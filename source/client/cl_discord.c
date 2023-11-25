@@ -617,7 +617,7 @@ void CL_UpdateDiscord( void )
 				strcpy( presence.partyId, cl.configstrings[CS_HOSTNAME] );
 
 				// If server is not localhost
-				if( cls.servertype != SOCKET_LOOPBACK ) {
+				if( cls.servertype != NET_IsLocalAddress ) {
 					strcpy( presence.joinSecret, NET_AddressToString( &cls.serveraddress ) );
 				}
 
