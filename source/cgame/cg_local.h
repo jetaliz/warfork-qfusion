@@ -1173,7 +1173,6 @@ void CG_ViewWeapon_RefreshAnimation( cg_viewweapon_t *viewweapon );
 //extern cvar_t *cg_footSteps;
 extern cvar_t *cg_damage_indicator;
 extern cvar_t *cg_damage_indicator_time;
-extern cvar_t *cg_pickup_flash;
 extern cvar_t *cg_weaponAutoSwitch;
 
 void CG_FireEvents( bool early );
