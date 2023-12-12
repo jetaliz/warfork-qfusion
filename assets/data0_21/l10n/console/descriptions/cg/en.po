@@ -438,11 +438,6 @@ msgstr "<0/1> You will see a flash when picking up an item or weapon.\n"
 "^6Note: For this command to work you must also set cg_showViewBlends \"1\"."
 
 #. Console/cg
-msgid "cg_placebo"
-msgstr "<value> This command sometimes yields a competitive edge over players similar to sv_cheats \"1\"\n"
-"^6Note: User experience varies. Satisfaction not guaranteed. Adult supervision is recommended."
-
-#. Console/cg
 msgid "cg_playList"
 msgstr "<path>/<filename>.m3u Path to your in-game music playlist.\n"
 "^6Note: To make your own in-game music playlist, create a folder in \"/basewf/\" called \"/sounds/music/\", which contains a file named custom.m3u and copy your music in ogg or wav format. On each line in custom.m3u, specify one track (ie: warfork.ogg). Music cannot exceed 44.1kHz or it will crash the sound system. In the console type cg_playList \"sounds/music/custom.m3u\""
