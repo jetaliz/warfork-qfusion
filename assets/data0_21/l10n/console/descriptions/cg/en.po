@@ -247,18 +247,6 @@ msgid "cg_ebbeam_width"
 msgstr "<value> Sets the width of the Elecrobolt beam."
 
 #. Console/cg
-msgid "cg_explosionsDust"
-msgstr "<0/1> Explosion dust will appear around Grenade Launcher and Rocket Launcher projectiles upon impact.\n"
-"^6Disable: cg_explosionsDust \"0\"\n"
-"^6Enable: cg_explosionsDust \"1\""
-
-#. Console/cg
-msgid "cg_explosionsRing"
-msgstr "<0/1> An explosion ring will appear around Grenade Launcher and Rocket Launcher projectiles upon impact.\n"
-"^6Disable: cg_explosionsRing \"0\"\n"
-"^6Enable: cg_explosionsRing \"1\""
-
-#. Console/cg
 msgid "cg_flashWindowCount"
 msgstr "<value> The amount of times Warfork flashes in your taskbar if warmup ends and a match starts."
 

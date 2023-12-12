@@ -235,7 +235,6 @@ typedef struct
 	cgs_media_handle_t *shaderParticle;
 	cgs_media_handle_t *shaderGrenadeExplosion;
 	cgs_media_handle_t *shaderRocketExplosion;
-	cgs_media_handle_t *shaderRocketExplosionRing;
 	cgs_media_handle_t *shaderBulletExplosion;
 	cgs_media_handle_t *shaderRaceGhostEffect;
 	cgs_media_handle_t *shaderWaterBubble;
@@ -901,8 +900,6 @@ extern cvar_t *cg_bloodTrailAlpha;
 
 extern cvar_t *cg_cartoonEffects;
 
-extern cvar_t *cg_explosionsRing;
-extern cvar_t *cg_explosionsDust;
 extern cvar_t *cg_gibs;
 extern cvar_t *cg_outlineModels;
 extern cvar_t *cg_outlineWorld;
