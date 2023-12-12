@@ -50,13 +50,6 @@ msgstr "<0|1|2|3|4|7> Cartoon effects.\n"
 "^6Enable all cartoon effects: cg_cartoonEffects \"7\""
 
 #. Console/cg
-msgid "cg_cartoonHitEffect"
-msgstr "<0/1> Critical hit effects will be displayed for high damage value attacks.\n"
-"^6Disable: cg_cartoonHitEffect \"0\"\n"
-"^6Enable: cg_cartoonHitEffect \"1\"\n"
-"^6Note: Critical hit effect color varies based on damage dealt. Green (39 or more), Yellow (50 or more), and Red (64 or more)."
-
-#. Console/cg
 msgid "cg_chatBeep"
 msgstr "<0/1> Plays a chat beep sound when someone sends a message.\n"
 "^6Disable: cg_chatBeep \"0\"\n"
