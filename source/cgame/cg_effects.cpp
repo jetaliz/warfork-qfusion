@@ -798,47 +798,6 @@ void CG_HighVelImpactPuffParticles( const vec3_t org, const vec3_t dir, int coun
 */
 void CG_ElectroIonsTrail( const vec3_t start, const vec3_t end, const vec4_t color )
 {
-#define MAX_BOLT_IONS 48
-	int i, count;
-	vec3_t move, vec;
-	float len;
-	float dec2 = 24.0f;
-	cparticle_t *p;
-
-	if( !cg_particles->integer )
-		return;
-
-	VectorSubtract( end, start, vec );
-	len = VectorNormalize( vec );
-	count = (int)( len / dec2 ) + 1;
-	if( count > MAX_BOLT_IONS )
-	{
-		count = MAX_BOLT_IONS;
-		dec2 = len / count;
-	}
-
-	VectorScale( vec, dec2, vec );
-	VectorCopy( start, move );
-
-	if( cg_numparticles + count > MAX_PARTICLES )
-		count = MAX_PARTICLES - cg_numparticles;
-	for( p = &particles[cg_numparticles], cg_numparticles += count; count > 0; count--, p++ )
-	{
-		CG_InitParticle( p, 0.65f, color[3], color[0] + crandom()*0.1, color[1] + crandom()*0.1, color[2] + crandom()*0.1, NULL );
-
-		for( i = 0; i < 3; i++ )
-		{
-			p->org[i] = move[i];
-			p->vel[i] = crandom()*4;
-		}
-		p->alphavel = -1.0 / ( 0.6 + random()*0.6 );
-		VectorClear( p->accel );
-		VectorAdd( move, vec, move );
-	}
-}
-
-void CG_ElectroIonsTrail2( const vec3_t start, const vec3_t end, const vec4_t color )
-{
 #define MAX_RING_IONS 96
 	int count;
 	vec3_t move, vec;
