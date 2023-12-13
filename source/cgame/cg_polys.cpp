@@ -323,43 +323,24 @@ void CG_LaserGunPolyBeam( const vec3_t start, const vec3_t end, const vec4_t col
 */
 void CG_ElectroPolyBeam( const vec3_t start, const vec3_t end, int team )
 {
-	struct shader_s *shader;
+    struct shader_s *shader;
 
-	if( cg_ebbeam_time->value <= 0.0f || cg_ebbeam_width->integer <= 0 )
-		return;
+    if( cg_ebbeam_time->value <= 0.0f || cg_ebbeam_width->integer <= 0 )
+        return;
 
-	if( cg_ebbeam_old->integer )
-	{
-		if( cg_teamColoredBeams->integer && ( team == TEAM_ALPHA || team == TEAM_BETA ) )
-		{
-			if( team == TEAM_ALPHA )
-				shader = CG_MediaShader( cgs.media.shaderElectroBeamOldAlpha );
-			else
-				shader = CG_MediaShader( cgs.media.shaderElectroBeamOldBeta );
-		}
-		else
-		{
-			shader = CG_MediaShader( cgs.media.shaderElectroBeamOld );
-		}
+    if( cg_teamColoredBeams->integer && ( team == TEAM_ALPHA || team == TEAM_BETA ) )
+    {
+        if( team == TEAM_ALPHA )
+            shader = CG_MediaShader( cgs.media.shaderElectroBeamAAlpha );
+        else
+            shader = CG_MediaShader( cgs.media.shaderElectroBeamABeta );
+    }
+    else
+    {
+        shader = CG_MediaShader( cgs.media.shaderElectroBeamA );
+    }
 
-		CG_SpawnPolyBeam( start, end, NULL, cg_ebbeam_width->integer, cg_ebbeam_time->value * 1000, cg_ebbeam_time->value * 1000 * 0.4f, shader, 128, 0 );
-	}
-	else
-	{
-		if( cg_teamColoredBeams->integer && ( team == TEAM_ALPHA || team == TEAM_BETA ) )
-		{
-			if( team == TEAM_ALPHA )
-				shader = CG_MediaShader( cgs.media.shaderElectroBeamAAlpha );
-			else
-				shader = CG_MediaShader( cgs.media.shaderElectroBeamABeta );
-		}
-		else
-		{
-			shader = CG_MediaShader( cgs.media.shaderElectroBeamA );
-		}
-
-		CG_SpawnPolyBeam( start, end, NULL, cg_ebbeam_width->integer, cg_ebbeam_time->value * 1000, cg_ebbeam_time->value * 1000 * 0.4f, shader, 128, 0 );
-	}
+    CG_SpawnPolyBeam( start, end, NULL, cg_ebbeam_width->integer, cg_ebbeam_time->value * 1000, cg_ebbeam_time->value * 1000 * 0.4f, shader, 128, 0 );
 }
 
 /*
