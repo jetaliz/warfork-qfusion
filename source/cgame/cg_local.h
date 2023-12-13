@@ -1031,9 +1031,6 @@ extern cvar_t *cg_thirdPersonRange;
 
 extern cvar_t *cg_colorCorrection;
 
-// Viewport bobbing on fall/high jumps
-extern cvar_t *cg_viewBob;
-
 void CG_ResetKickAngles( void );
 void CG_ResetColorBlend( void );
 
