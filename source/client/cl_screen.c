@@ -569,7 +569,7 @@ void SCR_RunConsole( int msec )
 	else
 		scr_conlines = 0;
 
-		scr_con_current = scr_conlines;
+	scr_con_current = scr_conlines;
 
 	scr_con_previous = scr_con_current;
 }

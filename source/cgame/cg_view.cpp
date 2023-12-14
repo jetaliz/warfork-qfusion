@@ -382,8 +382,8 @@ void CG_StartKickAnglesEffect( vec3_t source, float knockback, float radius, int
 */
 void CG_StartFallKickEffect( int bounceTime )
 {
-		cg.fallEffectTime = 0;
-		cg.fallEffectRebounceTime = 0;
+	cg.fallEffectTime = 0;
+	cg.fallEffectRebounceTime = 0;
 
 	if( cg.fallEffectTime > cg.time )
 		cg.fallEffectRebounceTime = 0;
