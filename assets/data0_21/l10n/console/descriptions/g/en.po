@@ -520,9 +520,8 @@ msgstr "<value> The amount of time before \"g_floodprotection_messages\" resets.
 
 #. Console/g
 msgid "g_floodprotection_team"
-msgstr "<0/1> Protects teamchat from flood.\n"
-"^6Disable: g_floodprotection_team \"0\"\n"
-"^6Enable: g_floodprotection_team \"1\""
+msgstr "<value> The amount of messages a player is permitted to send to team chat before triggering flood protection.\n"
+"^6Note: The amount of messages sent resets to \"0\" after the specified value of g_floodprotection_seconds elapses."
 
 #. Console/g
 msgid "g_gametype"
