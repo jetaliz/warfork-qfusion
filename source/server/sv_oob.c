@@ -416,9 +416,19 @@ static char *SV_ShortInfoString( void )
 		}
 	}
 
-	if( SV_MM_Initialized() )
+	// MM is currently disabled in warfork
+	// if( SV_MM_Initialized() )
+	// {
+	// 	Q_snprintfz( entry, sizeof( entry ), "mm\\\\1\\\\" );
+	// 	if( MAX_SVCINFOSTRING_LEN - len > strlen( entry ) )
+	// 	{
+	// 		Q_strncatz( string, entry, sizeof( string ) );
+	// 		len = strlen( string );
+	// 	}
+	// }
+	if ( Cvar_Integer("sv_useSteamAuth") )
 	{
-		Q_snprintfz( entry, sizeof( entry ), "mm\\\\1\\\\" );
+		Q_snprintfz( entry, sizeof( entry ), "stm\\\\1\\\\" );
 		if( MAX_SVCINFOSTRING_LEN - len > strlen( entry ) )
 		{
 			Q_strncatz( string, entry, sizeof( string ) );
