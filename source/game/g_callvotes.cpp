@@ -1186,7 +1186,11 @@ static void G_VoteKickBanPassed( callvotedata_t *vote )
 	if( !ent->r.inuse || !ent->r.client )  // may have disconnected along the callvote time
 		return;
 
-	trap_Cmd_ExecuteText( EXEC_APPEND, va( "addip %s %i\n", ent->r.client->ip, 15 ) );
+	if (ent->r.client->authenticated) {
+		trap_Cmd_ExecuteText( EXEC_APPEND, va( "ban %llu %llu\n", ent->r.client->steamid, 15 ) );
+	} else {
+		trap_Cmd_ExecuteText( EXEC_APPEND, va( "addip %s %i\n", ent->r.client->ip, 15 ) );
+	}
 	trap_DropClient( ent, DROP_TYPE_NORECONNECT, "Kicked" );
 }
 
