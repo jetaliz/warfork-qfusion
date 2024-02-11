@@ -335,6 +335,8 @@ static void Cmd_AddIP_f( void )
 		ipfilters[i].compare = 0xffffffff;
 	else if( trap_Cmd_Argc() == 3 )
 		ipfilters[i].timeout = game.serverTime + atof( trap_Cmd_Argv(2) )*60*1000;
+
+	SV_WriteIPList();
 }
 
 /*
@@ -369,6 +371,8 @@ static void Cmd_Ban_f( void )
 
 	if( trap_Cmd_Argc() == 3 )
 		ipfilters[i].timeout = game.serverTime + atof( trap_Cmd_Argv(2) )*60*1000;
+
+	SV_WriteIPList();
 }
 
 /*
@@ -399,6 +403,8 @@ static void Cmd_RemoveIP_f( void )
 			return;
 		}
 	G_Printf( "Didn't find %s.\n", trap_Cmd_Argv( 1 ) );
+
+	SV_WriteIPList();
 }
 
 /*
@@ -429,6 +435,8 @@ static void Cmd_RemoveBan_f( void )
 			return;
 		}
 	G_Printf( "Didn't find %s.\n", trap_Cmd_Argv( 1 ) );
+
+	SV_WriteIPList();
 }
 
 /*
