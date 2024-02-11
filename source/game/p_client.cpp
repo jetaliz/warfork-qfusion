@@ -803,13 +803,22 @@ void ClientBegin( edict_t *ent )
 void ClientAuth ( edict_t *ent, uint64_t steamid )
 {
 	gclient_t *client = ent->r.client;
+
+	if (SV_FilterSteamID(steamid)) {
+
+		trap_DropClient(ent, DROP_TYPE_GENERAL, "You are banned from this server.");
+		return;
+	}
+
 	client->steamid = steamid;
 	client->authenticated = true;
+
 
 	if ( g_permanent_operators->string[0] ){
 		char *pch = strtok(g_permanent_operators->string, ",");
 		while (pch != NULL){
 			uint64_t testid = atoll(pch);
+			printf("AAA %llu\n",testid);
 
 			if (testid == steamid){
 				if( !ent->r.client->isoperator )
