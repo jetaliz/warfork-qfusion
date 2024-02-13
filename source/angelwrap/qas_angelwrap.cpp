@@ -87,6 +87,16 @@ static void qasExceptionCallback( asIScriptContext *ctx )
 	moduleName = ( func ? func->GetModuleName() : "" );
 
 	Com_Printf( S_COLOR_RED "ASModule::ExceptionCallback (%s):\n%s %d:%d %s: %s\n", moduleName, sectionName, line, col, funcDecl, exceptionString );
+
+	int callstackSize = (int)ctx->GetCallstackSize();
+	for (int i = 0; i < callstackSize; i++)
+	{
+		const char *sectionName;
+		int line = ctx->GetLineNumber( i, nullptr, &sectionName );
+		const char *funcDecl = ctx->GetFunction( i )->GetDeclaration(true, true, true);
+
+		Com_Printf( S_COLOR_RED "[%d]" S_COLOR_WHITE " %s (%s line %d)\n", i, funcDecl, sectionName, line );
+	}
 }
 
 asIScriptEngine *qasCreateEngine( bool *asMaxPortability )
