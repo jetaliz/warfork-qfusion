@@ -673,12 +673,12 @@ static void G_asRegisterEnums( asIScriptEngine *asEngine )
 
 //=======================================================================
 
-static asIObjectType *asEntityArrayType()
+static asITypeInfo *asEntityArrayType()
 {
 	asIScriptContext *ctx = angelExport->asGetActiveContext();
 	asIScriptEngine *engine = ctx->GetEngine();
-	asIObjectType *ot = engine->GetObjectTypeById(engine->GetTypeIdByDecl("array<Entity @>"));
-	return ot;
+	asITypeInfo *ti = engine->GetTypeInfoById(engine->GetTypeIdByDecl("array<Entity @>"));
+	return ti;
 }
 
 //=======================================================================
@@ -2381,8 +2381,8 @@ static edict_t *objectGameEntity_DropItem( gsitem_t *item, edict_t *self )
 
 static CScriptArrayInterface *objectGameEntity_findTargets( edict_t *self )
 {
-	asIObjectType *ot = asEntityArrayType();
-	CScriptArrayInterface *arr = angelExport->asCreateArrayCpp( 0, ot );
+	asITypeInfo *ti = asEntityArrayType();
+	CScriptArrayInterface *arr = angelExport->asCreateArrayCpp( 0, ti );
 
 	if( self->target && self->target[0] != '\0' )
 	{
@@ -2400,8 +2400,8 @@ static CScriptArrayInterface *objectGameEntity_findTargets( edict_t *self )
 
 static CScriptArrayInterface *objectGameEntity_findTargeting( edict_t *self )
 {
-	asIObjectType *ot = asEntityArrayType();
-	CScriptArrayInterface *arr = angelExport->asCreateArrayCpp( 0, ot );
+	asITypeInfo *ti = asEntityArrayType();
+	CScriptArrayInterface *arr = angelExport->asCreateArrayCpp( 0, ti );
 
 	if( self->targetname && self->targetname[0] != '\0' )
 	{
@@ -3206,11 +3206,11 @@ static void asFunc_ConfigString( int index, asstring_t *str )
 
 static CScriptArrayInterface *asFunc_G_FindInRadius( asvec3_t *org, float radius )
 {
-	asIObjectType *ot = asEntityArrayType();
+	asITypeInfo *ti = asEntityArrayType();
 
 	int touch[MAX_EDICTS];
 	int numtouch = GClip_FindRadius( org->v, radius, touch, MAX_EDICTS );
-	CScriptArrayInterface *arr = angelExport->asCreateArrayCpp( numtouch, ot );
+	CScriptArrayInterface *arr = angelExport->asCreateArrayCpp( numtouch, ti );
 	for( int i = 0; i < numtouch; i++ ) {
 		*((edict_t **)arr->At( i )) = game.edicts + touch[i];
 	}
@@ -3222,8 +3222,8 @@ static CScriptArrayInterface *asFunc_G_FindByClassname( asstring_t *str )
 {
 	const char *classname = str->buffer;
 
-	asIObjectType *ot = asEntityArrayType();
-	CScriptArrayInterface *arr = angelExport->asCreateArrayCpp( 0, ot );
+	asITypeInfo *ti = asEntityArrayType();
+	CScriptArrayInterface *arr = angelExport->asCreateArrayCpp( 0, ti );
 
 	int count = 0;
 	edict_t *ent = NULL;
