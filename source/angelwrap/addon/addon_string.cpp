@@ -651,7 +651,7 @@ void RegisterStringAddon( asIScriptEngine *engine )
 	r = engine->RegisterObjectMethod( "String", "int toInt() const", asFUNCTION( objectString_toInt ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );
 	r = engine->RegisterObjectMethod( "String", "float toFloat() const", asFUNCTION( objectString_toFloat ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );
 
-	r = engine->RegisterObjectMethod( "String", "uint locate(String &, const uint) const", asFUNCTION( objectString_Locate ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );
+	r = engine->RegisterObjectMethod( "String", "uint locate(const String &in, const uint) const", asFUNCTION( objectString_Locate ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );
 	r = engine->RegisterObjectMethod( "String", "String @substr(const uint start, const uint length) const", asFUNCTION( objectString_Substring ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );
 	r = engine->RegisterObjectMethod( "String", "String @subString(const uint start, const uint length) const", asFUNCTION( objectString_Substring ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );
 	r = engine->RegisterObjectMethod( "String", "String @substr(const uint start) const", asFUNCTION( objectString_Substring2 ), asCALL_CDECL_OBJLAST ); assert( r >= 0 );
