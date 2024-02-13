@@ -1050,8 +1050,8 @@ static const asMethod_t match_Methods[] =
 	{ ASLIB_FUNCTION_DECL(int, getState, () const), asFUNCTION(objectMatch_getState), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_name, () const), asFUNCTION(objectMatch_getName), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, getScore, () const), asFUNCTION(objectMatch_getScore),  asCALL_CDECL_OBJLAST },
-	{ ASLIB_FUNCTION_DECL(void, set_name, ( String &in )), asFUNCTION(objectMatch_setName), asCALL_CDECL_OBJLAST },
-	{ ASLIB_FUNCTION_DECL(void, setScore, ( String &in )), asFUNCTION(objectMatch_setScore), asCALL_CDECL_OBJLAST },
+	{ ASLIB_FUNCTION_DECL(void, set_name, ( const String &in )), asFUNCTION(objectMatch_setName), asCALL_CDECL_OBJLAST },
+	{ ASLIB_FUNCTION_DECL(void, setScore, ( const String &in )), asFUNCTION(objectMatch_setScore), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(void, setClockOverride, ( uint milliseconds )), asFUNCTION(objectMatch_setClockOverride), asCALL_CDECL_OBJLAST },
 
 	ASLIB_METHOD_NULL
@@ -1340,7 +1340,7 @@ static const asMethod_t teamlist_Methods[] =
 	{ ASLIB_FUNCTION_DECL(Entity @, ent, ( int index )), asFUNCTION(objectTeamlist_GetPlayerEntity), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_name, () const), asFUNCTION(objectTeamlist_getName), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_defaultName, () const), asFUNCTION(objectTeamlist_getDefaultName), asCALL_CDECL_OBJLAST },
-	{ ASLIB_FUNCTION_DECL(void, set_name, ( String &in )), asFUNCTION(objectTeamlist_setName), asCALL_CDECL_OBJLAST },
+	{ ASLIB_FUNCTION_DECL(void, set_name, ( const String &in )), asFUNCTION(objectTeamlist_setName), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(bool, isLocked, () const), asFUNCTION(objectTeamlist_IsLocked), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(bool, lock, () const), asFUNCTION(objectTeamlist_Lock), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(bool, unlock, () const), asFUNCTION(objectTeamlist_Unlock), asCALL_CDECL_OBJLAST },
@@ -2538,7 +2538,7 @@ static const asMethod_t gedict_Methods[] =
 	{ ASLIB_FUNCTION_DECL(const String @, get_model2, () const), asFUNCTION(objectGameEntity_getModel2Name), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_sounds, () const), asFUNCTION(objectGameEntity_getSoundName), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_classname, () const), asFUNCTION(objectGameEntity_getClassname), asCALL_CDECL_OBJLAST },
-	//{ ASLIB_FUNCTION_DECL(const String @, getSpawnKey, ( String &in )), asFUNCTION(objectGameEntity_getSpawnKey), NULL, asCALL_CDECL_OBJLAST },
+	//{ ASLIB_FUNCTION_DECL(const String @, getSpawnKey, ( const String &in )), asFUNCTION(objectGameEntity_getSpawnKey), NULL, asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_targetname, () const), asFUNCTION(objectGameEntity_getTargetname), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_target, () const), asFUNCTION(objectGameEntity_getTarget), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_map, () const), asFUNCTION(objectGameEntity_getMap), asCALL_CDECL_OBJLAST },
@@ -3454,7 +3454,7 @@ static const asglobfuncs_t asGlobFuncs[] =
 	{ "void G_FireBullet( const Vec3 &in origin, const Vec3 &in angles, int range, int spread, int damage, int knockback, int stun, Entity @owner )", asFUNCTION(asFunc_FireBullet), NULL },
 	{ "Entity @G_FireBlast( const Vec3 &in origin, const Vec3 &in angles, int speed, int radius, int damage, int knockback, int stun, Entity @owner )", asFUNCTION(asFunc_FireBlast), NULL },
 
-	{ "bool ML_FilenameExists( String & )", asFUNCTION(asFunc_ML_FilenameExists), NULL },
+	{ "bool ML_FilenameExists( const String &in )", asFUNCTION(asFunc_ML_FilenameExists), NULL },
 	{ "const String @ML_GetMapByNum( int num )", asFUNCTION(asFunc_ML_GetMapByNum), NULL },
 
 	{ "uint G_RegisterHelpMessage( const String &in )", asFUNCTION(asFunc_G_RegisterHelpMessage), NULL },

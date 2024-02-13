@@ -218,7 +218,7 @@ only pointers and references are supported as-of-now (same goes for passing argu
 	#define ASBIND_THROW(a)	throw ASBind::Exception(a)
 #endif
 
-// #define __DEBUG_COUT_PRINT__
+#define __DEBUG_COUT_PRINT__
 // #define __DEBUG_COM_PRINTF__
 
 // Quake engine fixes
