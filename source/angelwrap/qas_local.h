@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <new>
 #include <string>
+#include <algorithm>
 #include <unordered_map>
 
 #if defined ( _WIN32 ) || ( _WIN64 )

@@ -221,30 +221,31 @@ void objectString_Release( asstring_t *obj )
 class StringFactory : public asIStringFactory
 {
 private:
-	std::unordered_map<asstring_t*, int> stringCache;
+	typedef std::unordered_map<asstring_t*, int> cachemap_t;
+	cachemap_t stringCache;
 
 private:
-	std::unordered_map<asstring_t*, int>::value_type* findCache(const char *data, asUINT length)
+	cachemap_t::iterator findCache(const char *data, asUINT length)
 	{
-		for (auto &v : stringCache)
-		{
-			if (!strncmp(v.first->buffer, data, length))
-				return &v;
-		}
-		return nullptr;
+		return std::find_if(stringCache.begin(), stringCache.end(),
+			[data, length](const cachemap_t::value_type &pair) -> bool {
+				if (pair.first->len != length)
+					return false;
+				return !strcmp( pair.first->buffer, data );
+			});
 	}
 
 public:
 	virtual const void *GetStringConstant(const char *data, asUINT length) override
 	{
-		auto v = findCache(data, length);
-		if (v != nullptr)
+		auto it = findCache( data, length );
+		if (it != stringCache.end())
 		{
-			v->second++;
-			return v->first;
+			it->second++;
+			return it->first;
 		}
 
-		asstring_t* ret = objectString_FactoryBuffer(data, length);
+		asstring_t* ret = objectString_FactoryBuffer( data, length );
 		stringCache[ret] = 1;
 		return ret;
 	}
