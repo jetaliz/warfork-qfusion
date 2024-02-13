@@ -78,14 +78,15 @@ static void qasExceptionCallback( asIScriptContext *ctx )
 {
 	int line, col;
 	asIScriptFunction *func;
-	const char *sectionName, *exceptionString, *funcDecl;
+	const char *sectionName, *exceptionString, *funcDecl, *moduleName;
 
 	line = ctx->GetExceptionLineNumber( &col, &sectionName );
 	func = ctx->GetExceptionFunction();
 	exceptionString = ctx->GetExceptionString();
 	funcDecl = ( func ? func->GetDeclaration( true ) : "" );
+	moduleName = ( func ? func->GetModuleName() : "" );
 
-	Com_Printf( S_COLOR_RED "ASModule::ExceptionCallback:\n%s %d:%d %s: %s\n", sectionName, line, col, funcDecl, exceptionString );
+	Com_Printf( S_COLOR_RED "ASModule::ExceptionCallback (%s):\n%s %d:%d %s: %s\n", moduleName, sectionName, line, col, funcDecl, exceptionString );
 }
 
 asIScriptEngine *qasCreateEngine( bool *asMaxPortability )

@@ -29,9 +29,10 @@
 			}
 		}
 
-		void showMenuButton( const String @id )
+		void showMenuButton( const String &in id )
 		{
-			gamemenu.getElementById( id ).css( 'display', 'block' );
+			auto element = gamemenu.getElementById( id );
+			element.css( 'display', 'block' );
 		}
 
 		void onGameShow( Element @body, Event @evt )
