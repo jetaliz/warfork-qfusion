@@ -1422,21 +1422,32 @@ static bool R_LoadKTX( int ctx, image_t *image, const char *pathname )
 			}
 
 		} else {
-			uint8_t *decompressed[6];
-			struct texture_buf_s decodeTextures[8] = { 0 };
-			for( size_t faceIdx = 0; faceIdx < numFaces; ++faceIdx ) {
-				struct texture_buf_s *tex = R_KTXResolveBuffer( &ktxContext, 0, faceIdx, 0 );
-				struct texture_buf_desc_s decodeDesc = {
-					.width = T_PixelW( tex ), .height = T_PixelH( tex ), .def = glConfig.ext.bgra ? R_BaseFormatDef( R_FORMAT_BGR8_UNORM ) : R_BaseFormatDef( R_FORMAT_RGB8_UNORM ), .alignment = 1 };
-				T_ReallocTextureBuf( &decodeTextures[faceIdx], &decodeDesc );
-				T_BlockDecodeETC1( tex, &decodeTextures[faceIdx] );
-				decompressed[faceIdx] = decodeTextures[faceIdx].buffer;
-			}
-			R_UploadMipmapped( ctx, decompressed, R_KTXWidth( &ktxContext ), R_KTXHeight( &ktxContext ), 1, image->flags, image->minmipsize, &image->upload_width, &image->upload_height,
-							   glConfig.ext.bgra ? GL_BGR_EXT : GL_RGB, GL_UNSIGNED_BYTE );
-			for( size_t faceIdx = 0; faceIdx < numFaces; faceIdx++ ) {
-				T_FreeTextureBuf( &decodeTextures[faceIdx] );
-			}
+		
+		 // TODO: this logic produces artifacting on mac decode logic behaves differently on osx for some reason need to investigate what happens
+		 // uint8_t *decompressed[6];
+		 // struct texture_buf_s decodeTextures[8] = { 0 };
+		 // for( size_t faceIdx = 0; faceIdx < numFaces; ++faceIdx ) {
+		 // 	struct texture_buf_s *tex = R_KTXResolveBuffer( &ktxContext, 0, faceIdx, 0 );
+		 // 	struct texture_buf_desc_s decodeDesc = {
+		 // 		.width = T_PixelW( tex ), .height = T_PixelH( tex ), .def = glConfig.ext.bgra ? R_BaseFormatDef( R_FORMAT_BGR8_UNORM ) : R_BaseFormatDef( R_FORMAT_RGB8_UNORM ), .alignment = 1 };
+		 // 	T_ReallocTextureBuf( &decodeTextures[faceIdx], &decodeDesc );
+		 // 	T_BlockDecodeETC1( tex, &decodeTextures[faceIdx] );
+		 // 	decompressed[faceIdx] = decodeTextures[faceIdx].buffer;
+		 // }
+		 // R_UploadMipmapped( ctx, decompressed, R_KTXWidth( &ktxContext ), R_KTXHeight( &ktxContext ), 1, image->flags, image->minmipsize, &image->upload_width, &image->upload_height,
+		 // 				   glConfig.ext.bgra ? GL_BGR_EXT : GL_RGB, GL_UNSIGNED_BYTE );
+		 // for( size_t faceIdx = 0; faceIdx < numFaces; faceIdx++ ) {
+		 // 	T_FreeTextureBuf( &decodeTextures[faceIdx] );
+		 // }
+		  
+		  uint8_t *decompressed[6];
+		  for( size_t faceIdx = 0; faceIdx < numFaces; ++faceIdx ) {
+		  	struct texture_buf_s *tex = R_KTXResolveBuffer( &ktxContext, 0, faceIdx, 0 );
+				decompressed[faceIdx] = R_PrepareImageBuffer( ctx, TEXTURE_LOADING_BUF0 + faceIdx, tex->width * tex->height * 4);
+				DecompressETC1( tex->buffer, tex->width, tex->height, decompressed[faceIdx], glConfig.ext.bgra ? true : false );
+		  }
+		  R_UploadMipmapped( ctx, decompressed, R_KTXWidth( &ktxContext ), R_KTXHeight( &ktxContext ), 1, image->flags, image->minmipsize, &image->upload_width, &image->upload_height,
+		  				   glConfig.ext.bgra ? GL_BGR_EXT : GL_RGB, GL_UNSIGNED_BYTE );
 		}
 
 		image->samples = 3;
