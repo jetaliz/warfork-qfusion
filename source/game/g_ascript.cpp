@@ -3928,6 +3928,11 @@ static asIScriptModule *G_BuildGameScript( const char *moduleName, const char *d
 
 	for( sectionNum = 0; ( section = G_LoadScriptSection( dir, script, sectionNum ) ) != NULL; sectionNum++ ) {
 		const char *sectionName = G_ListNameForPosition( script, sectionNum, SECTIONS_SEPARATOR );
+
+		// the section name may contain leading whitespace (newlines) which we don't want in the section name
+		while (isspace(*sectionName) && *sectionName != '\0')
+			sectionName++;
+
 		error = asModule->AddScriptSection( sectionName, section, strlen( section ) );
 
 		G_Free( section );
