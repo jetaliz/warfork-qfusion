@@ -511,7 +511,6 @@ static const int num_gl_extensions = sizeof( gl_extensions_decl ) / sizeof( gl_e
 #undef GL_EXTENSION
 #undef GL_EXTENSION_EXT
 
-
 /*
 * R_RegisterGLExtensions
 */
@@ -946,18 +945,9 @@ static void R_FinalizeGLExtensions( void )
 			qglGetIntegerv( GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS_ARB, &val );
 #endif
 
-// Michael: for osx intel will misreport power of 2 support
-// ref: https://github.com/TeamForbiddenLLC/warfork-qfusion/issues/169
-#ifdef __APPLE__
-		if(strstr( glConfig.rendererString, "Intel" )) {
-			val = -1;
-		}
-#endif
-
 		if( val <= 0 )
 			glConfig.ext.texture_non_power_of_two = false;
 	}
-
 #endif
 
 	if( glConfig.ext.depth24 ) {
