@@ -231,9 +231,9 @@ asIScriptContext *qasGetActiveContext( void )
 * Array tools
 **************************************/
 
-CScriptArrayInterface *qasCreateArrayCpp( unsigned int length, void *ot )
+CScriptArrayInterface *qasCreateArrayCpp( unsigned int length, void *ti )
 {
-	return QAS_NEW(CScriptArray)( length, static_cast<asIObjectType *>( ot ) );
+	return QAS_NEW(CScriptArray)( length, static_cast<asITypeInfo *>( ti ) );
 }
 
 void qasReleaseArrayCpp( CScriptArrayInterface *arr )
