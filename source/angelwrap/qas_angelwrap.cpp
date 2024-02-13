@@ -113,7 +113,8 @@ asIScriptEngine *qasCreateEngine( bool *asMaxPortability )
 
 	// The script compiler will write any compiler messages to the callback.
 	engine->SetMessageCallback( asFUNCTION( qasMessageCallback ), 0, asCALL_CDECL );
-	engine->SetEngineProperty( asEP_ALWAYS_IMPL_DEFAULT_CONSTRUCT, 1 );
+	engine->SetEngineProperty( asEP_ALWAYS_IMPL_DEFAULT_CONSTRUCT, 1 ); // always provide a default constructor for script classes
+	engine->SetEngineProperty( asEP_PROPERTY_ACCESSOR_MODE, 2 ); // app and script created accessors, property keyword optional
 
 	PreRegisterMathAddon( engine );
 	PreRegisterScriptArray( engine, true );
