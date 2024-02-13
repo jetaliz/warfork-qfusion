@@ -63,14 +63,16 @@ file(GLOB child_SRC
     "src/child/*.h"
     "src/child/*.cpp"
 )
-add_executable(wf_steam ${STEAM_SERVER_BINARY_TYPE} ${child_SRC})
-target_link_libraries(wf_steam ${STEAMWORKS_LIBRARY})
 
-qf_set_output_dir(wf_steam "")
+if (BUILD_STEAMLIB)
+    add_executable(wf_steam ${STEAM_SERVER_BINARY_TYPE} ${child_SRC})
+    target_link_libraries(wf_steam ${STEAMWORKS_LIBRARY})
+    qf_set_output_dir(wf_steam "")
 
-add_custom_command(TARGET wf_steam
-    POST_BUILD
-    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-        "${STEAMWORKS_LIBRARY_DIR}/${STEAMWORKS_SO_PREFIX}${STEAMWORKS_LIBRARY}${STEAMWORKS_LIBRARY_EXTENSION}"
-        "${STEAMWORKS_OUTPUT_PATH}"
-)
+    add_custom_command(TARGET wf_steam
+        POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "${STEAMWORKS_LIBRARY_DIR}/${STEAMWORKS_SO_PREFIX}${STEAMWORKS_LIBRARY}${STEAMWORKS_LIBRARY_EXTENSION}"
+            "${STEAMWORKS_OUTPUT_PATH}"
+    )
+endif()

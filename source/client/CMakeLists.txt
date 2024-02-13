@@ -212,9 +212,7 @@ endif()
 
 add_executable(${QFUSION_CLIENT_NAME} ${CLIENT_BINARY_TYPE} ${CLIENT_HEADERS} ${CLIENT_PLATFORM_HEADERS} ${CLIENT_COMMON_SOURCES} ${CLIENT_PLATFORM_SOURCES} ${BUNDLE_RESOURCES} )
 add_dependencies(${QFUSION_CLIENT_NAME} angelwrap cgame cin ftlib game ref_gl snd_openal ui)
-if (BUILD_STEAMLIB)
-    set(STEAMSHIMPARENT_LIBRARY steamshim_parent)
-endif()
+set(STEAMSHIMPARENT_LIBRARY steamshim_parent)
 
 
 execute_process(COMMAND git rev-parse HEAD WORKING_DIRECTORY ${CMAKE_HOME_DIRECTORY}/.. OUTPUT_VARIABLE GIT_COMMIT_HASH OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -258,6 +256,4 @@ endif()
 target_link_libraries(${QFUSION_CLIENT_NAME} PRIVATE ${CURL_LIBRARY} ${CLIENT_PLATFORM_LIBRARIES} ${DISCORD_LIBRARY} ${STEAMSHIMPARENT_LIBRARY})
 qf_set_output_dir(${QFUSION_CLIENT_NAME} "")
 
-if (BUILD_STEAMLIB)
-    add_dependencies(${QFUSION_CLIENT_NAME} wf_steam)
-endif()
+add_dependencies(${QFUSION_CLIENT_NAME} wf_steam)

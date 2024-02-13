@@ -106,6 +106,7 @@ bool launchChild(ProcessType *pid, const char* name )
 
     char* GArgv[2] = {exename,NULL};
     execvp(GArgv[0], GArgv);
+
     // still here? It failed! Terminate, closing child's ends of the pipes.
     _exit(1);
 } // launchChild

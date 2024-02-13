@@ -160,6 +160,7 @@ extern "C" {
     GPipeWrite = pipeParentWrite;
 
     char status;
+     
     readPipe(GPipeRead, &status, sizeof status);
 
     if (!status){
