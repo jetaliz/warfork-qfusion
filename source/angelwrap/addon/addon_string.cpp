@@ -262,8 +262,8 @@ public:
 
 		if (--it->second == 0)
 		{
-			stringCache.erase(it);
 			objectString_Free(it->first);
+			stringCache.erase(it);
 		}
 
 		return asSUCCESS;
@@ -591,7 +591,7 @@ void RegisterStringAddon( asIScriptEngine *engine )
 	int r;
 
 	// register the string factory
-	r = engine->RegisterStringFactory( "String @", &angelStringFactory ); assert( r >= 0 );
+	r = engine->RegisterStringFactory( "String", &angelStringFactory ); assert( r >= 0 );
 
 	// register object behaviours
 	r = engine->RegisterObjectBehaviour( "String", asBEHAVE_FACTORY, "String @f()", asFUNCTION( objectString_Factory ), asCALL_CDECL ); assert( r >= 0 );
