@@ -78,14 +78,25 @@ static void qasExceptionCallback( asIScriptContext *ctx )
 {
 	int line, col;
 	asIScriptFunction *func;
-	const char *sectionName, *exceptionString, *funcDecl;
+	const char *sectionName, *exceptionString, *funcDecl, *moduleName;
 
 	line = ctx->GetExceptionLineNumber( &col, &sectionName );
 	func = ctx->GetExceptionFunction();
 	exceptionString = ctx->GetExceptionString();
 	funcDecl = ( func ? func->GetDeclaration( true ) : "" );
+	moduleName = ( func ? func->GetModuleName() : "" );
 
-	Com_Printf( S_COLOR_RED "ASModule::ExceptionCallback:\n%s %d:%d %s: %s\n", sectionName, line, col, funcDecl, exceptionString );
+	Com_Printf( S_COLOR_RED "ASModule::ExceptionCallback (%s):\n%s %d:%d %s: %s\n", moduleName, sectionName, line, col, funcDecl, exceptionString );
+
+	int callstackSize = (int)ctx->GetCallstackSize();
+	for (int i = 0; i < callstackSize; i++)
+	{
+		const char *sectionName;
+		int line = ctx->GetLineNumber( i, nullptr, &sectionName );
+		const char *funcDecl = ctx->GetFunction( i )->GetDeclaration(true, true, true);
+
+		Com_Printf( S_COLOR_RED "[%d]" S_COLOR_WHITE " %s (%s line %d)\n", i, funcDecl, sectionName, line );
+	}
 }
 
 asIScriptEngine *qasCreateEngine( bool *asMaxPortability )
@@ -113,7 +124,8 @@ asIScriptEngine *qasCreateEngine( bool *asMaxPortability )
 
 	// The script compiler will write any compiler messages to the callback.
 	engine->SetMessageCallback( asFUNCTION( qasMessageCallback ), 0, asCALL_CDECL );
-	engine->SetEngineProperty( asEP_ALWAYS_IMPL_DEFAULT_CONSTRUCT, 1 );
+	engine->SetEngineProperty( asEP_ALWAYS_IMPL_DEFAULT_CONSTRUCT, 1 ); // always provide a default constructor for script classes
+	engine->SetEngineProperty( asEP_PROPERTY_ACCESSOR_MODE, 2 ); // app and script created accessors, property keyword optional
 
 	PreRegisterMathAddon( engine );
 	PreRegisterScriptArray( engine, true );
@@ -231,9 +243,9 @@ asIScriptContext *qasGetActiveContext( void )
 * Array tools
 **************************************/
 
-CScriptArrayInterface *qasCreateArrayCpp( unsigned int length, void *ot )
+CScriptArrayInterface *qasCreateArrayCpp( unsigned int length, void *ti )
 {
-	return QAS_NEW(CScriptArray)( length, static_cast<asIObjectType *>( ot ) );
+	return QAS_NEW(CScriptArray)( length, static_cast<asITypeInfo *>( ti ) );
 }
 
 void qasReleaseArrayCpp( CScriptArrayInterface *arr )

@@ -45,18 +45,19 @@ public:
 	void *getData() { return data; }
 
 	// asIBinaryStream implementation
-	void Read(void *ptr, asUINT _size)
+	int Read(void *ptr, asUINT _size)
 	{
 		if(!data || !ptr)
 			trap::Error("BinaryBuffer::Read null pointer");
 		if((offset+_size)>allocated)
-			trap::Error("BinaryBuffer::Read tried to read more bytes than available");
+			_size = allocated-offset;
 
 		memcpy(ptr, data+offset, _size);
 		offset+= _size;
+		return (int)_size;
 	}
 
-	void Write(const void *ptr, asUINT _size)
+	int Write(const void *ptr, asUINT _size)
 	{
 		if(!data || !ptr)
 			trap::Error("BinaryBuffer::Write null pointer");
@@ -70,6 +71,7 @@ public:
 		}
 		memcpy(data+size, ptr, _size);
 		size += _size;
+		return (int)_size;
 	}
 };
 
@@ -108,20 +110,20 @@ public:
 	}
 
 	// asIBinaryStream implementation
-	void Read(void *ptr, asUINT size)
+	int Read(void *ptr, asUINT size)
 	{
 		if(!fh)
 			trap::Error("BinaryFileStream::Read tried to read from closed file");
 
-		trap::FS_Read(ptr, size, fh);
+		return trap::FS_Read(ptr, size, fh);
 	}
 
-	void Write(const void *ptr, asUINT size)
+	int Write(const void *ptr, asUINT size)
 	{
 		if(!fh)
 			trap::Error("BinaryFileStream::Write tried to write to closed file");
 
-		trap::FS_Write(ptr, size, fh);
+		return trap::FS_Write(ptr, size, fh);
 	}
 };
 
@@ -133,7 +135,7 @@ class ASModule : public ASInterface
 
 	asIScriptEngine *engine;
 	struct angelwrap_api_s *as_api;
-	asIObjectType *stringObjectType;
+	asITypeInfo *stringObjectType;
 
 // private class, its ok to have everything as public :)
 public:
@@ -165,7 +167,7 @@ public:
 			return false;
 		}
 
-		stringObjectType = engine->GetObjectTypeById(engine->GetTypeIdByDecl("String"));
+		stringObjectType = engine->GetTypeInfoByDecl("String");
 
 		/*
 		module = engine->GetModule( UI_AS_MODULE, asGM_ALWAYS_CREATE );
@@ -230,7 +232,7 @@ public:
 		return currentFunction->GetModule();
 	}
 
-	virtual asIObjectType *getStringObjectType( void ) const {
+	virtual asITypeInfo *getStringObjectType( void ) const {
 		return stringObjectType;
 	}
 
@@ -297,19 +299,18 @@ public:
 			str = "typedef enum\r\n{\r\n";
 			trap::FS_Write( str, strlen( str ), filenum );
 
-			int enumTypeId;
-			const char *enumName = engine->GetEnumByIndex( i, &enumTypeId );
+			asITypeInfo *enumInfo = engine->GetEnumByIndex( i );
 
-			int enumValueCount = engine->GetEnumValueCount( enumTypeId );
+			int enumValueCount = enumInfo->GetEnumValueCount();
 			for( j = 0; j < enumValueCount; j++ )
 			{
 				int outValue;
-				const char *valueName = engine->GetEnumValueByIndex( enumTypeId, j, &outValue );
+				const char *valueName = enumInfo->GetEnumValueByIndex( j, &outValue );
 				str = va( "\t%s = 0x%x,\r\n", valueName, outValue );
 				trap::FS_Write( str, strlen( str ), filenum );
 			}
 
-			str = va( "} %s;\r\n\r\n", enumName );
+			str = va( "} %s;\r\n\r\n", enumInfo->GetName() );
 			trap::FS_Write( str, strlen( str ), filenum );
 		}
 
@@ -355,7 +356,7 @@ public:
 		int objectCount = engine->GetObjectTypeCount();
 		for( i = 0; i < objectCount; i++ )
 		{
-			asIObjectType *objectType = engine->GetObjectTypeByIndex( i );
+			asITypeInfo *objectType = engine->GetObjectTypeByIndex( i );
 			if( objectType )
 			{
 				// class file
@@ -450,7 +451,7 @@ public:
 	}
 
 	// array factory
-	virtual CScriptArrayInterface *createArray( unsigned int size, asIObjectType *ot )
+	virtual CScriptArrayInterface *createArray( unsigned int size, asITypeInfo *ot )
 	{
 		if( as_api ) {
 			return static_cast<CScriptArrayInterface *>( as_api->asCreateArrayCpp( size, static_cast<void *>( ot ) ) );
