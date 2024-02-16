@@ -8,6 +8,11 @@ enum texture_buf_flags_e {
 	TEX_BUF_MAX = 0xffff
 };
 
+enum texture_buf_res_e {
+	TEXTURE_BUF_SUCCESS,
+	TEXTURE_BUF_INVALID_CAP = -1 // the capacity of the buffer is invalid 
+};
+
 struct texture_buf_s {
 	enum texture_buf_flags_e flags;
   const struct base_format_def_s* def;
@@ -40,7 +45,7 @@ uint16_t T_PixelH( const struct texture_buf_s *buf);
 **/
 void T_PromteTextureBuf( struct texture_buf_s *buf);
 void T_ReallocTextureBuf( struct texture_buf_s *buf, const struct texture_buf_desc_s *desc);
-void T_AliasTextureBuf( struct texture_buf_s *buf, const struct texture_buf_desc_s *desc, uint8_t *buffer, size_t size);
+int T_AliasTextureBuf( struct texture_buf_s *buf, const struct texture_buf_desc_s *desc, uint8_t *buffer, size_t size);
 
 void T_FreeTextureBuf(struct texture_buf_s * tex);
 

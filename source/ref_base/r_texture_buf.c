@@ -97,11 +97,13 @@ size_t T_Size( struct texture_buf_s *buf )
 
 void T_PromteTextureBuf( struct texture_buf_s *tex )
 {
+	assert(tex);
 	if( ( tex->flags & TEX_BUF_IS_ALIASED ) > 0 ) {
 		uint8_t *aliasBuffer = tex->buffer;
 		tex->buffer = malloc( tex->size );
 		memcpy( tex->buffer, aliasBuffer, tex->size );
 	}
+	tex->flags = (tex->flags & (~TEX_BUF_IS_ALIASED));
 }
 
 void T_ReallocTextureBuf( struct texture_buf_s *buf, const struct texture_buf_desc_s *desc)
@@ -120,23 +122,23 @@ void T_ReallocTextureBuf( struct texture_buf_s *buf, const struct texture_buf_de
 	buf->buffer = realloc( buf->buffer, buf->capacity );
 }
 
-void T_AliasTextureBuf( struct texture_buf_s *buf, const struct texture_buf_desc_s *desc, uint8_t *buffer, size_t size)
+int T_AliasTextureBuf( struct texture_buf_s *buf, const struct texture_buf_desc_s *desc, uint8_t *buffer, size_t size)
 {
   T_ConfigureTextureBuf( buf, desc->def, desc->width, desc->height, desc->alignment );
 	if( ( buf->flags & TEX_BUF_IS_ALIASED ) == 0 ) {
 		free( buf->buffer ); // we free the underlying memory
 	}
 	buf->flags |= TEX_BUF_IS_ALIASED;
+	buf->buffer = buffer;
 	if(size == 0 ){
 		buf->capacity = buf->size;
 	} else {
 		buf->capacity = size;
-		assert( buf->capacity > size );
+		if( buf->capacity < size )
+			return TEXTURE_BUF_INVALID_CAP;
 	}
-	buf->buffer = buffer;
+	return TEXTURE_BUF_SUCCESS;
 }
-
-
 
 void T_SwapEndianness( struct texture_buf_s *tex) {
 	const uint32_t width = T_LogicalW( tex );
