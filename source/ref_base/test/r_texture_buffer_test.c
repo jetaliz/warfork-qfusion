@@ -1,24 +1,20 @@
 #include "r_texture_format.h"
-#include "unity.h"
 #include "r_texture_buf.h"
 
 #define STB_DS_IMPLEMENTATION 1
 #include "stb_ds.h"
 
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <setjmp.h>
+#include <cmocka.h>
+
 void Sys_Error( const char *format, ... ){
+   assert_true(false);
 }
 
-void setUp(void)
-{
-}
-
-void tearDown()
-{
-}
-
-
-
-void test_CreateAliasTextureBuffer(void)
+void test_alias_texture_buffer(void **state)
 {
   uint8_t* c = malloc(768);
   struct texture_buf_s buffer = {0};
@@ -29,23 +25,23 @@ void test_CreateAliasTextureBuffer(void)
     .alignment = 1 
   };
   const int res = T_AliasTextureBuf( &buffer, &texturedesc, c, 768);
-  TEST_ASSERT_EQUAL_INT( TEXTURE_BUF_SUCCESS, res );
-  TEST_ASSERT_EQUAL_INT( T_Size(&buffer), 768 );
-  TEST_ASSERT_EQUAL_INT( T_PixelW(&buffer), 16);
-  TEST_ASSERT_EQUAL_INT( T_PixelH(&buffer), 16);
-  TEST_ASSERT_EQUAL_INT( T_LogicalW(&buffer), 16);
-  TEST_ASSERT_EQUAL_INT( T_LogicalH(&buffer), 16);
-  TEST_ASSERT_TRUE( buffer.flags & TEX_BUF_IS_ALIASED);
+  assert_int_equal( TEXTURE_BUF_SUCCESS, res );
+  assert_uint_equal( T_Size( &buffer ), 768 );
+  assert_uint_equal( T_PixelW( &buffer ), 16 );
+  assert_uint_equal( T_PixelH( &buffer ), 16 );
+  assert_uint_equal( T_LogicalW( &buffer ), 16 );
+  assert_uint_equal( T_LogicalH( &buffer ), 16 );
+  assert_true( buffer.flags & TEX_BUF_IS_ALIASED);
 
   const int res2 = T_AliasTextureBuf( &buffer, &texturedesc, c, 128);
-  TEST_ASSERT_EQUAL_INT( TEXTURE_BUF_SUCCESS, res2 );
+  assert_int_equal( TEXTURE_BUF_SUCCESS, res2 );
   
   T_FreeTextureBuf(&buffer);
   free(c);
 }
 
 
-void test_SwapRGBTextureBuffer_SwapRG_Unorm(void) {
+void test_swap_rg_texture_buffer(void **state) {
 
   uint8_t src[8 * 8 * 3] = {
     228, 0, 0, 238, 198, 0, 65, 52, 0, 206, 253, 0, 45, 212, 0, 138, 147, 0, 61, 151, 0, 100, 167, 0,
@@ -75,17 +71,17 @@ void test_SwapRGBTextureBuffer_SwapRG_Unorm(void) {
     .alignment = 1 
   };
   const int res = T_AliasTextureBuf( &buffer, &texturedesc, src, sizeof(src));
-  TEST_ASSERT_EQUAL_INT( TEXTURE_BUF_SUCCESS, res);
+  assert_int_equal( TEXTURE_BUF_SUCCESS, res);
   enum texture_logical_channel_e swizzle[] = {
     R_LOGICAL_C_GREEN,
     R_LOGICAL_C_RED,
     R_LOGICAL_C_BLUE,
   };
   T_SwizzleInplace(&buffer, swizzle);
-  TEST_ASSERT_EQUAL_CHAR_ARRAY(expected, src, sizeof(expected));
+  assert_memory_equal(expected, src, sizeof(expected));
 }
 
-void test_PromoteTextureBuffer(void) {
+void test_promote_textuire_buffer(void **state) {
   uint8_t* c = malloc(768);
   struct texture_buf_s buffer = {0};
   struct texture_buf_desc_s texturedesc = { 
@@ -95,21 +91,23 @@ void test_PromoteTextureBuffer(void) {
     .alignment = 1 
   };
   const int res = T_AliasTextureBuf( &buffer, &texturedesc, c, 768);
-  TEST_ASSERT_EQUAL_INT( TEXTURE_BUF_SUCCESS, res );
+  assert_int_equal( TEXTURE_BUF_SUCCESS, res );
 
   T_PromteTextureBuf(&buffer);
-  TEST_ASSERT_NOT_EQUAL(buffer.buffer, c );
-  TEST_ASSERT_FALSE(buffer.flags & TEX_BUF_IS_ALIASED);
+  assert_ptr_not_equal(buffer.buffer, c );
+  assert_false(buffer.flags & TEX_BUF_IS_ALIASED);
 
   T_FreeTextureBuf(&buffer);
   free(c);
 }
 
-int main(void)
+int main( void )
 {
-	UNITY_BEGIN();
-	RUN_TEST( test_CreateAliasTextureBuffer );
-	RUN_TEST( test_PromoteTextureBuffer );
-	RUN_TEST( test_SwapRGBTextureBuffer_SwapRG_Unorm );
-	return UNITY_END();
+	const struct CMUnitTest tests[] = {
+		cmocka_unit_test( test_alias_texture_buffer ),
+		cmocka_unit_test( test_swap_rg_texture_buffer ),
+		cmocka_unit_test( test_promote_textuire_buffer ),
+	};
+
+	return cmocka_run_group_tests( tests, NULL, NULL );
 }

@@ -39,10 +39,10 @@ set(ANGELSCRIPT_DIR ${CMAKE_HOME_DIRECTORY}/../third-party/angelscript/sdk/angel
 set(ANGELSCRIPT_INCLUDE_DIR ${ANGELSCRIPT_DIR}/include/)
 add_subdirectory(${ANGELSCRIPT_DIR}/projects/cmake ${ANGELSCRIPT_DIR}/lib/)
 
-set(UNITY_DIR ${CMAKE_HOME_DIRECTORY}/../third-party/unity)
-set(UNITY_INCLUDE_DIR ${UNITY_DIR}/src/)
-set(UNITY_SRC_DIR ${UNITY_DIR}/src/)
-set(UNITY_SRC_FILES ${UNITY_SRC_DIR}/unity.c)
+set(CMOCKA_DIR ${CMAKE_HOME_DIRECTORY}/../third-party/cmocka)
+set(CMOCKA_INCLUDE_DIR ${CMOCKA_DIR}/include/)
+set(CMOCKA_SRC_DIR ${CMOCKA_DIR}/src/)
+set(CMOCKA_SRC_FILES ${CMOCKA_SRC_DIR}/cmocka.c)
 
 set(LIBROCKET_DIR ${CMAKE_HOME_DIRECTORY}/../third-party/libRocket)
 set(LIBROCKET_INCLUDE_DIR ${LIBROCKET_DIR}/Include)
