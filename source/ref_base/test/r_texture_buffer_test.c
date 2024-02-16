@@ -60,10 +60,8 @@ void test_PromoteTextureBuffer(void) {
   TEST_ASSERT_NOT_EQUAL(buffer.buffer, c );
   TEST_ASSERT_FALSE(buffer.flags & TEX_BUF_IS_ALIASED);
 
-
   T_FreeTextureBuf(&buffer);
   free(c);
-
 }
 
 int main(void)

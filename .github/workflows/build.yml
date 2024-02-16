@@ -202,7 +202,7 @@ jobs:
         working-directory: ./source
         run: |
           export CC=clang CXX=clang++
-          cmake -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_STEAMLIB=1 .
+          cmake -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_STEAMLIB=1 -DBUILD_UNIT_TEST=1 .
 
       - name: Build project
         working-directory: ./source
