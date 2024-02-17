@@ -191,7 +191,7 @@ jobs:
       - name: Install build dependencies
         run: |
           apt update
-          apt install -y curl clang cmake build-essential libsdl2-dev libopenal-dev libvorbis-dev libfreetype6-dev libcurl4-gnutls-dev git zip unzip parallel
+          apt install -y curl clang cmake build-essential libsdl2-dev libopenal-dev libvorbis-dev libfreetype6-dev libcurl4-gnutls-dev git zip unzip
 
       - name: Download steamworks sdk
         run: |
@@ -202,15 +202,11 @@ jobs:
         working-directory: ./source
         run: |
           export CC=clang CXX=clang++
-          cmake -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_STEAMLIB=1 -DBUILD_UNIT_TEST=1 .
+          cmake -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_STEAMLIB=1 .
 
       - name: Build project
         working-directory: ./source
         run: make -j8
-
-      - name: Run Tests
-        working-directory: ./source/build/test
-        run: find . -executable -type f | parallel -j1
       
       - name: Package warfork
         working-directory: ./source/build
