@@ -219,7 +219,6 @@
 		<a href="https://warfork.com/" target="_browser">
 			<img src="/ui/porkui/gfx/www.png" class="social-icon" />
 		</a>
-		<a
 		<a href="#" onclick="$openConsole">
 			<img src="/ui/porkui/gfx/console.png" class="social-icon" id="console" />
 		</a>
