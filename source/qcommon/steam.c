@@ -19,6 +19,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "../qcommon/qcommon.h"
 #include "../steamshim/src/parent/parent.h"
+#include "cvar.h"
+#include "steam.h"
 #include <string.h>
 
 #define UNIMPLEMENTED_DBGBREAK()                                         \
@@ -29,7 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 static void printEvent( const STEAMSHIM_Event *e )
 {
-	if( !e )
+	if( !steam_debug->integer || !e )
 		return;
 
 	Com_Printf( "%sokay, ival=%d, fval=%f, lval=%llu, name='%s').\n", e->okay ? "" : "!", e->ivalue, e->fvalue, e->lvalue, e->name );
@@ -51,16 +53,18 @@ static const STEAMSHIM_Event* blockOnEvent(STEAMSHIM_EventType type){
 		}
 	}
 }
-
+cvar_t *steam_debug;
 /*
 * Steam_Init
 */
 void Steam_Init( void )
 {
+	 steam_debug = Cvar_Get( "steam_debug", "0", 0);
+
 #if DEDICATED_ONLY 
-	int r = STEAMSHIM_init(false, true);
+	int r = STEAMSHIM_init(steam_debug->integer, false, true);
 #else
-	int r = STEAMSHIM_init(true, true);
+	int r = STEAMSHIM_init(steam_debug->integer, true, true);
 #endif
 	if( !r ) {
 		Com_Printf( "Steam initialization failed.\n" );

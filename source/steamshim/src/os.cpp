@@ -20,7 +20,16 @@ freely, subject to the following restrictions:
 
 #include "os.h"
 #include "parent/parent_private.h"
+#include <cstdarg>
 #include <cstring>
+
+bool debug = false;
+void dbgprintf(const char *fmt, ...){
+    if (!debug) return;
+    va_list va;
+    va_start(va, fmt);
+    vprintf(fmt, va);
+}
 
 #ifdef _WIN32
 void fail(const char *err)
@@ -60,13 +69,18 @@ bool setEnvVar(const char *key, const char *val)
 
 bool launchChild(ProcessType *pid, const char* name)
 {
-    char *str = _strdup( GetCommandLineA() );
-
     STARTUPINFOA si = { sizeof( si ) };
     memset( pid, 0, sizeof( *pid ) );
 
     char exename[32] = ".\\";
     strncpy(exename+2, name, 30);
+
+    char args[32] = { 0 };
+    if (debug){
+        snprintf(args, 31, ".\\%s steamdebug");
+    } else {
+        snprintf(args, 31, ".\\%s");
+    }
 
     bool bResult = ( CreateProcessA( exename, str, NULL, NULL, TRUE, 0, NULL,
                               NULL, &si, pid) != 0);
@@ -104,7 +118,9 @@ bool launchChild(ProcessType *pid, const char* name )
     char exename[32] = "./";
     strncpy(exename+2, name, 30);
 
-    char* GArgv[2] = {exename,NULL};
+    char* GArgv[3] = {exename, NULL, NULL};
+    if (debug)
+        GArgv[1] = strdup("steamdebug");
     execvp(GArgv[0], GArgv);
 
     // still here? It failed! Terminate, closing child's ends of the pipes.

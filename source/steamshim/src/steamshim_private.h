@@ -39,6 +39,7 @@ typedef enum ShimCmd
 
 extern PipeType GPipeRead;
 extern PipeType GPipeWrite;
+extern bool debug;
 
 class PipeBuffer
 {

@@ -50,7 +50,7 @@ static STEAMSHIM_Event* ProcessEvent(){
 
     #if DEBUGPIPE
     if (0) {}
-    #define PRINTGOTEVENT(x) else if (type == x) printf("Parent got " #x ".\n")
+    #define PRINTGOTEVENT(x) else if (type == x) dbgprintf("Parent got " #x ".\n")
     PRINTGOTEVENT(SHIMEVENT_BYE);
     PRINTGOTEVENT(SHIMEVENT_STATSRECEIVED);
     PRINTGOTEVENT(SHIMEVENT_STATSSTORED);
@@ -126,8 +126,9 @@ static bool setEnvironmentVars(PipeType pipeChildRead, PipeType pipeChildWrite)
 } 
 
 extern "C" {
-  int STEAMSHIM_init(bool runclient, bool runserver)
+  int STEAMSHIM_init(bool _debug, bool runclient, bool runserver)
   {
+    debug = _debug;
 
 
     PipeType pipeParentRead = NULLPIPE;

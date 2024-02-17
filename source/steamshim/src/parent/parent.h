@@ -30,7 +30,7 @@ extern "C" {
 
 // pass runclient to connect to the steam app, runserver to host a game server
 // return of 0 means failure
-int STEAMSHIM_init(bool runclient, bool runserver);
+int STEAMSHIM_init(bool debug, bool runclient, bool runserver);
 void STEAMSHIM_deinit(void);
 int STEAMSHIM_alive(void);
 const STEAMSHIM_Event *STEAMSHIM_pump(void);

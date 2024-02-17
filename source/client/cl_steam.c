@@ -6,7 +6,7 @@
 
 static void printEvent( const STEAMSHIM_Event *e )
 {
-	if( !e )
+	if( !steam_debug->integer || !e )
 		return;
 
 	Com_Printf( "%sokay, ival=%d, fval=%f, lval=%llu, name='%s').\n", e->okay ? "" : "!", e->ivalue, e->fvalue, e->lvalue, e->name );
@@ -72,10 +72,6 @@ void Steam_GetPersonaName( char *name, size_t namesize )
 	STEAMSHIM_getPersonaName();
 	const STEAMSHIM_Event *evt = blockOnEvent(SHIMEVENT_PERSONANAMERECIEVED);
 	strncpy(name, evt->name, namesize);
-
-
-	printf("making beacon\n");
-	STEAMSHIM_createBeacon(1, "a", "b");
 }
 
 void Steam_SetRichPresence( int num, const char **key, const char **val )

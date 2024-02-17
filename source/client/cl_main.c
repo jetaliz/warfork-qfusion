@@ -2237,7 +2237,6 @@ static void CL_InitLocal( void )
 
 	}
 
-
 	steam_id = Cvar_Get( "steam_id", "", CVAR_USERINFO|CVAR_READONLY);
 
 	if (Steam_Active()){

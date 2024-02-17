@@ -51,3 +51,5 @@ int readPipe(PipeType fd, void *buf, const unsigned int _len);
 void closePipe(PipeType fd);
 char *getEnvVar(const char *key, char *buf, const size_t buflen);
 int pipeReady(PipeType fd);
+
+void dbgprintf(const char *fmt, ...);
