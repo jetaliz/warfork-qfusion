@@ -183,19 +183,9 @@ a:hover, a:focus {
 
 /* Console icon */
 #console {
-	position: fixed;
-	bottom: 24dp;
-	width: 32dp;
-	height: 32dp;
-	z-index: 2;
+	float: left;
 }
 
-#link_console { 
-	float: left;
-	width: 32dp;
-	height: 32dp;
-	margin-left: 5dp;
-}
 
 /** Left side container */
 #leftside {
