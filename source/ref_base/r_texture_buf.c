@@ -307,6 +307,30 @@ void T_SwizzleInplace(struct texture_buf_s* tex, enum texture_logical_channel_e*
 			}
 			break;
 		}
+		case R_BASE_FORMAT_PACKED_16: {
+			for( size_t row = 0; row < logicalHeight; row++ ) {
+				for( size_t column = 0; column < logicalWidth; column++ ) {
+					uint16_t *const block = (uint16_t *)&tex->buffer[( tex->rowPitch * row ) + ( column * RT_BlockSize( tex->def ) )];
+					uint_fast16_t intermediary = 0;			
+					for( size_t c = 0; c < tex->def->packed_16.numChannels; c++ ) {
+						if( tex->def->packed_16.channels[c] == channels[c] ) {
+							intermediary |= ( (*block) & tex->def->packed_16.bits[c].mask );
+					  } else {
+					  	for( size_t c2 = 0; c2 < tex->def->packed_16.numChannels; c2++ ) {
+					  		if( tex->def->packed_16.channels[c] == channels[c2] ) {
+					  			const struct texture_format_packed_def_16_packing_s *src = &tex->def->packed_16.bits[c];
+					  			const struct texture_format_packed_def_16_packing_s *dest = &tex->def->packed_16.bits[c2];
+									intermediary |= (((*block) & src->mask) >> (src->offset)) << dest->offset;
+					  			break;
+					  		}
+					  	}
+					  }
+					}
+					(*block) = intermediary;
+				}
+			}
+			break;
+		}
 		case R_BASE_FORMAT_FIXED_16: {
 			uint16_t values[R_LOGICAL_C_MAX];
 			for( size_t row = 0; row < logicalHeight; row++ ) {
