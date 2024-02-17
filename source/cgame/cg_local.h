@@ -924,6 +924,7 @@ extern cvar_t *cg_laserBeamSubdivisions;
 extern cvar_t *cg_projectileAntilagOffset;
 extern cvar_t *cg_raceGhosts;
 extern cvar_t *cg_raceGhostsAlpha;
+extern cvar_t *cg_chatBlocklist;
 extern cvar_t *cg_chatBeep;
 extern cvar_t *cg_chatFilter;
 extern cvar_t *cg_chatFilterTV;

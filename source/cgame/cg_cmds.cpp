@@ -50,6 +50,11 @@ static void CG_SC_ChatPrint( void )
 	if( filter->integer & (teamonly ? 2 : 1) )
 		return;
 
+	if (*cgs.configStrings[CS_USESTEAMAUTH] == '1')
+		// strstr will always work for steamid64
+		if (cg_chatBlocklist->string[0] && strstr(cg_chatBlocklist->string, va("%llu", cgs.clientInfo[who-1].steamid) ))
+			return;
+
 	if( !name )
 		CG_LocalPrint( S_COLOR_GREEN "console: %s\n", text );
 	else if( teamonly )
