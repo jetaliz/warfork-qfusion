@@ -32,12 +32,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	MAX_GLIMAGES	    8192
 #define IMAGES_HASH_SIZE    64
 
-typedef struct
-{
-	int ctx;
-	int side;
-} loaderCbInfo_t;
-
 static image_t images[MAX_GLIMAGES];
 static image_t images_hash_headnode[IMAGES_HASH_SIZE], *free_images;
 static qmutex_t *r_imagesLock;
@@ -410,15 +404,6 @@ static void R_EndianSwap16BitImage( unsigned short *data, int width, int height 
 			*data = ( ( *data & 255 ) << 8 ) | ( *data >> 8 );
 		data += width & 1; // 4 unpack alignment
 	}
-}
-
-/*
-* R_AllocImageBufferCb
-*/
-static uint8_t *_R_AllocImageBufferCb( void *ptr, size_t size, const char *filename, int linenum )
-{
-	loaderCbInfo_t *cbinfo = ptr;
-	return _R_PrepareImageBuffer( cbinfo->ctx, cbinfo->side, size, filename, linenum );
 }
 
 
