@@ -558,7 +558,7 @@ static void CL_DiscordReady( const DiscordUser *user )
 
 	Com_Printf( "Loading Discord module... (%s)\n", discord_id );
 	Cvar_ForceSet( "discord_id", discord_id );
-	Discord_Register(va("%llu",DISCORD_APP_ID), "steam steam://run/671610");
+	Discord_Register(va("%llu",DISCORD_APP_ID), "steam://run/671610");
 	cl_presence_state.discord_initialized = true;
 }
 
@@ -617,8 +617,16 @@ void CL_UpdatePresence( void )
 				strncpy(sanitized_mapname, mapname, 24);
 				Q_strlwr(sanitized_mapname);
 
+				if (strlen(sanitized_mapname) == 1){
+					sanitized_mapname[1] = ' '; // discord rpc HATES 1 character strings (but for some reason arRPC handles them fine?)
+				}
+
 				char sanitized_hostname[45] = {0};
 				strncpy(sanitized_hostname, cl.configstrings[CS_HOSTNAME], 44);
+
+				if (strlen(sanitized_hostname) == 1){
+					sanitized_hostname[1] = ' ';
+				}
 
 
 
@@ -637,7 +645,7 @@ void CL_UpdatePresence( void )
 					presence.details[0] = '\0';
 				}
 
-				strcpy( presence.partyId, cl.configstrings[CS_HOSTNAME] );
+				strcpy( presence.partyId, sanitized_hostname );
 
 				// If server is not localhost
 				if( !NET_IsLocalAddress( &cls.serveraddress ) ) {
