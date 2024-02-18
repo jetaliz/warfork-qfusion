@@ -38,10 +38,10 @@ static const struct base_format_def_s baseFormats[] = {
     .packed_16 = {
       .numChannels = 4,
       .bits = { 
-        {.offset = 12, .mask = 0xf},
-        {.offset = 8, .mask = 0xf},
-        {.offset = 4, .mask = 0xf},
-        {.offset = 0, .mask = 0xf}
+        {.offset = 12, .mask = 0xf000},
+        {.offset = 8, .mask =  0x0f00},
+        {.offset = 4, .mask =  0x00f0},
+        {.offset = 0, .mask =  0x000f}
       },
       .channels = {R_LOGICAL_C_RED, R_LOGICAL_C_GREEN, R_LOGICAL_C_BLUE, R_LOGICAL_C_ALPHA},
     },

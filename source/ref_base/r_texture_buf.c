@@ -97,11 +97,13 @@ size_t T_Size( struct texture_buf_s *buf )
 
 void T_PromteTextureBuf( struct texture_buf_s *tex )
 {
+	assert(tex);
 	if( ( tex->flags & TEX_BUF_IS_ALIASED ) > 0 ) {
 		uint8_t *aliasBuffer = tex->buffer;
 		tex->buffer = malloc( tex->size );
 		memcpy( tex->buffer, aliasBuffer, tex->size );
 	}
+	tex->flags = (tex->flags & (~TEX_BUF_IS_ALIASED));
 }
 
 void T_ReallocTextureBuf( struct texture_buf_s *buf, const struct texture_buf_desc_s *desc)
@@ -120,23 +122,23 @@ void T_ReallocTextureBuf( struct texture_buf_s *buf, const struct texture_buf_de
 	buf->buffer = realloc( buf->buffer, buf->capacity );
 }
 
-void T_AliasTextureBuf( struct texture_buf_s *buf, const struct texture_buf_desc_s *desc, uint8_t *buffer, size_t size)
+int T_AliasTextureBuf( struct texture_buf_s *buf, const struct texture_buf_desc_s *desc, uint8_t *buffer, size_t size)
 {
   T_ConfigureTextureBuf( buf, desc->def, desc->width, desc->height, desc->alignment );
 	if( ( buf->flags & TEX_BUF_IS_ALIASED ) == 0 ) {
 		free( buf->buffer ); // we free the underlying memory
 	}
 	buf->flags |= TEX_BUF_IS_ALIASED;
+	buf->buffer = buffer;
 	if(size == 0 ){
 		buf->capacity = buf->size;
 	} else {
 		buf->capacity = size;
-		assert( buf->capacity > size );
+		if( buf->capacity < size )
+			return TEXTURE_BUF_INVALID_CAP;
 	}
-	buf->buffer = buffer;
+	return TEXTURE_BUF_SUCCESS;
 }
-
-
 
 void T_SwapEndianness( struct texture_buf_s *tex) {
 	const uint32_t width = T_LogicalW( tex );
@@ -301,6 +303,30 @@ void T_SwizzleInplace(struct texture_buf_s* tex, enum texture_logical_channel_e*
 						assert( channels[c] < R_LOGICAL_C_MAX );
 						block[c] = values[channels[c]];
 					}
+				}
+			}
+			break;
+		}
+		case R_BASE_FORMAT_PACKED_16: {
+			for( size_t row = 0; row < logicalHeight; row++ ) {
+				for( size_t column = 0; column < logicalWidth; column++ ) {
+					uint16_t *const block = (uint16_t *)&tex->buffer[( tex->rowPitch * row ) + ( column * RT_BlockSize( tex->def ) )];
+					uint_fast16_t intermediary = 0;			
+					for( size_t c = 0; c < tex->def->packed_16.numChannels; c++ ) {
+						if( tex->def->packed_16.channels[c] == channels[c] ) {
+							intermediary |= ( (*block) & tex->def->packed_16.bits[c].mask );
+					  } else {
+					  	for( size_t c2 = 0; c2 < tex->def->packed_16.numChannels; c2++ ) {
+					  		if( tex->def->packed_16.channels[c] == channels[c2] ) {
+					  			const struct texture_format_packed_def_16_packing_s *src = &tex->def->packed_16.bits[c];
+					  			const struct texture_format_packed_def_16_packing_s *dest = &tex->def->packed_16.bits[c2];
+									intermediary |= (((*block) & src->mask) >> (src->offset)) << dest->offset;
+					  			break;
+					  		}
+					  	}
+					  }
+					}
+					(*block) = intermediary;
 				}
 			}
 			break;
