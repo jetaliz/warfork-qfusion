@@ -84,13 +84,12 @@ bool launchChild(ProcessType *pid, const char* name)
         snprintf(args, 31, ".\\%s");
     }
     
-    DWORD dwAttrib = GetFileAttributes(exename);
+    DWORD dwAttrib = GetFileAttributesA(exename);
     if (dwAttrib == INVALID_FILE_ATTRIBUTES ||
          (dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) return false;
 
     bool bResult = ( CreateProcessA( exename, args, NULL, NULL, TRUE, 0, NULL,
                               NULL, &si, pid) != 0);
-    free( str );
     return bResult;
 } // launchChild
 
