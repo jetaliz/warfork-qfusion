@@ -621,7 +621,6 @@ void CL_UpdatePresence( void )
 
 				char sanitized_mapname[25] = {0};
 				strncpy(sanitized_mapname, mapname, 24);
-				Q_strlwr(sanitized_mapname);
 
 				if (strlen(sanitized_mapname) == 1){
 					sanitized_mapname[1] = ' '; // discord rpc HATES 1 character strings (but for some reason arRPC handles them fine?)
@@ -635,9 +634,11 @@ void CL_UpdatePresence( void )
 				}
 
 
+				char levelshot_id[25];
+				strcpy(levelshot_id, sanitized_mapname);
+				Q_strlwr(levelshot_id);
 
-
-				strcpy( presence.largeImageKey, valid_map ? sanitized_mapname : "unknownmap" ); // Levelshot
+				strcpy( presence.largeImageKey, valid_map ? levelshot_id : "unknownmap" ); // Levelshot
 				strcpy( presence.largeImageText, COM_RemoveColorTokens(sanitized_hostname) );	  // Server name
 				strcpy( presence.smallImageKey, CL_PlayerStatus( frame ) );
 				strcpy( presence.smallImageText, CL_PlayerStatus( frame ) );
