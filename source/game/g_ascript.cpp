@@ -673,12 +673,12 @@ static void G_asRegisterEnums( asIScriptEngine *asEngine )
 
 //=======================================================================
 
-static asIObjectType *asEntityArrayType()
+static asITypeInfo *asEntityArrayType()
 {
 	asIScriptContext *ctx = angelExport->asGetActiveContext();
 	asIScriptEngine *engine = ctx->GetEngine();
-	asIObjectType *ot = engine->GetObjectTypeById(engine->GetTypeIdByDecl("array<Entity @>"));
-	return ot;
+	asITypeInfo *ti = engine->GetTypeInfoById(engine->GetTypeIdByDecl("array<Entity @>"));
+	return ti;
 }
 
 //=======================================================================
@@ -1050,8 +1050,8 @@ static const asMethod_t match_Methods[] =
 	{ ASLIB_FUNCTION_DECL(int, getState, () const), asFUNCTION(objectMatch_getState), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_name, () const), asFUNCTION(objectMatch_getName), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, getScore, () const), asFUNCTION(objectMatch_getScore),  asCALL_CDECL_OBJLAST },
-	{ ASLIB_FUNCTION_DECL(void, set_name, ( String &in )), asFUNCTION(objectMatch_setName), asCALL_CDECL_OBJLAST },
-	{ ASLIB_FUNCTION_DECL(void, setScore, ( String &in )), asFUNCTION(objectMatch_setScore), asCALL_CDECL_OBJLAST },
+	{ ASLIB_FUNCTION_DECL(void, set_name, ( const String &in )), asFUNCTION(objectMatch_setName), asCALL_CDECL_OBJLAST },
+	{ ASLIB_FUNCTION_DECL(void, setScore, ( const String &in )), asFUNCTION(objectMatch_setScore), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(void, setClockOverride, ( uint milliseconds )), asFUNCTION(objectMatch_setClockOverride), asCALL_CDECL_OBJLAST },
 
 	ASLIB_METHOD_NULL
@@ -1181,11 +1181,11 @@ static const asMethod_t gametypedescr_Methods[] =
 {
 	{ ASLIB_FUNCTION_DECL(const String @, get_name, () const), asFUNCTION(objectGametypeDescriptor_getName), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_title, () const), asFUNCTION(objectGametypeDescriptor_getTitle), asCALL_CDECL_OBJLAST },
-	{ ASLIB_FUNCTION_DECL(void, set_title, ( String & )), asFUNCTION(objectGametypeDescriptor_setTitle), asCALL_CDECL_OBJLAST },
+	{ ASLIB_FUNCTION_DECL(void, set_title, ( const String &in )), asFUNCTION(objectGametypeDescriptor_setTitle), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_version, () const), asFUNCTION(objectGametypeDescriptor_getVersion), asCALL_CDECL_OBJLAST },
-	{ ASLIB_FUNCTION_DECL(void, set_version, ( String & )), asFUNCTION(objectGametypeDescriptor_setVersion), asCALL_CDECL_OBJLAST },
+	{ ASLIB_FUNCTION_DECL(void, set_version, ( const String &in )), asFUNCTION(objectGametypeDescriptor_setVersion), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_author, () const), asFUNCTION(objectGametypeDescriptor_getAuthor), asCALL_CDECL_OBJLAST },
-	{ ASLIB_FUNCTION_DECL(void, set_author, ( String & )), asFUNCTION(objectGametypeDescriptor_setAuthor), asCALL_CDECL_OBJLAST },
+	{ ASLIB_FUNCTION_DECL(void, set_author, ( const String &in )), asFUNCTION(objectGametypeDescriptor_setAuthor), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_manifest, () const), asFUNCTION(objectGametypeDescriptor_getManifest), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(void, setTeamSpawnsystem, ( int team, int spawnsystem, int wave_time, int wave_maxcount, bool deadcam )), asFUNCTION(objectGametypeDescriptor_SetTeamSpawnsystem), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(bool, get_isInstagib, () const), asFUNCTION(objectGametypeDescriptor_isInstagib), asCALL_CDECL_OBJLAST },
@@ -1340,7 +1340,7 @@ static const asMethod_t teamlist_Methods[] =
 	{ ASLIB_FUNCTION_DECL(Entity @, ent, ( int index )), asFUNCTION(objectTeamlist_GetPlayerEntity), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_name, () const), asFUNCTION(objectTeamlist_getName), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_defaultName, () const), asFUNCTION(objectTeamlist_getDefaultName), asCALL_CDECL_OBJLAST },
-	{ ASLIB_FUNCTION_DECL(void, set_name, ( String &in )), asFUNCTION(objectTeamlist_setName), asCALL_CDECL_OBJLAST },
+	{ ASLIB_FUNCTION_DECL(void, set_name, ( const String &in )), asFUNCTION(objectTeamlist_setName), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(bool, isLocked, () const), asFUNCTION(objectTeamlist_IsLocked), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(bool, lock, () const), asFUNCTION(objectTeamlist_Lock), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(bool, unlock, () const), asFUNCTION(objectTeamlist_Unlock), asCALL_CDECL_OBJLAST },
@@ -2381,8 +2381,8 @@ static edict_t *objectGameEntity_DropItem( gsitem_t *item, edict_t *self )
 
 static CScriptArrayInterface *objectGameEntity_findTargets( edict_t *self )
 {
-	asIObjectType *ot = asEntityArrayType();
-	CScriptArrayInterface *arr = angelExport->asCreateArrayCpp( 0, ot );
+	asITypeInfo *ti = asEntityArrayType();
+	CScriptArrayInterface *arr = angelExport->asCreateArrayCpp( 0, ti );
 
 	if( self->target && self->target[0] != '\0' )
 	{
@@ -2400,8 +2400,8 @@ static CScriptArrayInterface *objectGameEntity_findTargets( edict_t *self )
 
 static CScriptArrayInterface *objectGameEntity_findTargeting( edict_t *self )
 {
-	asIObjectType *ot = asEntityArrayType();
-	CScriptArrayInterface *arr = angelExport->asCreateArrayCpp( 0, ot );
+	asITypeInfo *ti = asEntityArrayType();
+	CScriptArrayInterface *arr = angelExport->asCreateArrayCpp( 0, ti );
 
 	if( self->targetname && self->targetname[0] != '\0' )
 	{
@@ -2538,7 +2538,7 @@ static const asMethod_t gedict_Methods[] =
 	{ ASLIB_FUNCTION_DECL(const String @, get_model2, () const), asFUNCTION(objectGameEntity_getModel2Name), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_sounds, () const), asFUNCTION(objectGameEntity_getSoundName), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_classname, () const), asFUNCTION(objectGameEntity_getClassname), asCALL_CDECL_OBJLAST },
-	//{ ASLIB_FUNCTION_DECL(const String @, getSpawnKey, ( String &in )), asFUNCTION(objectGameEntity_getSpawnKey), NULL, asCALL_CDECL_OBJLAST },
+	//{ ASLIB_FUNCTION_DECL(const String @, getSpawnKey, ( const String &in )), asFUNCTION(objectGameEntity_getSpawnKey), NULL, asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_targetname, () const), asFUNCTION(objectGameEntity_getTargetname), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_target, () const), asFUNCTION(objectGameEntity_getTarget), asCALL_CDECL_OBJLAST },
 	{ ASLIB_FUNCTION_DECL(const String @, get_map, () const), asFUNCTION(objectGameEntity_getMap), asCALL_CDECL_OBJLAST },
@@ -3206,11 +3206,11 @@ static void asFunc_ConfigString( int index, asstring_t *str )
 
 static CScriptArrayInterface *asFunc_G_FindInRadius( asvec3_t *org, float radius )
 {
-	asIObjectType *ot = asEntityArrayType();
+	asITypeInfo *ti = asEntityArrayType();
 
 	int touch[MAX_EDICTS];
 	int numtouch = GClip_FindRadius( org->v, radius, touch, MAX_EDICTS );
-	CScriptArrayInterface *arr = angelExport->asCreateArrayCpp( numtouch, ot );
+	CScriptArrayInterface *arr = angelExport->asCreateArrayCpp( numtouch, ti );
 	for( int i = 0; i < numtouch; i++ ) {
 		*((edict_t **)arr->At( i )) = game.edicts + touch[i];
 	}
@@ -3222,8 +3222,8 @@ static CScriptArrayInterface *asFunc_G_FindByClassname( asstring_t *str )
 {
 	const char *classname = str->buffer;
 
-	asIObjectType *ot = asEntityArrayType();
-	CScriptArrayInterface *arr = angelExport->asCreateArrayCpp( 0, ot );
+	asITypeInfo *ti = asEntityArrayType();
+	CScriptArrayInterface *arr = angelExport->asCreateArrayCpp( 0, ti );
 
 	int count = 0;
 	edict_t *ent = NULL;
@@ -3454,7 +3454,7 @@ static const asglobfuncs_t asGlobFuncs[] =
 	{ "void G_FireBullet( const Vec3 &in origin, const Vec3 &in angles, int range, int spread, int damage, int knockback, int stun, Entity @owner )", asFUNCTION(asFunc_FireBullet), NULL },
 	{ "Entity @G_FireBlast( const Vec3 &in origin, const Vec3 &in angles, int speed, int radius, int damage, int knockback, int stun, Entity @owner )", asFUNCTION(asFunc_FireBlast), NULL },
 
-	{ "bool ML_FilenameExists( String & )", asFUNCTION(asFunc_ML_FilenameExists), NULL },
+	{ "bool ML_FilenameExists( const String &in )", asFUNCTION(asFunc_ML_FilenameExists), NULL },
 	{ "const String @ML_GetMapByNum( int num )", asFUNCTION(asFunc_ML_GetMapByNum), NULL },
 
 	{ "uint G_RegisterHelpMessage( const String &in )", asFUNCTION(asFunc_G_RegisterHelpMessage), NULL },
@@ -3928,6 +3928,11 @@ static asIScriptModule *G_BuildGameScript( const char *moduleName, const char *d
 
 	for( sectionNum = 0; ( section = G_LoadScriptSection( dir, script, sectionNum ) ) != NULL; sectionNum++ ) {
 		const char *sectionName = G_ListNameForPosition( script, sectionNum, SECTIONS_SEPARATOR );
+
+		// the section name may contain leading whitespace (newlines) which we don't want in the section name
+		while (isspace(*sectionName) && *sectionName != '\0')
+			sectionName++;
+
 		error = asModule->AddScriptSection( sectionName, section, strlen( section ) );
 
 		G_Free( section );

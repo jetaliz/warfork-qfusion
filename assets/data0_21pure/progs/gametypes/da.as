@@ -150,7 +150,7 @@ class cDARound
         }
     }
 
-    void roundAnnouncementPrint( String &string )
+    void roundAnnouncementPrint( const String &in string )
     {
         if ( string.len() <= 0 )
             return;
