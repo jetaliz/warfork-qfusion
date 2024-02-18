@@ -24,6 +24,7 @@ freely, subject to the following restrictions:
 #include <stdarg.h>
 #include <stdio.h>
 #include <cstring>
+#include <unistd.h>
 
 bool debug = false;
 void dbgprintf(const char *fmt, ...){
@@ -83,6 +84,10 @@ bool launchChild(ProcessType *pid, const char* name)
     } else {
         snprintf(args, 31, ".\\%s");
     }
+    
+    DWORD dwAttrib = GetFileAttributes(exename);
+    if (dwAttrib == INVALID_FILE_ATTRIBUTES ||
+         (dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) return false;
 
     bool bResult = ( CreateProcessA( exename, args, NULL, NULL, TRUE, 0, NULL,
                               NULL, &si, pid) != 0);
@@ -111,15 +116,18 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 bool launchChild(ProcessType *pid, const char* name )
 {
+
+    char exename[32] = "./";
+    strncpy(exename+2, name, 30);
+
+
+    if (access(exename, F_OK) < 0) return false;
+
     *pid = fork();
     if (*pid == -1)   // failed
         return false;
     else if (*pid != 0)  // we're the parent
         return true;  // we'll let the pipe fail if this didn't work.
-
-    char exename[32] = "./";
-    strncpy(exename+2, name, 30);
-
     char* GArgv[3] = {exename, NULL, NULL};
     if (debug)
         GArgv[1] = strdup("steamdebug");
