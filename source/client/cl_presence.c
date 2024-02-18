@@ -612,11 +612,20 @@ void CL_UpdatePresence( void )
 					}
 				}
 
+				char sanitized_mapname[25] = {0};
+				strncpy(sanitized_mapname, mapname, 24);
+
+				char sanitized_hostname[45] = {0};
+				strncpy(sanitized_hostname, cl.configstrings[CS_HOSTNAME], 44);
+
+
+
+
 				strcpy( presence.largeImageKey, valid_map ? mapname : "unknownmap" ); // Levelshot
-				strcpy( presence.largeImageText, cl.configstrings[CS_HOSTNAME] );	  // Server name
+				strcpy( presence.largeImageText, COM_RemoveColorTokens(sanitized_hostname) );	  // Server name
 				strcpy( presence.smallImageKey, CL_PlayerStatus( frame ) );
 				strcpy( presence.smallImageText, CL_PlayerStatus( frame ) );
-				strcpy( presence.state, mapname ); // Map name
+				strcpy( presence.state, COM_RemoveColorTokens(sanitized_mapname)); // Map name
 
 				// Gametype and Score (if available)
 				if( cl.configstrings[CS_GAMETYPENAME][0] || cl.configstrings[CS_MATCHSCORE][0] ) {
