@@ -970,7 +970,6 @@ void Qcommon_Init( int argc, char **argv )
 #endif
 	developer =	    Cvar_Get( "developer", "0", 0 );
     
-	Com_LoadCompressionLibraries();
 
 	FS_Init();
 
@@ -1200,8 +1199,6 @@ void Qcommon_Shutdown( void )
    L10n_Shutdown();
 
 	FS_Shutdown();
-
-	Com_UnloadCompressionLibraries();
 
    wswcurl_cleanup();
    
