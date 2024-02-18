@@ -84,7 +84,7 @@ bool launchChild(ProcessType *pid, const char* name)
         snprintf(args, 31, ".\\%s");
     }
 
-    bool bResult = ( CreateProcessA( exename, exename, NULL, NULL, TRUE, 0, NULL,
+    bool bResult = ( CreateProcessA( exename, args, NULL, NULL, TRUE, 0, NULL,
                               NULL, &si, pid) != 0);
     free( str );
     return bResult;
