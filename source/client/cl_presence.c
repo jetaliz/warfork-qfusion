@@ -616,7 +616,7 @@ void CL_UpdatePresence( void )
 				strcpy( presence.largeImageText, cl.configstrings[CS_HOSTNAME] );	  // Server name
 				strcpy( presence.smallImageKey, CL_PlayerStatus( frame ) );
 				strcpy( presence.smallImageText, CL_PlayerStatus( frame ) );
-				strcpy( presence.state, valid_map ? mapname : "unknownmap" ); // Map name
+				strcpy( presence.state, mapname ); // Map name
 
 				// Gametype and Score (if available)
 				if( cl.configstrings[CS_GAMETYPENAME][0] || cl.configstrings[CS_MATCHSCORE][0] ) {
