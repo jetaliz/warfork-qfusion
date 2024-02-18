@@ -24,7 +24,6 @@ freely, subject to the following restrictions:
 #include <stdarg.h>
 #include <stdio.h>
 #include <cstring>
-#include <unistd.h>
 
 bool debug = false;
 void dbgprintf(const char *fmt, ...){
@@ -113,6 +112,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #endif
 
 #else  // everyone else that isn't Windows.
+#include <unistd.h>
 
 bool launchChild(ProcessType *pid, const char* name )
 {
