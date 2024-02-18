@@ -614,6 +614,7 @@ void CL_UpdatePresence( void )
 
 				char sanitized_mapname[25] = {0};
 				strncpy(sanitized_mapname, mapname, 24);
+				Q_strlwr(sanitized_mapname);
 
 				char sanitized_hostname[45] = {0};
 				strncpy(sanitized_hostname, cl.configstrings[CS_HOSTNAME], 44);
@@ -621,7 +622,7 @@ void CL_UpdatePresence( void )
 
 
 
-				strcpy( presence.largeImageKey, valid_map ? mapname : "unknownmap" ); // Levelshot
+				strcpy( presence.largeImageKey, valid_map ? sanitized_mapname : "unknownmap" ); // Levelshot
 				strcpy( presence.largeImageText, COM_RemoveColorTokens(sanitized_hostname) );	  // Server name
 				strcpy( presence.smallImageKey, CL_PlayerStatus( frame ) );
 				strcpy( presence.smallImageText, CL_PlayerStatus( frame ) );
