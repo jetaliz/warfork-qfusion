@@ -232,6 +232,13 @@ msgstr "<0-1.0> Sets the transparency of the Electrobolt Beam.\n"
 "^6Totally opaque: cg_ebbeam_alpha \"1.0\""
 
 #. Console/cg
+msgid "cg_ebbeam_old"
+msgstr "<0/1> You will see the old Electrobolt beam.\n"
+"^6Disable: cg_ebbeam_old \"0\"\n"
+"^6Enable: cg_ebbeam_old \"1\"\n"
+"^6Note: It looks similar to the lasergun beam, but thinner."
+
+#. Console/cg
 msgid "cg_ebbeam_time"
 msgstr "<value> Sets how long the Elecrobolt beam will be visible."
 
