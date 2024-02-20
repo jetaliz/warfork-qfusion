@@ -480,24 +480,13 @@ static void Cmd_PlayersExt_f( edict_t *ent, bool onlyspecs )
 		{
 			edict_t *ent = &game.edicts[i+1];
 			gclient_t *cl;
-			const char *login;
 
 			if( onlyspecs && ent->s.team != TEAM_SPECTATOR )
 				continue;
 
 			cl = ent->r.client;
 
-			login = NULL;
-			if( cl->mm_session > 0 ) {
-				login = Info_ValueForKey( cl->userinfo, "cl_mm_login" );
-			}
-			if( !login ) {
-				login = "";
-			}
-
-			Q_snprintfz( line, sizeof( line ), "%3i %s" S_COLOR_WHITE "%s%s%s%s\n", i, cl->netname,
-				login[0] ? "(" S_COLOR_YELLOW : "", login, login[0] ? S_COLOR_WHITE ")" : "",
-				cl->isoperator ? " op" : "" );
+			Q_snprintfz( line, sizeof( line ), "%3i %-16s" S_COLOR_WHITE "%s %llu\n", i, cl->netname, cl->isoperator ? "op" : "no", ent->r.client->steamid);
 
 			if( strlen( line ) + strlen( msg ) > sizeof( msg ) - 100 )
 			{
@@ -508,8 +497,8 @@ static void Cmd_PlayersExt_f( edict_t *ent, bool onlyspecs )
 
 			if( count == 0 )
 			{
-				Q_strncatz( msg, "num name\n", sizeof( msg ) );
-				Q_strncatz( msg, "--- ------------------------------\n", sizeof( msg ) );
+				Q_strncatz( msg, "num name            op steamid      \n", sizeof( msg ) );
+				Q_strncatz( msg, "--- --------------- -- -------------\n", sizeof( msg ) );
 			}
 
 			Q_strncatz( msg, line, sizeof( msg ) );
