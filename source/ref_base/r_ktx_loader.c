@@ -176,7 +176,8 @@ bool R_InitKTXContext(struct ktx_context_s *cntx, uint8_t *memory, size_t size, 
 			for( size_t arrayIdx = 0; arrayIdx < numberOfArrayElements; arrayIdx++ ) {
 				struct ktx_image_s *img = R_KTXGetImage( cntx, mipLevel, faceIdx, arrayIdx );
 				struct texture_buf_desc_s desc = { .width = width, .height = height, .alignment = 4, .def = cntx->desc };
-				T_AliasTextureBuf( &img->texture, &desc, ( cntx->buffer + offset + arrByteOffset ), 0 );
+				const int res = T_AliasTextureBuf( &img->texture, &desc, ( cntx->buffer + offset + arrByteOffset ), 0 );
+				assert(res == TEXTURE_BUF_SUCCESS);
 				arrByteOffset += img->texture.size;
 			}
 			if( faceLodSize + offset > size ) {

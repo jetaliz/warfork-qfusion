@@ -135,7 +135,7 @@ struct texture_format_def_fixed_8_s {
 
 struct texture_format_packed_def_16_s {
 	int_fast16_t numChannels;
-	struct {
+	struct texture_format_packed_def_16_packing_s {
 		size_t offset;
 		size_t mask;
 	} bits[R_LOGICAL_C_MAX];
