@@ -513,7 +513,6 @@ void UpdatePresenceIfChanged( RichPresence presence )
 	if( memcmp( &cl_presence_state.old_presence, &presence, sizeof( presence ) ) == 0 ) {
 		return;
 	}
-	printf("changed!\n");
 
 	cl_presence_state.old_presence = presence;
 
