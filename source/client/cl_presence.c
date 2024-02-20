@@ -513,6 +513,7 @@ void UpdatePresenceIfChanged( RichPresence presence )
 	if( memcmp( &cl_presence_state.old_presence, &presence, sizeof( presence ) ) == 0 ) {
 		return;
 	}
+	printf("changed!\n");
 
 	cl_presence_state.old_presence = presence;
 
@@ -596,8 +597,7 @@ static const char *CL_PlayerStatus( snapshot_t *frame )
 
 void CL_UpdatePresence( void )
 {
-	// is there a better way of checking whether steam is ready?
-	if( cl_presence_state.discord_initialized || Steam_Active()) {
+	if( cl_presence_state.discord_initialized ) {
 		unsigned int now = Sys_Milliseconds();
 		if( cl_presence_state.next_update <= now ) {
 			// Discord rate limit is 15s, but this has been tested and is fine!
