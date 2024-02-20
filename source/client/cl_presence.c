@@ -558,6 +558,13 @@ static void CL_DiscordReady( const DiscordUser *user )
 
 	Com_Printf( "Loading Discord module... (%s)\n", discord_id );
 	Cvar_ForceSet( "discord_id", discord_id );
+
+
+#ifdef __linux__
+	Discord_Register(va("%llu",DISCORD_APP_ID), "steam steam://rungameid/671610");
+#else
+	Discord_Register(va("%llu",DISCORD_APP_ID), "steam://rungameid/671610");
+#endif
 	cl_presence_state.discord_initialized = true;
 }
 
@@ -612,11 +619,30 @@ void CL_UpdatePresence( void )
 					}
 				}
 
-				strcpy( presence.largeImageKey, valid_map ? mapname : "unknownmap" ); // Levelshot
-				strcpy( presence.largeImageText, cl.configstrings[CS_HOSTNAME] );	  // Server name
+				char sanitized_mapname[25] = {0};
+				strncpy(sanitized_mapname, mapname, 24);
+
+				if (strlen(sanitized_mapname) == 1){
+					sanitized_mapname[1] = ' '; // discord rpc HATES 1 character strings (but for some reason arRPC handles them fine?)
+				}
+
+				char sanitized_hostname[45] = {0};
+				strncpy(sanitized_hostname, cl.configstrings[CS_HOSTNAME], 44);
+
+				if (strlen(sanitized_hostname) == 1){
+					sanitized_hostname[1] = ' ';
+				}
+
+
+				char levelshot_id[25];
+				strcpy(levelshot_id, sanitized_mapname);
+				Q_strlwr(levelshot_id);
+
+				strcpy( presence.largeImageKey, valid_map ? levelshot_id : "unknownmap" ); // Levelshot
+				strcpy( presence.largeImageText, COM_RemoveColorTokens(sanitized_hostname) );	  // Server name
 				strcpy( presence.smallImageKey, CL_PlayerStatus( frame ) );
 				strcpy( presence.smallImageText, CL_PlayerStatus( frame ) );
-				strcpy( presence.state, valid_map ? mapname : "unknownmap" ); // Map name
+				strcpy( presence.state, COM_RemoveColorTokens(sanitized_mapname)); // Map name
 
 				// Gametype and Score (if available)
 				if( cl.configstrings[CS_GAMETYPENAME][0] || cl.configstrings[CS_MATCHSCORE][0] ) {
@@ -626,7 +652,7 @@ void CL_UpdatePresence( void )
 					presence.details[0] = '\0';
 				}
 
-				strcpy( presence.partyId, cl.configstrings[CS_HOSTNAME] );
+				strcpy( presence.partyId, sanitized_hostname );
 
 				// If server is not localhost
 				if( !NET_IsLocalAddress( &cls.serveraddress ) ) {
