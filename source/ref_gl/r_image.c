@@ -27,14 +27,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "r_texture_buf.h"
 #include "r_texture_format.h"
 
+#include "stb_image.h"
+
 #define	MAX_GLIMAGES	    8192
 #define IMAGES_HASH_SIZE    64
-
-typedef struct
-{
-	int ctx;
-	int side;
-} loaderCbInfo_t;
 
 static image_t images[MAX_GLIMAGES];
 static image_t images_hash_headnode[IMAGES_HASH_SIZE], *free_images;
@@ -410,59 +406,53 @@ static void R_EndianSwap16BitImage( unsigned short *data, int width, int height 
 	}
 }
 
-/*
-* R_AllocImageBufferCb
-*/
-static uint8_t *_R_AllocImageBufferCb( void *ptr, size_t size, const char *filename, int linenum )
-{
-	loaderCbInfo_t *cbinfo = ptr;
-	return _R_PrepareImageBuffer( cbinfo->ctx, cbinfo->side, size, filename, linenum );
+
+static void __R_stbi_free_image(void* p) {
+	stbi_uc* img = (stbi_uc*) p;
+	stbi_image_free(img);
 }
 
-/*
-* R_ReadImageFromDisk
-*/
-static int R_ReadImageFromDisk( int ctx, char *pathname, size_t pathname_size, 
-	uint8_t **pic, int *width, int *height, int *flags, int side )
-{
-	const char *extension;
-	int samples;
 
-	*pic = NULL;
-	*width = *height = 0;
-	samples = 0;
-
-	extension = ri.FS_FirstExtension( pathname, IMAGE_EXTENSIONS, NUM_IMAGE_EXTENSIONS - 1 ); // last is KTX
-	if( extension )
-	{
-
-		loaderCbInfo_t cbinfo = { ctx, side };
-
-		COM_ReplaceExtension( pathname, extension, pathname_size );
-
-		r_imginfo_t imginfo = IMG_LoadImage( pathname, _R_AllocImageBufferCb, (void *)&cbinfo );
-
-		if( imginfo.samples >= 3 )
-		{
-			if( ( (imginfo.comp & ~1) == IMGCOMP_BGR ) && ( !glConfig.ext.bgra || !flags ) )
-			{
-				R_SwapBlueRed( imginfo.pixels, imginfo.width, imginfo.height, imginfo.samples, 1 );
-				imginfo.comp = IMGCOMP_RGB | (imginfo.comp & 1);
-			}
-		}
-
-		*pic = imginfo.pixels;
-		*width = imginfo.width;
-		*height = imginfo.height;
-		samples = imginfo.samples;
-		if( flags )
-		{
-			if( ( imginfo.samples >= 3 ) && ( ( imginfo.comp & ~1 ) == IMGCOMP_BGR ) )
-				*flags |= IT_BGRA;
-		}
+static bool __R_ReadImageFromDisk_stbi(char *filename, struct texture_buf_s* buffer ) {
+	uint8_t* data;
+	size_t size = R_LoadFile( filename, ( void ** ) &data );
+	if(data == NULL) {
+		ri.Com_Printf(S_COLOR_YELLOW "can't resolve file: %s", filename);
+		return false;
 	}
 
-	return samples;
+	struct texture_buf_desc_s desc = {
+		.alignment = 1,
+	};
+
+	int channelCount = 0;
+	int w;
+	int h;
+	stbi_uc* stbiBuffer = stbi_load_from_memory( data, size, &w, &h, &channelCount, 0 );
+	desc.width = w;
+	desc.height = h;
+	switch(channelCount) {
+		case 1:
+			desc.def = R_BaseFormatDef(R_FORMAT_A8_UNORM);
+			break;
+		case 2:
+			desc.def = R_BaseFormatDef(R_FORMAT_L8_A8_UNORM);
+			break;
+		case 3:
+			desc.def = R_BaseFormatDef(R_FORMAT_RGB8_UNORM);
+			break;
+		case 4:
+			desc.def = R_BaseFormatDef(R_FORMAT_RGBA8_UNORM);
+			break;
+		default:
+			stbi_image_free(stbiBuffer);
+			ri.Com_Printf(S_COLOR_YELLOW "unhandled channel count: %d", channelCount);
+			return false;
+	}
+	R_FreeFile( data );
+	const int res = T_AliasTextureBuf_Free(buffer, &desc, stbiBuffer, 0, stbiBuffer, __R_stbi_free_image);
+	assert(res == TEXTURE_BUF_SUCCESS);
+	return true;
 }
 
 /*
@@ -1480,67 +1470,69 @@ error: // must not be reached after actually starting uploading the texture
 */
 static bool R_LoadImageFromDisk( int ctx, image_t *image )
 {
-	int flags = image->flags;
-	size_t len = strlen( image->name );
-	char pathname[1024];
-	size_t pathsize = sizeof( pathname );
-	int width = 1, height = 1, samples = 1;
+	sds pathname = sdsnew(image->name);
+	size_t baseLen = sdslen(pathname);
 	bool loaded = false;
 
-	if( len >= pathsize ) {
-		return false;
+
+	pathname = sdscat(pathname, ".ktx");
+	if( R_LoadKTX( ctx, image, pathname ) ) {
+		sdsfree(pathname);
+		return true;
 	}
 
-	memcpy( pathname, image->name, len + 1 );
-	
-	Q_strncatz( pathname, ".ktx", pathsize );
-	if( R_LoadKTX( ctx, image, pathname ) )
-		return true;
-	pathname[len] = 0;
-
-	if( flags & IT_CUBEMAP )
+	if( image->flags & IT_CUBEMAP )
 	{
-		int i, j;
-		uint8_t *pic[6];
+		int i = 0, j = 0;
+		struct texture_buf_s pics[6]= {0};
+		uint8_t* buf[6] = {0};
 		struct cubemapSufAndFlip
 		{
 			char *suf; int flags;
-		} cubemapSides[2][6] = {
+		} static const cubemapSides[2][6] = {
 			{ 
-				{ "px", 0 }, { "nx", 0 }, { "py", 0 },
-				{ "ny", 0 }, { "pz", 0 }, { "nz", 0 } 
+				{ "px", 0 }, 
+				{ "nx", 0 }, 
+				{ "py", 0 },
+				{ "ny", 0 }, 
+				{ "pz", 0 }, 
+				{ "nz", 0 } 
 			},
 			{
-				{ "rt", IT_FLIPDIAGONAL }, { "lf", IT_FLIPX|IT_FLIPY|IT_FLIPDIAGONAL }, { "bk", IT_FLIPY },
-				{ "ft", IT_FLIPX }, { "up", IT_FLIPDIAGONAL }, { "dn", IT_FLIPDIAGONAL }
+				{ "rt", IT_FLIPDIAGONAL }, 
+				{ "lf", IT_FLIPX|IT_FLIPY|IT_FLIPDIAGONAL }, 
+				{ "bk", IT_FLIPY },
+				{ "ft", IT_FLIPX }, 
+				{ "up", IT_FLIPDIAGONAL }, 
+				{ "dn", IT_FLIPDIAGONAL }
 			}
 		};
 		int lastSize = 0;
-
-		pathname[len] = '_';
+		const char* lastExtension = "";
 		for( i = 0; i < 2; i++ )
 		{
 			for( j = 0; j < 6; j++ )
 			{
-				pathname[len+1] = cubemapSides[i][j].suf[0];
-				pathname[len+2] = cubemapSides[i][j].suf[1];
-				pathname[len+3] = 0;
-
-				Q_strncatz( pathname, ".tga", pathsize );
-				samples = R_ReadImageFromDisk( ctx, pathname, pathsize, 
-					&(pic[j]), &width, &height, &flags, j );
-				if( pic[j] )
+				sdssubstr(pathname, 0, baseLen);
+				pathname = sdscatfmt( pathname, "_%s", cubemapSides[i][j].suf );
+				const char* extension = ri.FS_FirstExtension( pathname, IMAGE_EXTENSIONS, NUM_IMAGE_EXTENSIONS - 1 ); // last is KTX
+				
+				if(extension != NULL) {
+					lastExtension = extension;
+					pathname = sdscat(pathname, extension);
+				}
+				if(extension != NULL && __R_ReadImageFromDisk_stbi(pathname, &pics[j]) )
 				{
-					if( width != height )
+					if( T_PixelW(&pics[j]) != T_PixelH(&pics[j]))
 					{
 						ri.Com_DPrintf( S_COLOR_YELLOW "Not square cubemap image %s\n", pathname );
 						break;
 					}
 					if( !j )
 					{
-						lastSize = width;
+						lastSize = T_PixelW(&pics[j]);
 					}
-					else if( lastSize != width )
+					else if( lastSize != T_PixelW(&pics[j]) )
 					{
 						ri.Com_DPrintf( S_COLOR_YELLOW "Different cubemap image size: %s\n", pathname );
 						break;
@@ -1549,13 +1541,21 @@ static bool R_LoadImageFromDisk( int ctx, image_t *image )
 					{
 						int flags = cubemapSides[i][j].flags;
 						uint8_t *temp = R_PrepareImageBuffer( ctx,
-							TEXTURE_FLIPPING_BUF0+j, width * height * samples );
-						R_FlipTexture( pic[j], temp, width, height, 4, 
+							TEXTURE_FLIPPING_BUF0+j, T_PixelW(&pics[j]) * T_PixelH(&pics[j]) * RT_NumberChannels(pics[j].def));
+						R_FlipTexture( pics[j].buffer, temp, T_PixelW(&pics[j]), T_PixelH(&pics[j]), RT_NumberChannels(pics[j].def), 
 							(flags & IT_FLIPX) ? true : false, 
 							(flags & IT_FLIPY) ? true : false, 
 							(flags & IT_FLIPDIAGONAL) ? true : false );
-						pic[j] = temp;
+
+						struct texture_buf_desc_s desc = {
+							.alignment = 1,
+							.width = T_PixelW(&pics[j]),
+							.height = T_PixelH(&pics[j]),
+							.def = pics[j].def
+						};
+						T_AliasTextureBuf(&pics[j], &desc, temp, 0);
 					}
+					buf[j] = pics[j].buffer;
 					continue;
 				}
 				break;
@@ -1566,43 +1566,48 @@ static bool R_LoadImageFromDisk( int ctx, image_t *image )
 
 		if( i != 2 )
 		{
-			image->width = width;
-			image->height = height;
-			image->samples = samples;
+			image->width = T_PixelW(&pics[0]);
+			image->height = T_PixelH(&pics[0]);
+			image->samples =  RT_NumberChannels(pics[0].def);
 
 			R_BindImage( image );
 
-			R_Upload32( ctx, pic, 0, 0, 0, width, height, flags, image->minmipsize, &image->upload_width, 
-				&image->upload_height, samples, false, false );
+			R_Upload32( ctx, buf, 0, 0, 0, image->width, image->height, image->flags, image->minmipsize, &image->upload_width, 
+				&image->upload_height, image->samples, false, false );
 
-			Q_strncpyz( image->extension, &pathname[len+3], sizeof( image->extension ) );
+			Q_strncpyz( image->extension, lastExtension, sizeof( image->extension ) );
 			loaded = true;
 		}
 		else
 		{
 			ri.Com_DPrintf( S_COLOR_YELLOW "Missing image: %s\n", image->name );
 		}
+		for(size_t i = 0; i < 6; i++) {
+			T_FreeTextureBuf(&pics[i]);
+		}
 	}
 	else
 	{
-		uint8_t *pic = NULL;
-
-		Q_strncatz( pathname, ".tga", pathsize );
-		samples = R_ReadImageFromDisk( ctx, pathname, pathsize, &pic, &width, &height, &flags, 0 );
-
-		if( pic )
+		struct texture_buf_s pic = {0};
+		sdssubstr(pathname, 0, baseLen);
+		const char* extension = ri.FS_FirstExtension( pathname, IMAGE_EXTENSIONS, NUM_IMAGE_EXTENSIONS - 1 ); // last is KTX
+		if(extension != NULL) {
+			pathname = sdscat(pathname, extension);
+		}
+		if(extension != NULL && __R_ReadImageFromDisk_stbi(pathname, &pic) )
 		{
-			image->width = width;
-			image->height = height;
-			image->samples = samples;
+			image->width = T_PixelW(&pic);
+			image->height = T_PixelH(&pic);
+			image->samples =  RT_NumberChannels(pic.def);
 
 			R_BindImage( image );
 
-			R_Upload32( ctx, &pic, 0, 0, 0, width, height, flags, image->minmipsize, &image->upload_width, 
-				&image->upload_height, samples, false, false );
+			R_Upload32( ctx, &pic.buffer, 0, 0, 0, image->width, image->height, image->flags, image->minmipsize, &image->upload_width, 
+				&image->upload_height, image->samples, false, false );
 
-			Q_strncpyz( image->extension, &pathname[len], sizeof( image->extension ) );
+			Q_strncpyz( image->extension, extension, sizeof( image->extension ) );
 			loaded = true;
+			T_FreeTextureBuf(&pic);
 		}
 		else
 		{
@@ -1612,10 +1617,9 @@ static bool R_LoadImageFromDisk( int ctx, image_t *image )
 
 	if( loaded )
 	{
-		// Update IT_LOADFLAGS that may be set by R_ReadImageFromDisk.
-		image->flags = flags;
 		R_DeferDataSync();
 	}
+	sdsfree(pathname);
 
 	return loaded;
 }

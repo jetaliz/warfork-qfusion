@@ -12,11 +12,17 @@ enum texture_buf_res_e {
 	TEXTURE_BUF_SUCCESS,
 	TEXTURE_BUF_INVALID_CAP = -1 // the capacity of the buffer is invalid 
 };
+struct texture_buf_s;
 
+typedef void (*free_hander_t)(void* p);
+																					
 struct texture_buf_s {
 	enum texture_buf_flags_e flags;
   const struct base_format_def_s* def;
-	
+
+  void* freeParam;
+	free_hander_t freeHandler;
+
 	uint32_t rowPitch; // the number of bytes in a row of pixels including any alignment
   uint16_t rowAlign;
   
@@ -43,9 +49,14 @@ uint16_t T_PixelH( const struct texture_buf_s *buf);
 /**
 * If a buffer is aliased then it will allocate and copy the alised memory ovecr
 **/
-void T_PromteTextureBuf( struct texture_buf_s *buf);
+void T_PromoteTextureBuf( struct texture_buf_s *buf);
 void T_ReallocTextureBuf( struct texture_buf_s *buf, const struct texture_buf_desc_s *desc);
 int T_AliasTextureBuf( struct texture_buf_s *buf, const struct texture_buf_desc_s *desc, uint8_t *buffer, size_t size);
+
+/**
+ * texture buffer can be created with a custom de-allocator
+ **/
+int T_AliasTextureBuf_Free( struct texture_buf_s *buf, const struct texture_buf_desc_s *desc, uint8_t *buffer, size_t size, void* param, free_hander_t freeFn);
 
 void T_FreeTextureBuf(struct texture_buf_s * tex);
 
