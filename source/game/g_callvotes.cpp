@@ -119,7 +119,7 @@ static void G_AppendString( char **pdst, const char *src, size_t *pdst_len, size
 	*pdst = dst;
 }
 
-static http_response_code_t G_PlayerlistWebRequest( http_query_method_t method, const char *resource, 
+http_response_code_t G_PlayerlistWebRequest( http_query_method_t method, const char *resource, 
 	const char *query_string, char **content, size_t *content_length )
 {
 	int i;
@@ -135,9 +135,11 @@ static http_response_code_t G_PlayerlistWebRequest( http_query_method_t method, 
 			G_AppendString( &msg, va( 
 				"{\n"
 				"\"value\"" " " "\"%i\"" "\n"
+				"\"steamid\"" " " "\"%llu\"" "\n"
 				"\"name\"" " " "\"%s\"" "\n"
 				"}\n", 
 				i,
+				game.clients[i].steamid,
 				game.clients[i].netname
 				), &msg_len, &msg_size );
 		}

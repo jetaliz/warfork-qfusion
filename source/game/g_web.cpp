@@ -31,5 +31,9 @@ http_response_code_t G_WebRequest( http_query_method_t method, const char *resou
 	if( !Q_strnicmp( resource, "callvote", 8 ) ) {
 		return G_CallVotes_WebRequest( method, resource, query_string, content, content_length );
 	}
+
+	if( !Q_strnicmp( resource, "players", 7 ) ) {
+		return G_PlayerlistWebRequest( method, resource, query_string, content, content_length );
+	}
 	return HTTP_RESP_NOT_FOUND;
 }

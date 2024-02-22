@@ -713,6 +713,8 @@ void G_OperatorVote_Cmd( edict_t *ent );
 void G_RegisterGametypeScriptCallvote( const char *name, const char *usage, const char *type, const char *help );
 http_response_code_t G_CallVotes_WebRequest( http_query_method_t method, const char *resource, 
 	const char *query_string, char **content, size_t *content_length );
+http_response_code_t G_PlayerlistWebRequest( http_query_method_t method, const char *resource, 
+	const char *query_string, char **content, size_t *content_length );
 
 //
 // g_trigger.c
