@@ -146,7 +146,7 @@ static void R_UnbindImage( const image_t *tex )
 /*
 * R_TextureMode
 */
-void R_TextureMode( char *string )
+void R_TextureMode(const char *string )
 {
 	int i;
 	image_t	*glt;
