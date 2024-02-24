@@ -74,6 +74,10 @@ void Steam_GetPersonaName( char *name, size_t namesize )
 	strncpy(name, evt->name, namesize);
 }
 
+void Steam_OpenProfile(uint64_t steamid) { 
+	STEAMSHIM_openProfile(steamid);
+}
+
 void Steam_SetRichPresence( int num, const char **key, const char **val )
 {
 	STEAMSHIM_setRichPresence(num, key, val);

@@ -240,6 +240,13 @@ extern "C" {
   void STEAMSHIM_getAuthSessionTicket(){
       Write1ByteMessage(SHIMCMD_REQUESTAUTHSESSIONTICKET);
   }
+  
+  void STEAMSHIM_openProfile(uint64_t steamid) {
+      PipeBuffer buf;
+      buf.WriteByte(SHIMCMD_OPENPROFILE);
+      buf.WriteLong(steamid);
+      buf.Transmit();
+  }
 
   void STEAMSHIM_beginAuthSession(uint64_t steamid, SteamAuthTicket_t* ticket){
       PipeBuffer buf;

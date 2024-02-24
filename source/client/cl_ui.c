@@ -326,6 +326,8 @@ void CL_UIModule_Init( void )
 	import.L10n_ClearDomain = &CL_UIModule_L10n_ClearDomain;
 	import.L10n_GetUserLanguage = &L10n_GetUserLanguage;
 
+	import.Steam_OpenProfile = &Steam_OpenProfile;
+
 #ifndef UI_HARD_LINKED
 	funcs[0].name = "GetUIAPI";
 	funcs[0].funcPointer = ( void ** ) &GetUIAPI;

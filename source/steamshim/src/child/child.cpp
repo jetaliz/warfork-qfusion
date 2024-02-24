@@ -168,6 +168,12 @@ static bool processCommand(PipeBuffer cmd, ShimCmd cmdtype, unsigned int len)
                 GSteamGameServer->EndAuthSession(steamID);
             }
             break;
+        case SHIMCMD_OPENPROFILE:
+            {
+                uint64 steamID = cmd.ReadLong();
+                SteamFriends()->ActivateGameOverlayToUser("steamid", steamID);
+            }
+            break;
     } // switch
 
     return true;

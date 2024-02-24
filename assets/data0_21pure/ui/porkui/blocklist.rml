@@ -34,6 +34,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 		ElementFormControl @playerValue;
 
 		Element @blockBtn;
+		Element @viewprofileBtn;
 
 		String @selsteamid;
 		String @selname;
@@ -49,6 +50,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 			@playerOptions = body.getElementById( "player_options" );
 			@playerText = body.getElementById( "player_text" );
 			@blockBtn = body.getElementById( "block_btn" );
+			@viewprofileBtn = body.getElementById( "viewprofile_btn" );
 
 		}
 
@@ -60,6 +62,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 		void onPlayersShow( Element @body, Event @evt )
 		{
 			blockBtn.css( 'visibility', 'hidden' );
+			viewprofileBtn.css( 'visibility', 'hidden' );
 			animationsOnShow();
 
 			playersSetDataSources();
@@ -99,6 +102,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 			blockBtn.css( 'display', 'inline-block' );
 			blockBtn.css( 'visibility', 'visible' );
+
+			viewprofileBtn.css( 'display', 'inline-block' );
+			viewprofileBtn.css( 'visibility', 'visible' );
 			blockBtn.setInnerRML("Block " + name);
 			@selname = name;
 			@selsteamid = steamid;
@@ -118,6 +124,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 			game.execAppend("cg_chatBlocklist \"" + blocklist + ":"+selsteamid+name + "\"");
 			window.close();
+		}
+
+		void onShowProfile( Element @elem, Event @ev )
+		{
+			window.close();
+			game.steamopenprofile(selsteamid);
 		}
 	</script>
 </head>
@@ -150,6 +162,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 				<input id="block_btn" type="submit"></input>
 			</form>
 
+			<button id="viewprofile_btn" onclick="$onShowProfile">View Profile</button>		
 			<button onclick="window.close();">Return to game</button>		
 		</div>			
 	</div>

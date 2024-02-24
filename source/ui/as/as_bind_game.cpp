@@ -102,6 +102,11 @@ static asstring_t *Game_Cvar( Game *game, asstring_t* name )
 	return ASSTR (trap::Cvar_String(name->buffer));
 }
 
+static void Game_SteamOpenProfile( Game *game, asstring_t* steamid )
+{
+	trap::Steam_OpenProfile(atoll(steamid->buffer));
+}
+
 static int Game_ClientState( Game *game )
 {
 	return UI_Main::Get()->getRefreshState().clientState;
@@ -204,6 +209,8 @@ void BindGame( ASInterface *as )
 		.constmethod( Game_ConfigString, "configString", true )
 		.constmethod( Game_ConfigString, "cs", true )
 		.constmethod( Game_Cvar, "cvar", true )
+
+		.constmethod( Game_SteamOpenProfile, "steamopenprofile", true )
 
 		.constmethod( Game_PlayerNum, "get_playerNum", true )
 
