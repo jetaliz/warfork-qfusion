@@ -240,7 +240,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
         cp ${CMAKE_HOME_DIRECTORY}/build/$(CONFIGURATION)/${QFUSION_TVSERVER_NAME} ${BUNDLE_PATH}/MacOS/ &&
         cp ${CMAKE_HOME_DIRECTORY}/build/libsteam_api.dylib ${BUNDLE_PATH}/Resources/ &&
         cp ${CMAKE_HOME_DIRECTORY}/build/commit.txt ${BUNDLE_PATH}/MacOS/ &&
-        cp ${CMAKE_HOME_DIRECTORY}/build/steam_appid.txt ${BUNDLE_PATH}/MacOS/
+        cp ${CMAKE_HOME_DIRECTORY}/build/steam_appid.txt ${BUNDLE_PATH}/Resources/
     )
         
     add_custom_command(TARGET ${QFUSION_CLIENT_NAME} POST_BUILD COMMAND ${POST_BUILD_CMDS})
