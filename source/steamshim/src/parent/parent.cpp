@@ -225,20 +225,15 @@ extern "C" {
   const STEAMSHIM_Event *STEAMSHIM_pump(void)
   {
     Write1ByteMessage(SHIMCMD_PUMP);
-    printf("--pump--\n");
     return ProcessEvent();
   } 
 
   void STEAMSHIM_getSteamID()
   {
-
-    printf("GETTING STEAM ID\n");
 	  Write1ByteMessage(SHIMCMD_REQUESTSTEAMID);
   }
 
   void STEAMSHIM_getPersonaName(){
-
-    printf("GETTING PERSONA NAME\n");
       Write1ByteMessage(SHIMCMD_REQUESTPERSONANAME);
   }
 

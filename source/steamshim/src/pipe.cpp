@@ -136,7 +136,6 @@ int PipeBuffer::Recieve()
 
           assert(bytesRead < sizeof(buffer));
           const int morebr = readPipe(GPipeRead, buffer + bytesRead, sizeof (buffer) - bytesRead);
-          printf("--reading--\n");
           if (morebr > 0)
               bytesRead += morebr;
           else  /* uh oh */
@@ -150,7 +149,6 @@ int PipeBuffer::Recieve()
   // we have a full command
   if (msglen && (bytesRead >= msglen + sizeof(uint32_t)))
   {
-    printf("FULL COMMAND!!!\n");
     hasmsg = true;
 
     bytesRead -= msglen + sizeof(uint32_t);
