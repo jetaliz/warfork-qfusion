@@ -1710,10 +1710,7 @@ char *R_CopyString_( const char *in, const char *filename, int fileline )
 	return out;
 }
 
-/*
-* R_LoadFile
-*/
-int R_LoadFile_( const char *path, int flags, void **buffer, const char *filename, int fileline )
+int R_LoadFileGroup_( const char *path, int flags, group_handle_t* group, void **buffer, const char *filename, int fileline )
 {
 	uint8_t *buf;
 	unsigned int len;
@@ -1722,7 +1719,7 @@ int R_LoadFile_( const char *path, int flags, void **buffer, const char *filenam
 	buf = NULL; // quiet compiler warning
 
 	// look for it in the filesystem or pack files
-	len = ri.FS_FOpenFile( path, &fhandle, FS_READ|flags );
+	len = FS_FOpenFileGroup( path, &fhandle, FS_READ|flags, group );
 
 	if( !fhandle )
 	{
@@ -1733,7 +1730,7 @@ int R_LoadFile_( const char *path, int flags, void **buffer, const char *filenam
 
 	if( !buffer )
 	{
-		ri.FS_FCloseFile( fhandle );
+		FS_FCloseFile( fhandle );
 		return len;
 	}
 
@@ -1741,8 +1738,42 @@ int R_LoadFile_( const char *path, int flags, void **buffer, const char *filenam
 	buf[len] = 0;
 	*buffer = buf;
 
-	ri.FS_Read( buf, len, fhandle );
-	ri.FS_FCloseFile( fhandle );
+	FS_Read( buf, len, fhandle );
+	FS_FCloseFile( fhandle );
+
+	return len;
+}
+
+int R_LoadFile_( const char *path, int flags, void **buffer, const char *filename, int fileline )
+{
+	uint8_t *buf;
+	unsigned int len;
+	int fhandle;
+
+	buf = NULL; // quiet compiler warning
+
+	// look for it in the filesystem or pack files
+	len = FS_FOpenFile( path, &fhandle, FS_READ|flags );
+
+	if( !fhandle )
+	{
+		if( buffer )
+			*buffer = NULL;
+		return -1;
+	}
+
+	if( !buffer )
+	{
+		FS_FCloseFile( fhandle );
+		return len;
+	}
+
+	buf = ( uint8_t *)ri.Mem_AllocExt( r_mempool, len + 1, 16, 0, filename, fileline );
+	buf[len] = 0;
+	*buffer = buf;
+
+	FS_Read( buf, len, fhandle );
+	FS_FCloseFile( fhandle );
 
 	return len;
 }
