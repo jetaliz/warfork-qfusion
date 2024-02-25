@@ -503,20 +503,22 @@ typedef struct RichPresence {
 typedef struct {
 	_Bool discord_initialized;
 	unsigned int next_update;
-	RichPresence old_presence;
+	RichPresence discord_old_presence;
+	RichPresence steam_old_presence;
 } cl_presence_state_t;
 
 static cl_presence_state_t cl_presence_state;
 
 void UpdatePresenceIfChanged( RichPresence presence )
 {
-	if( memcmp( &cl_presence_state.old_presence, &presence, sizeof( presence ) ) == 0 ) {
-		return;
+	if( memcmp( &cl_presence_state.steam_old_presence, &presence, sizeof( presence ) ) != 0 && Steam_Active()) {
+		char* keys[3] = {"score", "details","steam_display"};
+		char* values[3] = {presence.state,presence.state,"#Status_Score"};
+		Steam_SetRichPresence(3, keys, values);
+		cl_presence_state.steam_old_presence = presence;
 	}
 
-	cl_presence_state.old_presence = presence;
-
-	if(cl_presence_state.discord_initialized) {
+	if( memcmp( &cl_presence_state.discord_old_presence, &presence, sizeof( presence ) ) != 0 && cl_presence_state.discord_initialized) {
 		DiscordRichPresence discord = { 0 };
 		discord.state = presence.state;
 		discord.details = presence.details;
@@ -536,15 +538,8 @@ void UpdatePresenceIfChanged( RichPresence presence )
 		discord.instance = presence.instance;
 
 		Discord_UpdatePresence( &discord );
+		cl_presence_state.discord_old_presence = presence;
 	}
-
-#ifdef APP_STEAMID
-	if (Steam_Active()){
-		char* keys[3] = {"score", "details","steam_display"};
-		char* values[3] = {presence.state,presence.state,"#Status_Score"};
-		Steam_SetRichPresence(3, keys, values);
-	}
-#endif
 
 }
 
@@ -596,7 +591,7 @@ static const char *CL_PlayerStatus( snapshot_t *frame )
 
 void CL_UpdatePresence( void )
 {
-	if( cl_presence_state.discord_initialized ) {
+	if( cl_presence_state.discord_initialized || Steam_Active() ) {
 		unsigned int now = Sys_Milliseconds();
 		if( cl_presence_state.next_update <= now ) {
 			// Discord rate limit is 15s, but this has been tested and is fine!
