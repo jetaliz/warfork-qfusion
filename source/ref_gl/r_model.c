@@ -1063,7 +1063,8 @@ model_t *Mod_ForName( const char *name, bool crash )
 	//
 	// load the file
 	//
-	modfilelen = R_LoadFile( name, (void **)&buf );
+	uintptr_t group = 0;
+	modfilelen = R_LoadFileGroup( name, &group, (void **)&buf);
 	if( !buf && crash )
 		ri.Com_Error( ERR_DROP, "Mod_NumForName: %s not found", name );
 
@@ -1123,7 +1124,7 @@ model_t *Mod_ForName( const char *name, bool crash )
 	for( i = 0; i < descr->maxLods; i++ )
 	{
 		Q_snprintfz( lodname, sizeof( lodname ), "%s_%i.%s", shortname, i+1, extension );
-		R_LoadFile( lodname, (void **)&buf );
+		R_LoadFileGroup(lodname, &group, (void **)&buf );
 		if( !buf || strncmp( (const char *)buf, descr->header, descr->headerLen ) )
 			break;
 
@@ -1216,7 +1217,7 @@ static void R_InitMapConfig( const char *model )
 		{
 			*p = 0;
 			Q_strncatz( lightmapsPath, "/lm_0000.tga", sizeof( lightmapsPath ) );
-			if( ri.FS_FOpenFile( lightmapsPath, NULL, FS_READ ) != -1 )
+			if( FS_FOpenFile( lightmapsPath, NULL, FS_READ ) != -1 )
 			{
 				ri.Com_DPrintf( S_COLOR_YELLOW "External lightmap stage: lightmaps packing is disabled\n" );
 				mapConfig.lightmapsPacking = false;

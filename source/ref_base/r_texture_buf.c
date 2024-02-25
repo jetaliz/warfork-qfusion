@@ -95,15 +95,34 @@ size_t T_Size( struct texture_buf_s *buf )
 	return buf->size;
 }
 
-void T_PromteTextureBuf( struct texture_buf_s *tex )
+void T_PromoteTextureBuf( struct texture_buf_s *tex )
 {
 	assert(tex);
 	if( ( tex->flags & TEX_BUF_IS_ALIASED ) > 0 ) {
 		uint8_t *aliasBuffer = tex->buffer;
 		tex->buffer = malloc( tex->size );
 		memcpy( tex->buffer, aliasBuffer, tex->size );
+		
+		// free the alias buffer
+		if(tex->freeHandler) {
+  			tex->freeHandler(tex->freeParam);
+  		}
+		tex->freeHandler = NULL;
 	}
 	tex->flags = (tex->flags & (~TEX_BUF_IS_ALIASED));
+}
+
+static void __T_ResetBuffer(struct texture_buf_s *buf) {
+  if( ( buf->flags & TEX_BUF_IS_ALIASED ) > 0 ) {
+  	if(buf->freeHandler) {
+  		buf->freeHandler(buf->freeParam);
+  	}
+  	buf->freeHandler = NULL;
+  	buf->flags = (buf->flags & ~TEX_BUF_IS_ALIASED); // we clear the alias flag
+  } else {
+  	free(buf->buffer);
+  }
+  buf->buffer = NULL;
 }
 
 void T_ReallocTextureBuf( struct texture_buf_s *buf, const struct texture_buf_desc_s *desc)
@@ -111,23 +130,20 @@ void T_ReallocTextureBuf( struct texture_buf_s *buf, const struct texture_buf_de
   // we stash the previous size and the current buffer to transfer
   T_ConfigureTextureBuf( buf, desc->def, desc->width, desc->height, desc->alignment );
   if( ( buf->flags & TEX_BUF_IS_ALIASED ) > 0 ) {
-	  buf->buffer = NULL; // if the buffer is aliased we don't own the memory
+  	__T_ResetBuffer(buf);
 	  buf->capacity = buf->size;
   } else {
 	  while( buf->size > buf->capacity ) {
 		  buf->capacity = ( buf->capacity == 0 ) ? buf->size : ( buf->capacity >> 1 ) + buf->capacity;
 	  }
   }
-  buf->flags = (buf->flags & ~TEX_BUF_IS_ALIASED);
 	buf->buffer = realloc( buf->buffer, buf->capacity );
 }
 
 int T_AliasTextureBuf( struct texture_buf_s *buf, const struct texture_buf_desc_s *desc, uint8_t *buffer, size_t size)
 {
   T_ConfigureTextureBuf( buf, desc->def, desc->width, desc->height, desc->alignment );
-	if( ( buf->flags & TEX_BUF_IS_ALIASED ) == 0 ) {
-		free( buf->buffer ); // we free the underlying memory
-	}
+  __T_ResetBuffer(buf);
 	buf->flags |= TEX_BUF_IS_ALIASED;
 	buf->buffer = buffer;
 	if(size == 0 ){
@@ -137,6 +153,24 @@ int T_AliasTextureBuf( struct texture_buf_s *buf, const struct texture_buf_desc_
 		if( buf->capacity < size )
 			return TEXTURE_BUF_INVALID_CAP;
 	}
+	return TEXTURE_BUF_SUCCESS;
+}
+
+int T_AliasTextureBuf_Free( struct texture_buf_s *buf, const struct texture_buf_desc_s *desc, uint8_t *buffer, size_t size, void* param, free_hander_t freeFn) {
+	assert(freeFn);
+	T_ConfigureTextureBuf( buf, desc->def, desc->width, desc->height, desc->alignment );
+	__T_ResetBuffer(buf);
+	buf->flags |= TEX_BUF_IS_ALIASED;
+	buf->buffer = buffer;
+	if(size == 0 ){
+		buf->capacity = buf->size;
+	} else {
+		buf->capacity = size;
+		if( buf->capacity < size )
+			return TEXTURE_BUF_INVALID_CAP;
+	}
+	buf->freeHandler = freeFn;
+	buf->freeParam = param;
 	return TEXTURE_BUF_SUCCESS;
 }
 
@@ -200,10 +234,7 @@ void T_MipMapQuarterInPlace( struct texture_buf_s *tex) {
 void T_FreeTextureBuf( struct texture_buf_s *tex )
 {
 	assert(tex);
-	if( ( tex->flags & TEX_BUF_IS_ALIASED ) == 0 ) {
-		free( tex->buffer );
-	}
-	tex->buffer = NULL;
+	__T_ResetBuffer(tex);
 	tex->flags = 0;
 }
 
