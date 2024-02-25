@@ -555,11 +555,7 @@ static void CL_DiscordReady( const DiscordUser *user )
 	Cvar_ForceSet( "discord_id", discord_id );
 
 
-#ifdef __linux__
-	Discord_Register(va("%llu",DISCORD_APP_ID), "steam steam://rungameid/671610");
-#else
-	Discord_Register(va("%llu",DISCORD_APP_ID), "steam://rungameid/671610");
-#endif
+	Discord_RegisterSteamGame(G_STRINGIFY(DISCORD_APP_ID), G_STRINGIFY(APP_STEAMID));
 	cl_presence_state.discord_initialized = true;
 }
 
