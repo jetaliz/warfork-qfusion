@@ -1,4 +1,5 @@
 #players_left_frame { overflow-y: auto; width: 150dp; height: 160dp; float: left; }
+#players_right_frame { overflow-y: auto; width: 150dp; height: 160dp; float: left; }
 
 #players_datagrid datagridheader { font-size: 14dp; text-align: left; }
 #players_datagrid datagridrow { font-size: 14dp; text-align: left; }
@@ -6,9 +7,14 @@
 #players_datagrid datagridrow:selected  { background: #3f3c49; }
 #players_datagrid datagridcolumn:hover { background: #3f3c49; }
 
+#blocked_datagrid datagridheader { font-size: 14dp; text-align: left; }
+#blocked_datagrid datagridrow { font-size: 14dp; text-align: left; }
+#blocked_datagrid datagridrow:hover { background: #3f3c49; }
+#blocked_datagrid datagridrow:selected  { background: #3f3c49; }
+#blocked_datagrid datagridcolumn:hover { background: #3f3c49; }
+
 #players_spacer_frame { width: 12dp; height: 160dp; float: left; }
 
-#players_right_frame { height: 160dp; font-size: 14dp; text-align: left; }
 #players_options_frame { }
 
 #player_picker_frame { height: 100dp; }

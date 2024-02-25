@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 	<!-- <script src="as/players.as" /> -->
 	<script>
 		Element @playersDatagrid;
+		Element @blockedDatagrid;
 		ElementForm @playerForm;
 		ElementFormControl @playerName;
 		ElementFormControl @playerNumArgs;
@@ -39,11 +40,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 		String @selsteamid;
 		String @selname;
 
+		bool unblock = false;
+
+
 		void onPlayersLoad( Element @body, Event @evt )
 		{
 			onTemplateLoad( body, evt );
 
 			@playersDatagrid = body.getElementById( 'players_datagrid' );
+			@blockedDatagrid = body.getElementById( 'blocked_datagrid' );
 			@playerForm = body.getElementById('players_form_start');
 			@playerName = body.getElementById( "player_name" );
 			@playerNumArgs = body.getElementById( "player_numargs" );
@@ -76,17 +81,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 		void playersSetDataSources( void )
 		{
+			cast<ElementDataGrid>(blockedDatagrid).setDataSource( 'blockedplayers.what' );
 			cast<ElementDataGrid>(playersDatagrid).setDataSource( 'gameajax.players' );
 		}
 
 		void playersClearDataSources( void )
 		{		
 			cast<ElementDataGrid>(playersDatagrid).setDataSource( '' );
-			cast<ElementFormControlDataSelect>(playerOptions).setDataSource( '' );
+			cast<ElementDataGrid>(blockedDatagrid).setDataSource( '' );
 		}
 
 		void onPlayersRowSelect( Element @elem, Event @ev )
 		{
+			unblock = false;
 			int selectedRow = ev.getParameter( 'index', -1 );			
 			if( selectedRow < 0 ) {
 				return;
@@ -111,18 +118,60 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 		}
 
-		void onBlockSubmit( Element @elem, Event @ev )
+		void onBlockedRowSelect( Element @elem, Event @ev )
 		{
-			String name = selname;
-
-
-			for ( int i = name.length(); i < 15; i++ ) { 
-				name += " ";
+			unblock = true;
+			int selectedRow = ev.getParameter( 'index', -1 );			
+			if( selectedRow < 0 ) {
+				return;
 			}
 
-			String blocklist = game.cvar("cg_chatBlocklist");
+			DataSource @data = getDataSource( 'blockedplayers' );
 
-			game.execAppend("cg_chatBlocklist \"" + blocklist + ":"+selsteamid+name + "\"");
+			String name = data.getField( 'players', selectedRow, 'name' );
+			int idx = data.getField( 'players', selectedRow, 'index' ).toInt();
+			String steamid = data.getField( 'players', selectedRow, 'steamid' );
+
+
+			blockBtn.css( 'display', 'inline-block' );
+			blockBtn.css( 'visibility', 'visible' );
+
+			viewprofileBtn.css( 'display', 'inline-block' );
+			viewprofileBtn.css( 'visibility', 'visible' );
+			blockBtn.setInnerRML("Unblock " + name);
+			@selname = name;
+			@selsteamid = steamid;
+
+		}
+
+		void onBlockSubmit( Element @elem, Event @ev )
+		{
+			if (unblock) {
+				String blocklist = game.cvar("cg_chatBlocklist");
+				String newblocklist = "";
+
+				for ( int i = 0; i < blocklist.length(); i+=(15+17+1) ) { 
+					String steamid = blocklist.substr(i+1, 17);
+					String name = blocklist.substr(i+18, 15);
+
+					if (name != selname) {
+						newblocklist += ":"+steamid + name;
+					}
+				}
+
+				game.execAppend("cg_chatBlocklist \"" + newblocklist + "\"");
+			}else if (selsteamid.length() == 17) {
+				String name = selname;
+
+
+				for ( int i = name.length(); i < 15; i++ ) { 
+					name += " ";
+				}
+
+				String blocklist = game.cvar("cg_chatBlocklist");
+
+				game.execAppend("cg_chatBlocklist \"" + blocklist + ":"+selsteamid+name + "\"");
+			}
 			window.close();
 		}
 
@@ -142,20 +191,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 				<div id="players-container">
 					<div id="players_left_frame">
 						<datagrid id="players_datagrid" source="" onrowselect="$onPlayersRowSelect">
-							<col fields="name" width="150dp">Name</col>
+							<col fields="name" width="150dp">In Game</col>
 						</datagrid>
 					</div>
 					<div id="players_spacer_frame" >&nbsp;</div>
 					<div id="players_right_frame">
-						<div id="players_options_frame">
-							<div id="player_picker_frame">
-								<input id="player_name" type="text" style="display: none;" name="name" />
-								<input id="player_numargs" type="text" style="display: none;" name="numargs" />
-								<dataselect id="player_options" fields="name" valuefield="value" formatter="colorcode" />
-								<input id="player_text" type="text" />
-							<br/>
-							</div>
-						</div>
+						<datagrid id="blocked_datagrid" source="" onrowselect="$onBlockedRowSelect">
+							<col fields="name" width="150dp">Blocked</col>
+						</datagrid>
 					</div>
 					<br/>
 				</div>			

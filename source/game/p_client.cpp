@@ -818,7 +818,6 @@ void ClientAuth ( edict_t *ent, uint64_t steamid )
 		char *pch = strtok(g_permanent_operators->string, ",");
 		while (pch != NULL){
 			uint64_t testid = atoll(pch);
-			printf("AAA %llu\n",testid);
 
 			if (testid == steamid){
 				if( !ent->r.client->isoperator )
