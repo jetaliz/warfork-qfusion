@@ -1365,7 +1365,11 @@ static void G_VoteUnmutePassed( callvotedata_t *vote )
 	if( !ent->r.inuse || !ent->r.client )  // may have disconnect along the callvote time
 		return;
 
-	ent->r.client->muted &= ~1;
+	if (ent->r.client->authenticated){
+		trap_Cmd_ExecuteText( EXEC_APPEND, va( "removemute %llu\n", ent->r.client->steamid ) );
+	} else {
+		ent->r.client->muted = 0;
+	}
 }
 
 /*

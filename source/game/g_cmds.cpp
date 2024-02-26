@@ -695,7 +695,10 @@ void Cmd_Say_f( edict_t *ent, bool arg0, bool checkflood )
 			return;
 	}
 
-	if( ent->r.client && ( ent->r.client->muted & 1 ) )
+	if( ent->r.client && ent->r.client->muted )
+		return;
+
+	if (ent->r.client->authenticated && SV_FilterSteamID(ent->r.client->steamid,true))
 		return;
 
 	if( trap_Cmd_Argc() < 2 && !arg0 )
@@ -843,7 +846,10 @@ static void G_vsay_f( edict_t *ent, bool team )
 	const char *text = NULL;
 	char *msg = trap_Cmd_Argv( 1 );
 
-	if( ent->r.client && ( ent->r.client->muted & 2 ) )
+	if( ent->r.client && ent->r.client->muted )
+		return;
+
+	if (ent->r.client->authenticated && SV_FilterSteamID(ent->r.client->steamid, true))
 		return;
 
 	if( ( !GS_TeamBasedGametype() || GS_InvidualGameType() ) && ent->s.team != TEAM_SPECTATOR )

@@ -903,7 +903,7 @@ void SP_target_kill( edict_t *self );
 //
 void SV_ResetPacketFiltersTimeouts( void );
 bool SV_FilterPacket( char *from );
-bool SV_FilterSteamID( uint64_t id );
+bool SV_FilterSteamID( uint64_t id, bool ismute );
 void G_AddServerCommands( void );
 void G_RemoveCommands( void );
 void SV_ReadIPList( void );
@@ -1239,7 +1239,7 @@ struct gclient_s
 	int movestyle_latched;
 	bool isoperator;
 	unsigned int queueTimeStamp;
-	int muted;     // & 1 = chat disabled, & 2 = vsay disabled
+	int muted; // fallback if steam auth is disabled. see SV_FilterSteamID
 
 	usercmd_t ucmd;
 	int timeDelta;              // time offset to adjust for shots collision (antilag)

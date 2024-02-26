@@ -127,6 +127,7 @@ typedef struct
 	};
 	unsigned timeout;
 	bool steamban;
+	bool ismute;
 } ipfilter_t;
 
 #define	MAX_IPFILTERS	1024
@@ -228,7 +229,7 @@ bool SV_FilterPacket( char *from )
 	return false;
 }
 
-bool SV_FilterSteamID( uint64_t id ) {
+bool SV_FilterSteamID( uint64_t id, bool ismute ) {
 	if( !filterban->integer )
 		return false;
 
@@ -237,7 +238,7 @@ bool SV_FilterSteamID( uint64_t id ) {
 	for( i = 0; i < numipfilters; i++ )
 		if( ipfilters[i].steamban && ipfilters[i].steamid == id
 			&& (!ipfilters[i].timeout || ipfilters[i].timeout > game.serverTime) )
-			return true;
+			return ipfilters[i].ismute == ismute;
 
 
 	return false;
@@ -286,10 +287,12 @@ void SV_WriteIPList( void )
 		float timeout = (ipfilters[i].timeout - game.serverTime)/(1000.0f*60.0f);
 		if (ipfilters[i].steamban) {
 			uint64_t id = ipfilters[i].steamid;
+
+			const char *type = ipfilters[i].ismute ? "mute" : "ban";
 			if( ipfilters[i].timeout )
-				Q_snprintfz( string, sizeof( string ), "ban %llu %.2f\r\n", id, timeout);
+				Q_snprintfz( string, sizeof( string ), "%s %llu %.2f\r\n", type, id, timeout);
 			else
-				Q_snprintfz( string, sizeof( string ), "ban %llu\r\n", id );
+				Q_snprintfz( string, sizeof( string ), "%s %llu\r\n", type, id );
 		}else{
 			*(unsigned *)b = ipfilters[i].compare;
 			if( ipfilters[i].timeout )
@@ -329,6 +332,8 @@ static void Cmd_AddIP_f( void )
 		numipfilters++;
 	}
 
+
+	ipfilters[i].ismute = false;
 	ipfilters[i].steamban = false;
 	ipfilters[i].timeout = 0;
 	if( !StringToFilter( trap_Cmd_Argv( 1 ), &ipfilters[i] ) )
@@ -339,18 +344,8 @@ static void Cmd_AddIP_f( void )
 	SV_WriteIPList();
 }
 
-/*
-* Cmd_AddIP_f
-*/
-static void Cmd_Ban_f( void )
-{
+static void CmdAddSteamIpListEntry(bool mute) {
 	int i;
-
-	if( trap_Cmd_Argc() < 2 )
-	{
-		G_Printf( "Usage: ban <steamid64> [time-mins]\n" );
-		return;
-	}
 
 	for( i = 0; i < numipfilters; i++ )
 		if( (!ipfilters[i].steamban && ipfilters[i].compare == 0xffffffff) || (ipfilters[i].timeout && ipfilters[i].timeout <= game.serverTime) )
@@ -365,6 +360,7 @@ static void Cmd_Ban_f( void )
 		numipfilters++;
 	}
 
+	ipfilters[i].ismute = mute;
 	ipfilters[i].steamban = true;
 	ipfilters[i].timeout = 0;
 	ipfilters[i].steamid = atoll(trap_Cmd_Argv(1));
@@ -372,6 +368,27 @@ static void Cmd_Ban_f( void )
 	if( trap_Cmd_Argc() == 3 )
 		ipfilters[i].timeout = game.serverTime + atof( trap_Cmd_Argv(2) )*60*1000;
 
+}
+
+static void Cmd_Ban_f( void )
+{
+	if( trap_Cmd_Argc() < 2 )
+	{
+		G_Printf( "Usage: ban <steamid64> [time-mins]\n" );
+		return;
+	}
+	CmdAddSteamIpListEntry(false);
+	SV_WriteIPList();
+}
+
+static void Cmd_Mute_f( void )
+{
+	if( trap_Cmd_Argc() < 2 )
+	{
+		G_Printf( "Usage: mute <steamid64> [time-mins]\n" );
+		return;
+	}
+	CmdAddSteamIpListEntry(true);
 	SV_WriteIPList();
 }
 
@@ -407,26 +424,15 @@ static void Cmd_RemoveIP_f( void )
 	SV_WriteIPList();
 }
 
-/*
-* Cmd_RemoveBan_f
-*/
-static void Cmd_RemoveBan_f( void )
-{
+static void CmdRemoveSteamIpListEntry(bool mute){
 	int i, j;
-
-	if( trap_Cmd_Argc() < 2 )
-	{
-		G_Printf( "Usage: removeban <steamid64>\n" );
-		return;
-	}
-
 
 	uint64_t steamid = atoll(trap_Cmd_Argv(1));
 	if ( !steamid )
 		return;
 
 	for( i = 0; i < numipfilters; i++ )
-		if( ipfilters[i].steamban && ipfilters[i].steamid == steamid )
+		if( ipfilters[i].steamban && ipfilters[i].ismute == mute && ipfilters[i].steamid == steamid )
 		{
 			for( j = i+1; j < numipfilters; j++ )
 				ipfilters[j-1] = ipfilters[j];
@@ -436,6 +442,32 @@ static void Cmd_RemoveBan_f( void )
 		}
 	G_Printf( "Didn't find %s.\n", trap_Cmd_Argv( 1 ) );
 
+}
+
+/*
+* Cmd_RemoveBan_f
+*/
+static void Cmd_RemoveBan_f( void )
+{
+	if( trap_Cmd_Argc() < 2 )
+	{
+		G_Printf( "Usage: removeban <steamid64>\n" );
+		return;
+	}
+
+	CmdRemoveSteamIpListEntry(false);
+	SV_WriteIPList();
+}
+
+static void Cmd_RemoveMute_f( void )
+{
+	if( trap_Cmd_Argc() < 2 )
+	{
+		G_Printf( "Usage: removemute <steamid64>\n" );
+		return;
+	}
+
+	CmdRemoveSteamIpListEntry(true);
 	SV_WriteIPList();
 }
 
@@ -511,6 +543,8 @@ void G_AddServerCommands( void )
 	trap_Cmd_AddCommand( "writeip", Cmd_WriteIP_f );
 	trap_Cmd_AddCommand( "ban",  Cmd_Ban_f );
 	trap_Cmd_AddCommand( "removeban", Cmd_RemoveBan_f );
+	trap_Cmd_AddCommand( "mute",  Cmd_Mute_f );
+	trap_Cmd_AddCommand( "removemute",  Cmd_RemoveMute_f );
 
 	// MBotGame: Add AI related commands
 	trap_Cmd_AddCommand( "botdebug", AIDebug_ToogleBotDebug );

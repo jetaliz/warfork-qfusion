@@ -804,7 +804,7 @@ void ClientAuth ( edict_t *ent, uint64_t steamid )
 {
 	gclient_t *client = ent->r.client;
 
-	if (SV_FilterSteamID(steamid)) {
+	if (SV_FilterSteamID(steamid, false)) {
 
 		trap_DropClient(ent, DROP_TYPE_GENERAL, "You are banned from this server.");
 		return;
