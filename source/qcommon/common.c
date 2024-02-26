@@ -30,6 +30,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../qalgo/md5.h"
 #include "../matchmaker/mm_common.h"
 #include "compression.h"
+#include "mem.h"
 
 #define MAX_NUM_ARGVS	50
 
@@ -1078,9 +1079,11 @@ void Qcommon_Shutdown( void )
 
 	Com_Autoupdate_Shutdown();
 
+
 	Qcommon_ShutdownCommands();
 	Memory_ShutdownCommands();
 
+	Mem_DumpMemoryReport();
 	Com_CloseConsoleLog( true, true );
 
    Qcommon_ShutdownCvarDescriptions();
