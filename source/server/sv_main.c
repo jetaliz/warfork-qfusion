@@ -71,6 +71,7 @@ cvar_t *sv_hostname;
 cvar_t *sv_public;         // should heartbeats be sent
 cvar_t *sv_log_heartbeats;         // should the sending heartbeat message be printed
 cvar_t *sv_defaultmap;
+cvar_t *sv_whitelist;
 
 cvar_t *sv_iplimit;
 
@@ -912,6 +913,7 @@ void SV_Init( void )
 		sv_public =		Cvar_Get( "sv_public", "0", CVAR_ARCHIVE );
 		sv_log_heartbeats =		Cvar_Get( "sv_log_heartbeats", "1", CVAR_ARCHIVE );
 	}
+	sv_iplimit = Cvar_Get( "sv_whitelist", "", CVAR_ARCHIVE );
 
 	sv_iplimit = Cvar_Get( "sv_iplimit", "3", CVAR_ARCHIVE );
 

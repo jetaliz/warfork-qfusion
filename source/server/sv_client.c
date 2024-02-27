@@ -506,7 +506,7 @@ static void SV_Begin_f( client_t *client )
 
 	if (Cvar_Integer("sv_useSteamAuth") != 0 && !client->authenticated)
 	{
-		SV_DropClient( client, DROP_TYPE_GENERAL, "Client did not authenticate when steam authentication required." );
+		SV_DropClient( client, DROP_TYPE_GENERAL, "Client did not authenticate when steam authentication required (is steam running?)." );
 		return;
 	}
 
@@ -1261,6 +1261,12 @@ void SV_ParseClientMessage( client_t *client, msg_t *msg )
 				int result = Steam_BeginAuthSession(client->steamid, &ticket);
 				if (result != 0){
 					SV_DropClient(client, DROP_TYPE_GENERAL, "steam auth failure");
+					break;
+				}
+
+				const char *whitelist = Cvar_String("sv_whitelist");
+				if (whitelist[0] && !strstr(whitelist, steamid)){
+					SV_DropClient(client, DROP_TYPE_GENERAL, "you are not whitelisted!");
 					break;
 				}
 
