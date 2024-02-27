@@ -1264,8 +1264,7 @@ void SV_ParseClientMessage( client_t *client, msg_t *msg )
 					break;
 				}
 
-				const char *whitelist = Cvar_String("sv_whitelist");
-				if (whitelist[0] && !strstr(whitelist, steamid)){
+				if (sv_whitelist->string[0] && !strstr(sv_whitelist->string, steamid)){
 					SV_DropClient(client, DROP_TYPE_GENERAL, "you are not whitelisted!");
 					break;
 				}
