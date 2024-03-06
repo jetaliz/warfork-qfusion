@@ -104,8 +104,8 @@ void Steam_RequestAvatar(uint64_t steamid, int size)
 */
 void Steam_AdvertiseGame( const uint8_t *ip, unsigned short port )
 {
-	char* keys[1] = {"connect"};
-	char* values[1];
+	const char* keys[1] = {"connect"};
+	const char* values[1];
 	if (port) {
 		values[0] = va("+connect %d.%d.%d.%d:%i",ip[0],ip[1],ip[2],ip[3],port);
 	} else {
