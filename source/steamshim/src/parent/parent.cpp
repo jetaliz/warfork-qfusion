@@ -23,6 +23,7 @@ freely, subject to the following restrictions:
 #include <stdio.h>
 #define DEBUGPIPE 1
 #include "parent_private.h"
+#include "parent.h"
 #include "../steamshim.h"
 #include "../steamshim_private.h"
 #include "../os.h"
@@ -126,9 +127,9 @@ static bool setEnvironmentVars(PipeType pipeChildRead, PipeType pipeChildWrite)
 } 
 
 extern "C" {
-  int STEAMSHIM_init(bool _debug, bool runclient, bool runserver)
+  int STEAMSHIM_init(SteamshimOptions *options)
   {
-    debug = _debug;
+    debug = options->debug;
 
 
     PipeType pipeParentRead = NULLPIPE;
@@ -137,9 +138,9 @@ extern "C" {
     PipeType pipeChildWrite = NULLPIPE;
     ProcessType childPid;
 
-    if (runclient)
+    if (options->runclient)
         setEnvVar("STEAMSHIM_RUNCLIENT", "1");
-    if (runserver)
+    if (options->runserver)
         setEnvVar("STEAMSHIM_RUNSERVER", "1");
 
 
@@ -264,7 +265,7 @@ extern "C" {
     buf.Transmit();
   }
 
-  void STEAMSHIM_setRichPresence(int num, char** key, char** val){
+  void STEAMSHIM_setRichPresence(int num, const char** key, const char** val){
       PipeBuffer buf;
       buf.WriteByte(SHIMCMD_SETRICHPRESENCE);
       buf.WriteInt(num);

@@ -213,7 +213,7 @@ void ServerInfo::fromInfo( const char *info )
 		// 		mm = tmpmm != 0;
 		// 	}
 		// }
-		else if( cmd == "stm" ) { // MATCHMAKING
+		else if( cmd == "stm" ) { // STEAM AUTHENTICATED
 			int tmpstm;
 			std::stringstream toint( value );
 			toint >> tmpstm;

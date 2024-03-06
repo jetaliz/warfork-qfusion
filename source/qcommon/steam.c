@@ -61,11 +61,13 @@ void Steam_Init( void )
 {
 	 steam_debug = Cvar_Get( "steam_debug", "0", 0);
 
-#if DEDICATED_ONLY 
-	int r = STEAMSHIM_init(steam_debug->integer, false, true);
-#else
-	int r = STEAMSHIM_init(steam_debug->integer, true, true);
+	 SteamshimOptions opts;
+	 opts.debug = steam_debug->integer;
+	 opts.runserver = true;
+#ifndef DEDICATED_ONLY 
+	 opts.runclient = true;
 #endif
+	int r = STEAMSHIM_init( &opts );
 	if( !r ) {
 		Com_Printf( "Steam initialization failed.\n" );
 		return;

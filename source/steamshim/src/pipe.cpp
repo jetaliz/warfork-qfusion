@@ -29,7 +29,7 @@ freely, subject to the following restrictions:
 PipeType GPipeRead = NULLPIPE;
 PipeType GPipeWrite = NULLPIPE;
 
-void PipeBuffer::WriteData(void* val, size_t vallen)
+void PipeBuffer::WriteData(const void* val, size_t vallen)
 {
   assert(cursor + vallen < PIPEMESSAGE_MAX);
   memcpy(buffer + cursor, val, vallen);
@@ -56,7 +56,7 @@ void PipeBuffer::WriteLong(uint64_t val)
   WriteData(&val, sizeof val);
 }
 
-void PipeBuffer::WriteString(char *val)
+void PipeBuffer::WriteString(const char *val)
 {
   WriteData(val, strlen(val)+1);
 }
