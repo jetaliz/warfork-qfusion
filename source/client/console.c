@@ -20,7 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // console.c
 
 #include "client.h"
-
+#include "../qcommon/mod_mem.h"
 #define CON_MAXLINES	3000
 typedef struct
 {
@@ -190,7 +190,7 @@ void Con_Clear_f( void )
 
 	for( i = 0; i < CON_MAXLINES; i++ )
 	{
-		Q_free( con.text[i] );
+		free( con.text[i] );
 		con.text[i] = NULL;
 	}
 	con.numlines = 0;
@@ -244,11 +244,6 @@ static size_t Con_BufferText( char *buffer, const char *delim )
 */
 static void Con_Dump_f( void )
 {
-	int file;
-	size_t buffer_size;
-	char *buffer;
-	size_t name_size;
-	char *name;
 	const char *newline = "\r\n";
 
 	if( !con_initialized )
@@ -260,8 +255,8 @@ static void Con_Dump_f( void )
 		return;
 	}
 
-	name_size = sizeof( char ) * ( strlen( Cmd_Argv( 1 ) ) + strlen( ".txt" ) + 1 );
-	name = Mem_TempMalloc( name_size );
+	const size_t name_size = sizeof( char ) * ( strlen( Cmd_Argv( 1 ) ) + strlen( ".txt" ) + 1 );
+	char* const name = Q_Malloc( name_size );
 
 	Q_strncpyz( name, Cmd_Argv( 1 ), name_size );
 	COM_DefaultExtension( name, ".txt", name_size );
@@ -270,21 +265,22 @@ static void Con_Dump_f( void )
 	if( !COM_ValidateRelativeFilename( name ) )
 	{
 		Com_Printf( "Invalid filename.\n" );
-		Mem_TempFree( name );
+		Q_Free( name );
 		return;
 	}
-
+	
+	int file;
 	if( FS_FOpenFile( name, &file, FS_WRITE ) == -1 )
 	{
 		Com_Printf( "Couldn't open: %s\n", name );
-		Mem_TempFree( name );
+		Q_Free( name );
 		return;
 	}
 
 	QMutex_Lock( con.mutex );
 
-	buffer_size = Con_BufferText( NULL, newline ) + 1;
-	buffer = Mem_TempMalloc( buffer_size );
+	const size_t buffer_size = Con_BufferText( NULL, newline ) + 1;
+	char *const buffer = Q_Malloc( buffer_size );
 
 	Con_BufferText( buffer, newline );
 
@@ -294,10 +290,10 @@ static void Con_Dump_f( void )
 
 	FS_FCloseFile( file );
 
-	Mem_TempFree( buffer );
+	Q_Free( buffer );
 
 	Com_Printf( "Dumped console text: %s\n", name );
-	Mem_TempFree( name );
+	Q_Free( name );
 }
 
 /*
@@ -476,7 +472,7 @@ static void Con_Linefeed( bool notify )
 {
 	// shift scrollback text up in the buffer to make room for a new line
 	if (con.numlines == con.totallines )
-		Q_free( con.text[con.numlines - 1] );
+		free( con.text[con.numlines - 1] );
 	memmove( con.text + 1, con.text, sizeof( con.text[0] ) * min( con.numlines, con.totallines - 1 ) );
 	con.text[0] = NULL;
 
@@ -514,7 +510,7 @@ static void addcharstostr( char **s, const char *c, size_t num ) {
 		num--;
 	}
 
-	newstr = Q_realloc( *s, len + addlen + 1 );
+	newstr = realloc( *s, len + addlen + 1 );
 	memcpy( newstr + len, c, addlen );
 	newstr[len + addlen] = '\0';
 	*s = newstr;
@@ -1240,7 +1236,7 @@ static void Con_CompleteCommandLine( void )
 		{
 			// the list is empty, although non-NULL list pointer suggests that the command
 			// exists, so clean up and exit without printing anything
-			Mem_TempFree( list[4] );
+			Q_Free( list[4] );
 			return;
 		}
 	}
@@ -1344,7 +1340,7 @@ static void Con_CompleteCommandLine( void )
 			size_t temp_size;
 
 			temp_size = sizeof( key_lines[edit_line] );
-			cmd_temp = Mem_TempMalloc( temp_size );
+			cmd_temp = Q_Malloc( temp_size );
 
 			Q_strncpyz( cmd_temp, key_lines[edit_line] + skip, temp_size );
 			p = strstr( cmd_temp, " " );
@@ -1368,13 +1364,14 @@ static void Con_CompleteCommandLine( void )
 		key_lines[edit_line][key_linepos] = 0;
 
 		if( cmd == cmd_temp )
-			Mem_TempFree( cmd );
+			Q_Free( cmd );
 	}
 
 	for( i = 0; i < 5; ++i )
 	{
-		if( list[i] )
-			Mem_TempFree( list[i] );
+		if( list[i] ) {
+			Q_Free( list[i] );
+		}
 	}
 }
 
@@ -1395,8 +1392,6 @@ LINE TYPING INTO THE CONSOLE
 */
 static void Con_Key_Copy( void )
 {
-	size_t buffer_size;
-	char *buffer;
 	const char *newline = "\r\n";
 
 	if( search_text[0] ) {
@@ -1406,8 +1401,8 @@ static void Con_Key_Copy( void )
 
 	QMutex_Lock( con.mutex );
 
-	buffer_size = Con_BufferText( NULL, newline ) + 1;
-	buffer = Mem_TempMalloc( buffer_size );
+	const size_t buffer_size = Con_BufferText( NULL, newline ) + 1;
+	char* buffer = Q_Malloc( buffer_size );
 
 	Con_BufferText( buffer, newline );
 
@@ -1415,7 +1410,7 @@ static void Con_Key_Copy( void )
 
 	CL_SetClipboardData( buffer );
 
-	Mem_TempFree( buffer );
+	Q_Free( buffer );
 }
 
 /*
@@ -2176,7 +2171,7 @@ static void Con_MessageCompletion( const char *partial, bool teamonly )
 			for( i = 0; i < 4; ++i )
 			{
 				if( list[i] )
-					Mem_TempFree( list[i] );
+					Q_Free( list[i] );
 			}
 
 			if( t == 1 && comp_len < sizeof( comp ) - 1 ) {

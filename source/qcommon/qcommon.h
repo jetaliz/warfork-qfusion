@@ -697,6 +697,72 @@ void	    FS_Shutdown( void );
 
 #include "mod_fs.h"
 
+static const struct fs_import_s default_fs_imports_s = {
+	.FS_GameDirectory = FS_GameDirectory,
+	.FS_BaseGameDirectory = FS_BaseGameDirectory,
+	.FS_WriteDirectory = FS_WriteDirectory,
+	.FS_CacheDirectory = FS_CacheDirectory,
+	.FS_SecureDirectory = FS_SecureDirectory,
+	.FS_MediaDirectory = FS_MediaDirectory,
+	.FS_DownloadsDirectory = FS_DownloadsDirectory,
+	.FS_RuntimeDirectory = FS_RuntimeDirectory,
+	.FS_GetGameDirectoryList = FS_GetGameDirectoryList,
+	.FS_GetExplicitPurePakList = FS_GetExplicitPurePakList,
+	.FS_IsExplicitPurePak = FS_IsExplicitPurePak,
+	.FS_Read = FS_Read,
+	.FS_Print = FS_Print,
+	.FS_Printf = FS_Printf,
+	.FS_Write = FS_Write,
+	.FS_Tell = FS_Tell,
+	.FS_Seek = FS_Seek,
+	.FS_Eof = FS_Eof,
+	.FS_Flush = FS_Flush,
+	.FS_IsUrl = FS_IsUrl,
+	.FS_FileNo = FS_FileNo,
+	.FS_FOpenFile = FS_FOpenFile,
+	.FS_FOpenFileGroup = FS_FOpenFileGroup,
+	.FS_CreateAbsolutePath = FS_CreateAbsolutePath,
+	.FS_AbsoluteNameForFile = FS_AbsoluteNameForFile,
+	.FS_AbsoluteNameForBaseFile = FS_AbsoluteNameForBaseFile,
+	.FS_AddExtraPK3Directory = FS_AddExtraPK3Directory,
+	.FS_LoadFileExt = FS_LoadFileExt,
+	.FS_LoadBaseFileExt = FS_LoadBaseFileExt,
+	.FS_FreeFile = FS_FreeFile,
+	.FS_FreeBaseFile = FS_FreeBaseFile,
+	.FS_CopyFile = FS_CopyFile,
+	.FS_CopyBaseFile = FS_CopyBaseFile,
+	.FS_ExtractFile = FS_ExtractFile,
+	.FS_MoveFile = FS_MoveFile,
+	.FS_MoveBaseFile = FS_MoveBaseFile,
+	.FS_MoveCacheFile = FS_MoveCacheFile,
+	.FS_RemoveFile = FS_RemoveFile,
+	.FS_RemoveBaseFile = FS_RemoveBaseFile,
+	.FS_RemoveAbsoluteFile = FS_RemoveAbsoluteFile,
+	.FS_RemoveDirectory = FS_RemoveDirectory,
+	.FS_RemoveBaseDirectory = FS_RemoveBaseDirectory,
+	.FS_RemoveAbsoluteDirectory = FS_RemoveAbsoluteDirectory,
+	.FS_ChecksumAbsoluteFile = FS_ChecksumAbsoluteFile,
+	.FS_ChecksumBaseFile = FS_ChecksumBaseFile,
+	.FS_CheckPakExtension = FS_CheckPakExtension,
+	.FS_PakFileExists = FS_PakFileExists,
+	.FS_FileMTime = FS_FileMTime,
+	.FS_BaseFileMTime = FS_BaseFileMTime,
+	.FS_FirstExtension = FS_FirstExtension,
+	.FS_PakNameForFile = FS_PakNameForFile,
+	.FS_IsPureFile = FS_IsPureFile,
+	.FS_FileManifest = FS_FileManifest,
+	.FS_BaseNameForFile = FS_BaseNameForFile,
+	.FS_GetFileList = FS_GetFileList,
+	.FS_GetFileListExt = FS_GetFileListExt,
+	.FS_IsPakValid = FS_IsPakValid,
+	.FS_AddPurePak = FS_AddPurePak,
+	.FS_RemovePurePaks = FS_RemovePurePaks,
+	.FS_AddFileToMedia = FS_AddFileToMedia,
+	.FS_FOpenAbsoluteFile = FS_FOpenAbsoluteFile,
+	.FS_FCloseFile = FS_FCloseFile,
+	.FS_FOpenBaseFile = FS_FOpenBaseFile,
+};
+
 
 bool		FS_SetGameDirectory( const char *dir, bool force );
 int			FS_GetGameDirectoryList( char *buf, size_t bufsize );
@@ -799,7 +865,6 @@ void _Mem_FreePool( mempool_t **pool, int musthave, int canthave, const char *fi
 void _Mem_EmptyPool( mempool_t *pool, int musthave, int canthave, const char *filename, int fileline );
 char *_Mem_CopyString( mempool_t *pool, const char *in, const char *filename, int fileline );
 
-void _Mem_CheckSentinels( void *data, const char *filename, int fileline );
 void _Mem_CheckSentinelsGlobal( const char *filename, int fileline );
 
 size_t Mem_PoolTotalSize( mempool_t *pool );
@@ -814,7 +879,6 @@ size_t Mem_PoolTotalSize( mempool_t *pool );
 #define Mem_EmptyPool( pool ) _Mem_EmptyPool( pool, 0, 0, __FILE__, __LINE__ )
 #define Mem_CopyString( pool, str ) _Mem_CopyString( pool, str, __FILE__, __LINE__ )
 
-#define Mem_CheckSentinels( data ) _Mem_CheckSentinels( data, __FILE__, __LINE__ )
 #define Mem_CheckSentinelsGlobal() _Mem_CheckSentinelsGlobal( __FILE__, __LINE__ )
 #ifdef NDEBUG
 #define Mem_DebugCheckSentinelsGlobal()
@@ -834,9 +898,6 @@ extern mempool_t *zoneMemPool;
 #define Mem_TempMalloc( size ) Mem_Alloc( tempMemPool, size )
 #define Mem_TempFree( data ) Mem_Free( data )
 
-void *Q_malloc( size_t size );
-void *Q_realloc( void *buf, size_t newsize );
-void Q_free( void *buf );
 void Qcommon_InitCvarDescriptions( void );
 
 void Qcommon_Init( int argc, char **argv );
