@@ -131,6 +131,12 @@ typedef struct mleaf_s
 
 	msurface_t		**firstVisSurface;
 	msurface_t		**firstFragmentSurface;
+
+	unsigned numVisSurfaces;
+	unsigned *visSurfaces;
+
+	unsigned numFragmentSurfaces;
+	unsigned *fragmentSurfaces;
 } mleaf_t;
 
 typedef struct
@@ -183,6 +189,9 @@ typedef struct mbrushmodel_s
 	unsigned int	numfogs;
 	mfog_t			*fogs;
 	mfog_t			*globalfog;
+	
+	unsigned numMiptex;
+	void *mipTex;
 
 	/*unsigned*/int	numareas;
 
