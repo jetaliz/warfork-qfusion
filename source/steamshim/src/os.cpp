@@ -79,9 +79,9 @@ bool launchChild(ProcessType *pid, const char* name)
 
     char args[32] = { 0 };
     if (debug){
-        snprintf(args, 31, ".\\%s steamdebug");
+        snprintf(args, sizeof(args) - 1, ".\\%s steamdebug");
     } else {
-        snprintf(args, 31, ".\\%s");
+        snprintf(args, sizeof(args) - 1, ".\\%s");
     }
     
     DWORD dwAttrib = GetFileAttributesA(exename);
