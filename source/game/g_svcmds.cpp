@@ -118,12 +118,15 @@ static void Cmd_Match_f( void )
 
 typedef struct
 {
+	unsigned mask;
+	unsigned compare;
+} ipaddr_t;
+
+typedef struct
+{
 	union {
 		uint64_t steamid;
-		struct {
-			unsigned mask;
-			unsigned compare;
-		};
+		ipaddr_t ip;
 	};
 	unsigned timeout;
 	bool steamban;
@@ -174,8 +177,8 @@ static bool StringToFilter( char *s, ipfilter_t *f )
 		s++;
 	}
 
-	f->mask = *(unsigned *)m;
-	f->compare = *(unsigned *)b;
+	f->ip.mask = *(unsigned *)m;
+	f->ip.compare = *(unsigned *)b;
 
 	return true;
 }
@@ -222,7 +225,7 @@ bool SV_FilterPacket( char *from )
 	in = *(unsigned *)m;
 
 	for( i = 0; i < numipfilters; i++ )
-		if( !ipfilters[i].steamban && ( in & ipfilters[i].mask ) == ipfilters[i].compare
+		if( !ipfilters[i].steamban && ( in & ipfilters[i].ip.mask ) == ipfilters[i].ip.compare
 			&& (!ipfilters[i].timeout || ipfilters[i].timeout > game.serverTime) )
 			return true;
 
@@ -294,7 +297,7 @@ void SV_WriteIPList( void )
 			else
 				Q_snprintfz( string, sizeof( string ), "%s %llu\r\n", type, id );
 		}else{
-			*(unsigned *)b = ipfilters[i].compare;
+			*(unsigned *)b = ipfilters[i].ip.compare;
 			if( ipfilters[i].timeout )
 				Q_snprintfz( string, sizeof( string ), "addip %i.%i.%i.%i %.2f\r\n", b[0], b[1], b[2], b[3], timeout );
 			else
@@ -320,7 +323,7 @@ static void Cmd_AddIP_f( void )
 	}
 
 	for( i = 0; i < numipfilters; i++ )
-		if( (!ipfilters[i].steamban && ipfilters[i].compare == 0xffffffff) || (ipfilters[i].timeout && ipfilters[i].timeout <= game.serverTime) )
+		if( (!ipfilters[i].steamban && ipfilters[i].ip.compare == 0xffffffff) || (ipfilters[i].timeout && ipfilters[i].timeout <= game.serverTime) )
 			break; // free spot
 	if( i == numipfilters )
 	{
@@ -337,7 +340,7 @@ static void Cmd_AddIP_f( void )
 	ipfilters[i].steamban = false;
 	ipfilters[i].timeout = 0;
 	if( !StringToFilter( trap_Cmd_Argv( 1 ), &ipfilters[i] ) )
-		ipfilters[i].compare = 0xffffffff;
+		ipfilters[i].ip.compare = 0xffffffff;
 	else if( trap_Cmd_Argc() == 3 )
 		ipfilters[i].timeout = game.serverTime + atof( trap_Cmd_Argv(2) )*60*1000;
 
@@ -348,7 +351,7 @@ static void CmdAddSteamIpListEntry(bool mute) {
 	int i;
 
 	for( i = 0; i < numipfilters; i++ )
-		if( (!ipfilters[i].steamban && ipfilters[i].compare == 0xffffffff) || (ipfilters[i].timeout && ipfilters[i].timeout <= game.serverTime) )
+		if( (!ipfilters[i].steamban && ipfilters[i].ip.compare == 0xffffffff) || (ipfilters[i].timeout && ipfilters[i].timeout <= game.serverTime) )
 			break; // free spot
 	if( i == numipfilters )
 	{
@@ -410,8 +413,8 @@ static void Cmd_RemoveIP_f( void )
 		return;
 
 	for( i = 0; i < numipfilters; i++ )
-		if( !ipfilters[i].steamban && ipfilters[i].mask == f.mask
-			&& ipfilters[i].compare == f.compare )
+		if( !ipfilters[i].steamban && ipfilters[i].ip.mask == f.ip.mask
+			&& ipfilters[i].ip.compare == f.ip.compare )
 		{
 			for( j = i+1; j < numipfilters; j++ )
 				ipfilters[j-1] = ipfilters[j];
@@ -490,7 +493,7 @@ static void Cmd_ListIP_f( void )
 			else if( !ipfilters[i].timeout )
 				G_Printf( "%llu\n", id);
 		}else{
-			*(unsigned *)b = ipfilters[i].compare;
+			*(unsigned *)b = ipfilters[i].ip.compare;
 			if( ipfilters[i].timeout && ipfilters[i].timeout > game.serverTime )
 				G_Printf( "%3i.%3i.%3i.%3i %.2f\n", b[0], b[1], b[2], b[3],
 				(float)(ipfilters[i].timeout-game.serverTime)/(60*1000.0f) );
