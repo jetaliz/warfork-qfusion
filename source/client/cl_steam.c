@@ -3,6 +3,7 @@
 #include "client.h"
 #include "../steamshim/src/parent/parent.h"
 #include <string.h>
+#include <stdio.h>
 
 static void printEvent( const STEAMSHIM_Event *e )
 {
@@ -106,8 +107,11 @@ void Steam_AdvertiseGame( const uint8_t *ip, unsigned short port )
 {
 	const char* keys[1] = {"connect"};
 	const char* values[1];
+
+	char connectstr[64];
 	if (port) {
-		values[0] = va("+connect %d.%d.%d.%d:%i",ip[0],ip[1],ip[2],ip[3],port);
+		snprintf( connectstr,sizeof connectstr, "+connect %d.%d.%d.%d:%i",ip[0],ip[1],ip[2],ip[3],port);
+		values[0] = connectstr;
 	} else {
 		values[0] = "";
 	}

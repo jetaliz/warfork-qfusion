@@ -391,8 +391,8 @@ char *va_r( char *dest, size_t size, const char *format, ... )
 char *va( const char *format, ... )
 {
 	va_list	argptr;
-	thread_local static int str_index;
-	thread_local static char string[8][2048];
+	static int str_index;
+	static char string[8][2048];
 
 	str_index = ( str_index+1 ) & 7;
 	va_start( argptr, format );
