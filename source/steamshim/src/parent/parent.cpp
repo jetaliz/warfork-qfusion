@@ -22,7 +22,6 @@ freely, subject to the following restrictions:
 #include <cstring>
 #include <stdio.h>
 #define DEBUGPIPE 1
-#include "parent_private.h"
 #include "parent.h"
 #include "../steamshim.h"
 #include "../steamshim_private.h"
