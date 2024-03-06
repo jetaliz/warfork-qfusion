@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "q_arch.h"
 #include "q_math.h" // fixme : needed for MAX_S_COLORS define
+#include <threads.h>
 #include "q_shared.h"
 
 //============================================================================
@@ -390,8 +391,8 @@ char *va_r( char *dest, size_t size, const char *format, ... )
 char *va( const char *format, ... )
 {
 	va_list	argptr;
-	static int str_index;
-	static char string[8][2048];
+	thread_local static int str_index;
+	thread_local static char string[8][2048];
 
 	str_index = ( str_index+1 ) & 7;
 	va_start( argptr, format );
