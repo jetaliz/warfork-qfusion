@@ -88,7 +88,10 @@ else()
 endif()
 
 add_executable(${QFUSION_SERVER_NAME} ${SERVER_BINARY_TYPE} ${SERVER_HEADERS} ${SERVER_SOURCES} ${SERVER_PLATFORM_SOURCES})
-add_dependencies(${QFUSION_SERVER_NAME} angelwrap game wf_steam)
+add_dependencies(${QFUSION_SERVER_NAME} angelwrap game)
+if (BUILD_STEAMLIB)
+    add_dependencies(${QFUSION_SERVER_NAME} wf_steam)
+endif()
 target_link_libraries(${QFUSION_SERVER_NAME} PRIVATE ${CURL_LIBRARY} ${SERVER_PLATFORM_LIBRARIES} ${STEAMSHIMPARENT_LIBRARY})
 qf_set_output_dir(${QFUSION_SERVER_NAME} "")
 

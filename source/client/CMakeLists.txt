@@ -257,4 +257,6 @@ endif()
 target_link_libraries(${QFUSION_CLIENT_NAME} PRIVATE ${CURL_LIBRARY} ${CLIENT_PLATFORM_LIBRARIES} ${DISCORD_LIBRARY} ${STEAMSHIMPARENT_LIBRARY})
 qf_set_output_dir(${QFUSION_CLIENT_NAME} "")
 
-add_dependencies(${QFUSION_CLIENT_NAME} wf_steam)
+if (BUILD_STEAMLIB)
+    add_dependencies(${QFUSION_CLIENT_NAME} wf_steam)
+endif()
