@@ -19,10 +19,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // cm_q2bsp.c -- Q2 BSP model loading
 
+#include "mod_mem.h"
 #include "qcommon.h"
 #include "cm_local.h"
-
-//=========================================================
 
 /*
 * CMod_SurfaceFlags
@@ -107,35 +106,28 @@ MAP LOADING
 * CMod_SubmodelBrushes_r
 */
 static int cmap_checkcount;
-static void CMod_SubmodelBrushes_r( cmodel_state_t *cms, int nodenum, int *count, int *markbrushes ) {
+static void CMod_SubmodelBrushes_r( cmodel_state_t *cms, int nodenum, int *count, cbrush_t **markbrushes ) {
 	if( nodenum < 0 ) {
 		int i;
 		cleaf_t *leaf;
 
 		leaf = &cms->map_leafs[-1 - nodenum];
 		for( i = 0; i < leaf->nummarkbrushes; i++ ) {
-			int mb = leaf->markbrushes[i];
-
-			// avoid adding duplicate brushes, although we have a similar check in tracing code..
-			if( cms->map_brush_checkcheckouts[mb] == cmap_checkcount ) {
-				continue;
-			}
-
+			cbrush_t* mb = leaf->markbrushes[i];
 			if( markbrushes ) {
 				markbrushes[*count] = mb;
 			}
 			*count = *count + 1;
-
-			cms->map_brush_checkcheckouts[mb] = cmap_checkcount;
 		}
 		return;
 	}
 
 	CMod_SubmodelBrushes_r( cms, cms->map_nodes[nodenum].children[0], count, markbrushes );
 	CMod_SubmodelBrushes_r( cms, cms->map_nodes[nodenum].children[1], count, markbrushes );
+
 }
 
-static int CMod_SubmodelBrushes( cmodel_state_t *cms, int headnode, int *markbrushes ) {
+static int CMod_SubmodelBrushes( cmodel_state_t *cms, int headnode, cbrush_t **markbrushes ) {
 	int count = 0;
 
 	cmap_checkcount++;
@@ -173,7 +165,7 @@ static void CMod_LoadSubmodels( cmodel_state_t *cms, lump_t *l ) {
 		headnode = LittleLong( in->headnode );
 
 		out->nummarkbrushes = CMod_SubmodelBrushes( cms, headnode, NULL );
-		out->markbrushes = Mem_Alloc( cms->mempool, out->nummarkbrushes * sizeof( int ) );
+		out->markbrushes = Mem_Alloc( cms->mempool, out->nummarkbrushes * sizeof(cbrush_t*) );
 
 		CMod_SubmodelBrushes( cms, headnode, out->markbrushes );
 
@@ -299,7 +291,7 @@ static void CMod_LoadPlanes( cmodel_state_t *cms, lump_t *l ) {
 static void CMod_LoadMarkBrushes( cmodel_state_t *cms, lump_t *l ) {
 	int i;
 	int count;
-	int *out;
+	cbrush_t **out;
 	unsigned short  *in;
 
 	in = ( void * )( cms->cmod_base + l->fileofs );
@@ -315,7 +307,7 @@ static void CMod_LoadMarkBrushes( cmodel_state_t *cms, lump_t *l ) {
 	cms->nummarkbrushes = count;
 
 	for( i = 0; i < count; i++, in++, out++ )
-		*out = LittleLong( *in );
+		*out = cms->map_brushes + LittleLong( *in );
 }
 
 /*
@@ -424,6 +416,7 @@ static void CMod_LoadBrushes( cmodel_state_t *cms, lump_t *l ) {
 
 	out = cms->map_brushes = Mem_Alloc( cms->mempool, count * sizeof( *out ) );
 	cms->numbrushes = count;
+	cms->map_brush_checkcheckouts = Mem_Alloc( cms->mempool, cms->numbrushes * sizeof( int ) );
 
 	for( i = 0; i < count; i++, in++, out++ ) {
 		contents = LittleLong( in->contents );
@@ -494,6 +487,7 @@ void CM_LoadQ2BrushModel( cmodel_state_t *cms, void *parent, void *buf, bspForma
 	for( i = 0; i < sizeof( header ) / 4; i++ )
 		( (int *)&header )[i] = LittleLong( ( (int *)&header )[i] );
 	cms->cmod_base = ( uint8_t * )buf;
+	cms->checkcount = 0;
 
 	// load into heap
 	CMod_LoadTexinfo( cms, &header.lumps[Q2_LUMP_TEXINFO] );

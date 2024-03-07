@@ -397,6 +397,8 @@ static bool Mod_GetWALInfo( q2mtexinfo_t *texinfo ) {
 /*
 * Mod_BuildMeshForSurface
 */
+
+#define MESH_T_SIZE_ALIGNED ALIGN( sizeof( mesh_t ), sizeof( vec_t ) )
 static mesh_t *Mod_BuildMeshForSurface( q2msurface_t *fa, msurface_t *out ) {
 	int i, j, index;
 	int max_style;
@@ -406,8 +408,6 @@ static mesh_t *Mod_BuildMeshForSurface( q2msurface_t *fa, msurface_t *out ) {
 	float *vec;
 	float s, t, base_s, base_t;
 	size_t bufSize;
-	uint8_t *buffer;
-	mesh_t *mesh;
 	elem_t *elems;
 
 	// reconstruct the polygon
@@ -418,6 +418,7 @@ static mesh_t *Mod_BuildMeshForSurface( q2msurface_t *fa, msurface_t *out ) {
 	max_style = j;
 
 	bufSize = numVerts * ( sizeof( vec4_t ) + sizeof( vec4_t ) + sizeof( vec2_t ) );
+	bufSize += MESH_T_SIZE_ALIGNED;
 	bufSize += numElems * sizeof( elem_t );
 	for( j = 0; j < max_style; j++ )
 		bufSize += numVerts * sizeof( vec2_t );
@@ -431,9 +432,12 @@ static mesh_t *Mod_BuildMeshForSurface( q2msurface_t *fa, msurface_t *out ) {
 		}
 	}
 
-	buffer = ( uint8_t * )Mod_Malloc( loadmodel, bufSize );
+	uint8_t *buffer = ( uint8_t * )Mod_Malloc( loadmodel, bufSize );
+	out->mesh = (mesh_t*)buffer;
+	buffer += MESH_T_SIZE_ALIGNED;
 
-	mesh = &out->mesh;
+
+	mesh_t *mesh = out->mesh;
 	mesh->numVerts = numVerts;
 	mesh->numElems = numElems;
 
@@ -660,9 +664,7 @@ static void Mod_BuildMeshForWarpSurface( q2msurface_t *fa, msurface_t *out ) {
 	int index;
 	float *vec;
 	q2mwarppoly_t *poly, *next;
-	size_t bufSize;
-	uint8_t *buffer;
-	mesh_t *mesh;
+	
 	elem_t *elems;
 
 	loadbmodel_warppoly = NULL;
@@ -698,12 +700,15 @@ static void Mod_BuildMeshForWarpSurface( q2msurface_t *fa, msurface_t *out ) {
 	}
 
 	// build mesh
-	bufSize = numVerts * ( sizeof( vec4_t ) + sizeof( vec4_t ) + sizeof( vec2_t ) );
+	size_t bufSize = numVerts * ( sizeof( vec4_t ) + sizeof( vec4_t ) + sizeof( vec2_t ) );
+	bufSize += MESH_T_SIZE_ALIGNED;
 	bufSize += numElems * sizeof( elem_t );
 
-	buffer = ( uint8_t * )Mod_Malloc( loadmodel, bufSize );
-
-	mesh = &out->mesh;
+	uint8_t *buffer = ( uint8_t * )Mod_Malloc( loadmodel, bufSize );
+	out->mesh = (mesh_t*)buffer;
+	buffer += MESH_T_SIZE_ALIGNED;
+	
+	mesh_t *mesh = out->mesh;
 	mesh->numVerts = 0;
 	mesh->numElems = 0;
 
@@ -805,7 +810,7 @@ static void Mod_ApplySuperStylesToFace( const q2msurface_t *in, msurface_t *out 
 	int j, k;
 	float *lmArray;
 	uint8_t *lmlayersArray;
-	mesh_t *mesh = &out->mesh;
+	mesh_t *mesh = out->mesh;
 	mlightmapRect_t *lmRects[MAX_LIGHTMAPS];
 	int lightmaps[MAX_LIGHTMAPS];
 	uint8_t lightmapStyles[MAX_LIGHTMAPS], vertexStyles[MAX_LIGHTMAPS];
@@ -849,12 +854,11 @@ static void Mod_ApplySuperStylesToFace( const q2msurface_t *in, msurface_t *out 
 */
 static void Mod_CreateFaces( void ) {
 	q2msurface_t    *in;
-	msurface_t      *out;
 	int i, count;
 
 	in = loadmodel_surfaces;
 	count = loadmodel_numsurfaces;
-	out = Mod_Malloc( loadmodel, count * sizeof( *out ) );
+	msurface_t *out = Mod_Malloc( loadmodel, count * sizeof( *out ) );
 	cplane_t* planes = Mod_Malloc( loadmodel, count * sizeof(cplane_t) );
 
 	loadbmodel->surfaces = out;
@@ -863,6 +867,7 @@ static void Mod_CreateFaces( void ) {
 	R_SortSuperLightStyles( loadmodel );
 
 	for( i = 0; i < count; i++, in++, out++ ) {
+
 		out->facetype = FACETYPE_PLANAR;
 		out->shader = in->texinfo->shader;
 		out->flags = Mod_SurfaceFlags( in->texinfo->flags );
@@ -872,11 +877,6 @@ static void Mod_CreateFaces( void ) {
 		planes[i].type = PLANE_NONAXIAL;
 		planes[i].signbits = 0;
 		out->plane = &planes[i];
-
-		// get .wal width and height
-		if( !Mod_GetWALInfo( in->texinfo ) ) {
-			continue;
-		}
 
 		if(!in->texinfo->shader) {
 			continue;
@@ -891,7 +891,7 @@ static void Mod_CreateFaces( void ) {
   			Q_snprintfz( texture, sizeof( texture ), "%s.wal", texinfo->texture );
   			int file;
 				q2miptex_t miptex;
-  			size_t size = FS_FOpenFile( texture, &file, FS_READ );
+  			int size = FS_FOpenFile( texture, &file, FS_READ );
   			if( size > 0 && size > sizeof( miptex ) ) {
   				FS_Seek( file, (size_t)&( ( (q2miptex_t *)0 )->width ), FS_SEEK_SET );
   				FS_Read( &miptex.width, sizeof( miptex.width ), file );
@@ -1569,6 +1569,7 @@ static void Mod_Q2LoadTexinfo( const lump_t *l ) {
 		}
 
 		out->shader = R_LoadShaderText( out->texture, SHADER_TYPE_DELUXEMAP, false, shadertext );
+		
 	}
 }
 
@@ -1930,7 +1931,7 @@ void Mod_LoadQ2BrushModel( model_t *mod, model_t *parent, void *buffer, bspForma
 	{
 		uint8_t *pal = NULL;
 		struct texture_buf_s buffer = {};
-		T_LoadImagePCX( "pics/colormap.pcx", &buffer, &pal );
+		T_LoadImagePCX( "textures/colormap.pcx", &buffer, &pal );
 		for( size_t i = 0; i < 256; i++ ) {
 			uint32_t v = COLOR_RGBA( pal[i * 3 + 0], pal[i * 3 + 1], pal[i * 3 + 2], 255 );
 			pallet[i] = LittleLong( v );
@@ -2186,7 +2187,6 @@ static void Mod_Q1LoadEdges( const lump_t *l ) {
 
 static void Mod_Q1FixUpMiptexShader( q1mmiptex_t *miptex ) {
 	unsigned j, k;
-	//uint8_t     *data;
 	q1mmiptex_t *step;
 	unsigned basepass;
 	shaderpass_t *pass;
@@ -2200,7 +2200,7 @@ static void Mod_Q1FixUpMiptexShader( q1mmiptex_t *miptex ) {
 	// override textures with inlined miptex if no custom texture was found
 	basepass = 0;
 	pass = shader->passes + basepass;
-	struct texture_buf_s dest;
+	struct texture_buf_s dest = {};
 	if( miptex->flags & Q2_SURF_SKY ) {
 		if( !pass->images[0]->missing ) {
 			return;
@@ -2886,8 +2886,6 @@ void Mod_FixupQ1MipTex( model_t *mod ) {
 	}
 }
 
-
-
 /*
 * Mod_LoadQ1BrushModel
 */
@@ -2929,3 +2927,5 @@ void Mod_LoadQ1BrushModel( model_t *mod, model_t *parent, void *buffer, bspForma
 
 	Mod_Finish();
 }
+	
+//Mem_ValidationAllAllocations();

@@ -458,6 +458,7 @@ static void CMod_LoadFaces( cmodel_state_t *cms, lump_t *l )
 
 	out = cms->map_faces = Mem_Alloc( cms->mempool, count * sizeof( *out ) );
 	cms->numfaces = count;
+	cms->map_face_checkcheckouts = Mem_Alloc( cms->mempool, cms->numfaces * sizeof( int ) );
 
 	for( i = 0; i < count; i++, in++, out++ )
 	{
@@ -488,6 +489,7 @@ static void CMod_LoadFaces_RBSP( cmodel_state_t *cms, lump_t *l )
 
 	out = cms->map_faces = Mem_Alloc( cms->mempool, count * sizeof( *out ) );
 	cms->numfaces = count;
+	cms->map_face_checkcheckouts = Mem_Alloc( cms->mempool, cms->numfaces * sizeof( int ) );
 
 	for( i = 0; i < count; i++, in++, out++ )
 	{

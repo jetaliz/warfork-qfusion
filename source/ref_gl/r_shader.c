@@ -3195,8 +3195,7 @@ shader_t *R_LoadShaderText( const char *name, shaderType_e type, bool forceDefau
 
 	if( !ptr || token[0] != '{' ) {
 		__Shader_Defaults( shader, type, name, shortName, strlen( shortName ) );
-		sdsfree(shortName);
-		return shader;
+		goto finish;
 	}
 
 	while( ptr ) {
@@ -3215,6 +3214,7 @@ shader_t *R_LoadShaderText( const char *name, shaderType_e type, bool forceDefau
 
 	Shader_Finish( shader );
 
+finish:
 	shader->registrationSequence = rsh.registrationSequence;
 
 	shader_t *hnode = &r_shaders_hash_headnode[hashKey];
@@ -3223,6 +3223,11 @@ shader_t *R_LoadShaderText( const char *name, shaderType_e type, bool forceDefau
 	shader->next->prev = shader;
 	shader->prev->next = shader;
 	sdsfree( shortName );
+	
+	assert(shader->next);
+	assert(shader->prev);
+
+	return shader;
 }
 
 /*

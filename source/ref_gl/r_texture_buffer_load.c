@@ -9,6 +9,14 @@
 static uint32_t pallet[256];
 
 bool T_LoadImagePCX(char *filename, struct texture_buf_s* buffer, uint8_t** pallet) {
+
+	void* const raw;
+	size_t len = R_LoadFile( filename, (void **)&raw );
+	if(raw == NULL) {
+		ri.Com_Printf(S_COLOR_YELLOW "can't resolve file: %s", filename);
+		return false;
+	}
+	
 	struct {
 		char manufacturer;
 		char version;
@@ -23,11 +31,13 @@ bool T_LoadImagePCX(char *filename, struct texture_buf_s* buffer, uint8_t** pall
 		unsigned short palette_type;
 		char filler[58];
 		unsigned char data; // unbounded
-	} *pcx;
+	} *pcx  = (void *)raw;
 
-	uint8_t *raw;
-	size_t len = R_LoadFile( filename, (void **)&raw );
-	pcx = (void *)raw;
+	if( sizeof(*pcx) > len ) {
+		ri.Com_DPrintf( S_COLOR_YELLOW "PCX file %s was malformed", filename );
+		return false;
+	}
+
 
 	pcx->xmin = LittleShort( pcx->xmin );
 	pcx->ymin = LittleShort( pcx->ymin );
@@ -37,8 +47,12 @@ bool T_LoadImagePCX(char *filename, struct texture_buf_s* buffer, uint8_t** pall
 	pcx->vres = LittleShort( pcx->vres );
 	pcx->bytes_per_line = LittleShort( pcx->bytes_per_line );
 	pcx->palette_type = LittleShort( pcx->palette_type );
+	
+	if( (sizeof(*pcx) + (pcx->ymax * pcx->xmax) + sizeof(uint32_t) * 256) > len ) {
+		ri.Com_DPrintf( S_COLOR_YELLOW "PCX file %s was malformed", filename );
+		return false;
+	}
 
-	raw = &pcx->data;
 
 	if( pcx->manufacturer != 0x0a || pcx->version != 5 || pcx->encoding != 1 || pcx->bits_per_pixel != 8 ||
 		len < 768 ) {
@@ -63,15 +77,16 @@ bool T_LoadImagePCX(char *filename, struct texture_buf_s* buffer, uint8_t** pall
 		(*pallet) = pal ;
 	} 
   
+	uint8_t* c = &pcx->data;
 	int dataByte, runLength;
 	for(size_t y = 0; y < T_LogicalH(buffer); y++ ) {
 		for(size_t x = 0; x < T_LogicalW(buffer); ) {
-			dataByte = *raw++;
+			dataByte = *c++;
 
 			runLength = 1;
 			if( ( dataByte & 0xC0 ) == 0xC0 ) {
 				runLength = dataByte & 0x3F;
-				dataByte = *raw++;
+				dataByte = *c++;
 			} 
 
 			while( runLength-- > 0 ) {
@@ -84,13 +99,9 @@ bool T_LoadImagePCX(char *filename, struct texture_buf_s* buffer, uint8_t** pall
 		}
 	}
 
-	R_FreeFile( raw);
+	R_FreeFile( pcx);
 
-	if( raw - (uint8_t *)pcx > len ) {
-		ri.Com_DPrintf( S_COLOR_YELLOW "PCX file %s was malformed", filename );
-		return false;
-	}
-
+	
 	return true;
 
 }
@@ -147,110 +158,70 @@ void T_SetPallet(uint32_t p[256]) {
 }
 
 
-//void T_LoadPalletQ1()
-//{
-//	static const uint8_t host_quakepal[768] =
-//#include "../qcommon/quake1pal.h"
-//		;
-//
-//	// get the palette
-//	uint8_t *raw;
-//	size_t len = R_LoadFile( "gfx/palette.lmp", (void **)&raw );
-//	const uint8_t* pal = ( raw && len >= 768 ) ? raw : host_quakepal;
-//
-//	for(size_t i = 0; i < 256; i++ ) {
-//
-//		uint32_t v = COLOR_RGBA( pal[i * 3 + 0], pal[i * 3 + 1], pal[i * 3 + 2], 255 );
-//		pallet[i] = LittleLong( v );
-//	}
-//	pallet[255] = 0; // 255 is transparent
-//
-//	R_FreeFile( raw );
-//
-//}
-//
-//void T_LoadPalletQ2()
-//{
-//	uint8_t* pal = NULL;
-//	struct texture_buf_s buffer = {};
-//	T_LoadImagePCX( "pics/colormap.pcx", &buffer, &pal);
-//	for(size_t i = 0; i < 256; i++ ) {
-//		uint32_t v = COLOR_RGBA( pal[i * 3 + 0], pal[i * 3 + 1], pal[i * 3 + 2], 255 );
-//		pallet[i] = LittleLong( v );
-//	}
-//	T_FreeTextureBuf(&buffer);
-//	pallet[255] &= LittleLong( 0xffffff ); // 255 is transparent
-//}
 
 uint32_t* T_Pallet() {
 	return pallet;
 }
 
+//https://developer.valvesoftware.com/wiki/WAL
 bool T_LoadImageWAL(char *filename, struct texture_buf_s* tex) {
 	// load the file
-	uint8_t* buf = NULL;
-	R_LoadFile( filename, (void **)&buf);
-	if( !buf) {
+	uint8_t* const buf = NULL;
+	const size_t size = R_LoadFile( filename, (void **)&buf);
+	if(buf == NULL) {
+		ri.Com_Printf(S_COLOR_YELLOW "can't resolve file: %s", filename);
 		return false;
 	}
+	assert(buf);
 
-	q2miptex_t* mt = (q2miptex_t *)buf;
-	size_t rows = LittleLong( mt->width );
-	size_t columns = LittleLong( mt->height );
+	const q2miptex_t* mt = (q2miptex_t *)buf;
 	uint8_t* data = buf + LittleLong( mt->offsets[0] );
-	uint32_t size = rows * columns;
 
 	// determine the number of channels
-	size_t i = 0;
-	for( i = 0; i < size && data[i] != 255; i++ ) {}	
-	const unsigned samples = ( i < size ) ? 4 : 3;
+ // size_t i = 0;
+ // for( i = 0; i < size && data[i] != 255; i++ ) {}	
+ // const unsigned samples = ( i < size ) ? 4 : 3;
 
   struct texture_buf_desc_s desc = {
-    .width = columns,
-    .height = rows,
+    .width =  LittleLong( mt->width ),
+    .height =  LittleLong( mt->height ),
     .alignment = 1,
-    .def = (samples == 4) ? R_BaseFormatDef(R_FORMAT_RGBA8_UNORM): R_BaseFormatDef(R_FORMAT_RGB8_UNORM) 
+    .def = R_BaseFormatDef(R_FORMAT_RGBA8_UNORM) 
   };
   T_ReallocTextureBuf(tex, &desc);
 
-  for( size_t y = 0; y < T_LogicalH( tex ); y++ ) {
-	  for( size_t x = 0; x < T_LogicalW( tex ); ) {
-		  const size_t index = ( rows * y ) + x;
-		  uint32_t *block = (uint32_t *)&tex->buffer[( tex->rowPitch * y ) + ( x * RT_BlockSize( tex->def ) )];
-		  uint8_t p = data[index];
-		  if( samples == 4 ) {
-			  ( *block ) = pallet[p];
-			  if( p == 255 ) {
-				  // transparent, so scan around for another color
-				  // to avoid alpha fringes
-				  // FIXME: do a full flood fill so mips work...
-				  if( i > rows && data[i - rows] != 255 ) {
-					  p = data[i - rows];
-				  } else if( i < size - rows && data[i + rows] != 255 ) {
-					  p = data[i + rows];
-				  } else if( i > 0 && data[i - 1] != 255 ) {
-					  p = data[i - 1];
-				  } else if( i < size - 1 && data[i + 1] != 255 ) {
-					  p = data[i + 1];
-				  } else {
-					  p = 0;
-				  }
+	const uint32_t width = T_LogicalW( tex );
+	const uint32_t height = T_LogicalH( tex );
+	for( size_t row = 0; row < height; row++ ) {
+		for( size_t column = 0; column < width; column++ ) {
+		  const size_t index = ( width * row ) + column;
+			const size_t blockIdx = ( tex->rowPitch * row ) + ( column * RT_BlockSize( tex->def ) );
+			assert(blockIdx < tex->size);
+		  uint8_t *const block = &tex->buffer[blockIdx];
 
-				  // copy rgb components
-				  ( (uint8_t *)&block[i] )[0] = ( (uint8_t *)&pallet[p] )[0];
-				  ( (uint8_t *)&block[i] )[1] = ( (uint8_t *)&pallet[p] )[1];
-				  ( (uint8_t *)&block[i] )[2] = ( (uint8_t *)&pallet[p] )[2];
+		  uint8_t p = data[index];
+		  if( p == 255 ) {
+			  // transparent, so scan around for another color
+			  // to avoid alpha fringes
+			  // FIXME: do a full flood fill so mips work...
+			  if( index > width && data[index - width] != 255 ) {
+				  p = data[index - width];
+			  } else if( index < size - width && data[index + width] != 255 ) {
+				  p = data[index + width];
+			  } else if( index > 0 && data[index - 1] != 255 ) {
+				  p = data[index - 1];
+			  } else if( index < size - 1 && data[index + 1] != 255 ) {
+				  p = data[index + 1];
+			  } else {
+				  p = 0;
 			  }
-		  } else {
-			  ( (uint8_t *)&block[i] )[0] = ( (uint8_t *)&pallet[p] )[0];
-			  ( (uint8_t *)&block[i] )[1] = ( (uint8_t *)&pallet[p] )[1];
-			  ( (uint8_t *)&block[i] )[2] = ( (uint8_t *)&pallet[p] )[2];
 		  }
+		  *( (uint32_t *)block ) = pallet[p];
 	  }
   }
+	  Mem_ValidationAllAllocations();
 
-
-	R_FreeFile( mt );
+	R_FreeFile( buf );
 	return true;
 }
 
