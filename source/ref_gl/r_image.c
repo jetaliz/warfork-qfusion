@@ -414,7 +414,7 @@ static void __R_stbi_free_image(void* p) {
 	stbi_image_free(img);
 }
 
-
+// TODO: replace r_texture_buffer_load.h has a replacment 
 static bool __R_ReadImageFromDisk_stbi(char *filename, struct texture_buf_s* buffer ) {
 	uint8_t* data;
 	size_t size = R_LoadFile( filename, ( void ** ) &data );
