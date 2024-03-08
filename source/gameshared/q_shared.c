@@ -36,7 +36,7 @@ const char* extensionPNG = ".png";
 const char* extensionWAL = ".wal";
 const char* extensionKTX = ".ktx";
 const char* extensionWAV = ".wav";
-const char* extensionOgg = ".ogg";
+const char* extensionOGG = ".ogg";
 const char* extensionPCX = ".pcx";
 
 

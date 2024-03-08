@@ -308,7 +308,7 @@ extern const char* extensionWAL;
 extern const char* extensionKTX;
 extern const char* extensionWAV;
 extern const char* extensionPCX;
-extern const char* extensionOgg;
+extern const char* extensionOGG;
 
 
 extern const char *SOUND_EXTENSIONS[];
