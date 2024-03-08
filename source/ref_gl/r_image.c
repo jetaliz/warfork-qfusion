@@ -1594,7 +1594,7 @@ static bool R_LoadImageFromDisk( int ctx, image_t *image )
 	}
 	else
 	{
-		struct texture_buf_s pic = {};
+		struct texture_buf_s pic = {0};
 		sdssubstr(pathname, 0, baseLen);
 
 		const char *extensions[] = {

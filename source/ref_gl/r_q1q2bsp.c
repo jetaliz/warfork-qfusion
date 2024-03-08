@@ -1990,7 +1990,7 @@ void Mod_LoadQ2BrushModel( model_t *mod, model_t *parent, void *buffer, bspForma
 
 	{
 		uint8_t *pal = NULL;
-		struct texture_buf_s buffer = {};
+		struct texture_buf_s buffer = {0};
 		T_LoadImagePCX( "textures/colormap.pcx", &buffer, &pal );
 		for( size_t i = 0; i < 256; i++ ) {
 			uint32_t v = COLOR_RGBA( pal[i * 3 + 0], pal[i * 3 + 1], pal[i * 3 + 2], 255 );
@@ -2264,7 +2264,7 @@ static void Mod_Q1FixUpMiptexShader( q1mmiptex_t *miptex )
 	// override textures with inlined miptex if no custom texture was found
 	basepass = 0;
 	pass = shader->passes + basepass;
-	struct texture_buf_s dest = {};
+	struct texture_buf_s dest = {0};
 	if( miptex->flags & Q2_SURF_SKY ) {
 		if( !pass->images[0]->missing ) {
 			return;
