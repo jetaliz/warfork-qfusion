@@ -44,7 +44,8 @@ static const modelFormatDescr_t cm_supportedformats[] =
 	{ "*", 4, q2BSPFormats, 0, ( const modelLoader_t )CM_LoadQ2BrushModel },
 
 	// Q1-alike .bsp models
-	{ "*", 0, q1BSPFormats, 0, ( const modelLoader_t )CM_LoadQ1BrushModel },
+	// disable this for now until q2 is ready
+	//{ "*", 0, q1BSPFormats, 0, ( const modelLoader_t )CM_LoadQ1BrushModel },
 
 	// trailing NULL
 	{ NULL,	0, NULL, 0, NULL }

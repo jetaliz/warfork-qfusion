@@ -61,7 +61,8 @@ static const modelFormatDescr_t mod_supportedformats[] =
 	
 	{ "*", 4, q2BSPFormats, 0, ( const modelLoader_t )Mod_LoadQ2BrushModel },
 
-	{ "*", 0, q1BSPFormats, 0, ( const modelLoader_t )Mod_LoadQ1BrushModel },
+	// disable this for now until q2 is ready
+	//{ "*", 0, q1BSPFormats, 0, ( const modelLoader_t )Mod_LoadQ1BrushModel },
 
 	// trailing NULL
 	{ NULL,	0, NULL, 0, NULL }
