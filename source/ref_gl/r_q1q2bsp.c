@@ -21,13 +21,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // r_q1q2bsp.c -- Q1 and Q2 BSP model loading
 
+#include "../gameshared/q_arch.h"
 #include "r_local.h"
+#include "r_model.h"
 #include "r_texture_buf.h"
 #include "r_texture_buffer_load.h"
 #include "r_texture_format.h"
-#include "../gameshared/q_arch.h"
 
-#define LIGHTGRID_HASH_SIZE     8192
+#define LIGHTGRID_HASH_SIZE 8192
 
 typedef struct {
 	int firstface;
@@ -40,26 +41,26 @@ typedef struct q2mtexinfo_s {
 	int flags;
 	int numframes;
 	int wal_width, wal_height;
-	struct q2mtexinfo_s *next;      // animation chain
-	shader_t    *shader;
+	struct q2mtexinfo_s *next; // animation chain
+	shader_t *shader;
 } q2mtexinfo_t;
 
 typedef struct q2msurface_s {
-	int firstedge;          // look up in model->surfedges[], negative numbers
-	int numedges;           // are backwards edges
+	int firstedge; // look up in model->surfedges[], negative numbers
+	int numedges;  // are backwards edges
 
 	int texturemins[2];
 	int extents[2];
 
-	cplane_t    *plane;
+	cplane_t *plane;
 
 	q2mtexinfo_t *texinfo;
 
 	int lightmapnum[MAX_LIGHTMAPS];
-	int light_s[MAX_LIGHTMAPS], light_t[MAX_LIGHTMAPS];         // gl lightmap coordinates
+	int light_s[MAX_LIGHTMAPS], light_t[MAX_LIGHTMAPS]; // gl lightmap coordinates
 
 	uint8_t styles[MAX_LIGHTMAPS];
-	uint8_t     *samples;       // [numstyles*surfsize]
+	uint8_t *samples; // [numstyles*surfsize]
 } q2msurface_t;
 
 typedef struct q2lighthash_s {
@@ -115,22 +116,23 @@ LIGHTMAP ALLOCATION
 =============================================================================
 */
 
-#define BLOCK_WIDTH     256
-#define BLOCK_HEIGHT    256
+#define BLOCK_WIDTH 256
+#define BLOCK_HEIGHT 256
 
 typedef struct {
-	int         *allocated;
+	int *allocated;
 
 	int last_lmnum;
 
 	// the lightmap texture data needs to be kept in
 	// main memory so texsubimage can update properly
-	uint8_t     *lightmap_buffer;
+	uint8_t *lightmap_buffer;
 } lightmapstate_t;
 
 static lightmapstate_t lms;
 
-static void LM_Init( void ) {
+static void LM_Init( void )
+{
 	memset( &lms, 0, sizeof( lms ) );
 
 	lms.allocated = Mod_Malloc( loadmodel, sizeof( *lms.allocated ) * BLOCK_WIDTH );
@@ -139,17 +141,20 @@ static void LM_Init( void ) {
 	lms.lightmap_buffer = Mod_Malloc( loadmodel, BLOCK_WIDTH * BLOCK_HEIGHT * LIGHTMAP_BYTES );
 }
 
-static void LM_InitBlock( void ) {
+static void LM_InitBlock( void )
+{
 	memset( lms.allocated, 0, sizeof( *lms.allocated ) * BLOCK_WIDTH );
 }
 
-static int LM_UploadBlock( void ) {
+static int LM_UploadBlock( void )
+{
 	lms.last_lmnum++;
 	lms.lightmap_buffer = R_Realloc( lms.lightmap_buffer, ( lms.last_lmnum + 1 ) * BLOCK_WIDTH * BLOCK_HEIGHT * LIGHTMAP_BYTES );
 	return lms.last_lmnum;
 }
 
-static void LM_Stop( void ) {
+static void LM_Stop( void )
+{
 	LM_UploadBlock();
 
 	loadmodel_lightmapRects = Mod_Malloc( loadmodel, lms.last_lmnum * sizeof( *loadmodel_lightmapRects ) );
@@ -160,7 +165,8 @@ static void LM_Stop( void ) {
 }
 
 // returns a texture number and the position inside it
-static bool LM_AllocBlock( int w, int h, int *x, int *y ) {
+static bool LM_AllocBlock( int w, int h, int *x, int *y )
+{
 	int i, j;
 	int best, best2;
 
@@ -196,14 +202,15 @@ static bool LM_AllocBlock( int w, int h, int *x, int *y ) {
 //=================================================
 
 /*
-* Mod_BuildLightMap
-*
-* Combine and scale multiple lightmaps into the floating format in blocklights
-*/
-static void Mod_BuildLightMap( const q2msurface_t *surf, int style, uint8_t *dest, int stride ) {
+ * Mod_BuildLightMap
+ *
+ * Combine and scale multiple lightmaps into the floating format in blocklights
+ */
+static void Mod_BuildLightMap( const q2msurface_t *surf, int style, uint8_t *dest, int stride )
+{
 	int smax, tmax;
 	int i, size;
-	uint8_t     *lightmap;
+	uint8_t *lightmap;
 
 	smax = ( surf->extents[0] >> 4 ) + 1;
 	tmax = ( surf->extents[1] >> 4 ) + 1;
@@ -223,9 +230,10 @@ static void Mod_BuildLightMap( const q2msurface_t *surf, int style, uint8_t *des
 }
 
 /*
-* Mod_CreateSurfaceLightmaps
-*/
-static void Mod_CreateSurfaceLightmaps( q2msurface_t *surf ) {
+ * Mod_CreateSurfaceLightmaps
+ */
+static void Mod_CreateSurfaceLightmaps( q2msurface_t *surf )
+{
 	int j;
 	int smax, tmax;
 	uint8_t *base;
@@ -256,11 +264,12 @@ static void Mod_CreateSurfaceLightmaps( q2msurface_t *surf ) {
 //=======================================================
 
 /*
-* Mod_DecompressVis
-*
-* Decompresses RLE-compressed PVS data
-*/
-static uint8_t *Mod_DecompressVis( const uint8_t *in, int rowsize, uint8_t *decompressed ) {
+ * Mod_DecompressVis
+ *
+ * Decompresses RLE-compressed PVS data
+ */
+static uint8_t *Mod_DecompressVis( const uint8_t *in, int rowsize, uint8_t *decompressed )
+{
 	int c;
 	uint8_t *out;
 	int row;
@@ -289,11 +298,12 @@ static uint8_t *Mod_DecompressVis( const uint8_t *in, int rowsize, uint8_t *deco
 }
 
 /*
-* Mod_CalcSurfaceExtents
-*
-* Fills in s->texturemins[] and s->extents[]
-*/
-static void Mod_CalcSurfaceExtents( q2msurface_t *s ) {
+ * Mod_CalcSurfaceExtents
+ *
+ * Fills in s->texturemins[] and s->extents[]
+ */
+static void Mod_CalcSurfaceExtents( q2msurface_t *s )
+{
 	float mins[2], maxs[2], val;
 	int i, j, e;
 	q2dvertex_t *v;
@@ -335,12 +345,13 @@ static void Mod_CalcSurfaceExtents( q2msurface_t *s ) {
 }
 
 /*
-* Mod_GetBaseImage
-*/
-static image_t *Mod_GetBaseImage( q2mtexinfo_t *texinfo ) {
+ * Mod_GetBaseImage
+ */
+static image_t *Mod_GetBaseImage( q2mtexinfo_t *texinfo )
+{
 	int i;
-	shader_t    *shader = texinfo->shader;
-	image_t     *baseimage = NULL;
+	shader_t *shader = texinfo->shader;
+	image_t *baseimage = NULL;
 
 	for( i = shader->numpasses - 1; i >= 0; i-- ) {
 		baseimage = shader->passes[i].images[0];
@@ -352,11 +363,12 @@ static image_t *Mod_GetBaseImage( q2mtexinfo_t *texinfo ) {
 }
 
 /*
-* Mod_GetWALInfo
-*
-* Fills in s->texturemins[] and s->extents[]
-*/
-static bool Mod_GetWALInfo( q2mtexinfo_t *texinfo ) {
+ * Mod_GetWALInfo
+ *
+ * Fills in s->texturemins[] and s->extents[]
+ */
+static bool Mod_GetWALInfo( q2mtexinfo_t *texinfo )
+{
 	int file, size;
 	char texture[MAX_QPATH];
 	q2miptex_t miptex;
@@ -369,22 +381,22 @@ static bool Mod_GetWALInfo( q2mtexinfo_t *texinfo ) {
 	}
 
 	image_t *baseimage = Mod_GetBaseImage( texinfo );
- // if( !( baseimage->flags & IT_WAL ) ) {
- // 	// the image file is not a .wal file (probably a high-res version of the texture)
- // 	// now load the .wal file for original texture dimensions
- // 	Q_snprintfz( texture, sizeof( texture ), "%s.wal", texinfo->texture );
+	// if( !( baseimage->flags & IT_WAL ) ) {
+	// 	// the image file is not a .wal file (probably a high-res version of the texture)
+	// 	// now load the .wal file for original texture dimensions
+	// 	Q_snprintfz( texture, sizeof( texture ), "%s.wal", texinfo->texture );
 
- // 	size = FS_FOpenFile( texture, &file, FS_READ );
- // 	if( size > 0 && size > sizeof( miptex ) ) {
- // 		FS_Seek( file, (size_t)&( ( (q2miptex_t *)0 )->width ), FS_SEEK_SET );
- // 		FS_Read( &miptex.width, sizeof( miptex.width ), file );
- // 		FS_Read( &miptex.height, sizeof( miptex.height ), file );
- // 		FS_FCloseFile( file );
+	// 	size = FS_FOpenFile( texture, &file, FS_READ );
+	// 	if( size > 0 && size > sizeof( miptex ) ) {
+	// 		FS_Seek( file, (size_t)&( ( (q2miptex_t *)0 )->width ), FS_SEEK_SET );
+	// 		FS_Read( &miptex.width, sizeof( miptex.width ), file );
+	// 		FS_Read( &miptex.height, sizeof( miptex.height ), file );
+	// 		FS_FCloseFile( file );
 
- // 		texinfo->wal_width = LittleLong( miptex.width );
- // 		texinfo->wal_height = LittleLong( miptex.height );
- // 	}
- // }
+	// 		texinfo->wal_width = LittleLong( miptex.width );
+	// 		texinfo->wal_height = LittleLong( miptex.height );
+	// 	}
+	// }
 
 	if( !texinfo->wal_width || !texinfo->wal_height ) {
 		texinfo->wal_width = baseimage->width;
@@ -395,11 +407,12 @@ static bool Mod_GetWALInfo( q2mtexinfo_t *texinfo ) {
 }
 
 /*
-* Mod_BuildMeshForSurface
-*/
+ * Mod_BuildMeshForSurface
+ */
 
 #define MESH_T_SIZE_ALIGNED ALIGN( sizeof( mesh_t ), sizeof( vec_t ) )
-static mesh_t *Mod_BuildMeshForSurface( q2msurface_t *fa, msurface_t *out ) {
+static mesh_t *Mod_BuildMeshForSurface( q2msurface_t *fa, msurface_t *out )
+{
 	int i, j, index;
 	int max_style;
 	int smax, tmax;
@@ -414,7 +427,8 @@ static mesh_t *Mod_BuildMeshForSurface( q2msurface_t *fa, msurface_t *out ) {
 	numVerts = fa->numedges;
 	numElems = ( numVerts - 2 ) * 3;
 
-	for( j = 0; j < MAX_LIGHTMAPS && fa->styles[j] != 255; j++ ) ;
+	for( j = 0; j < MAX_LIGHTMAPS && fa->styles[j] != 255; j++ )
+		;
 	max_style = j;
 
 	bufSize = numVerts * ( sizeof( vec4_t ) + sizeof( vec4_t ) + sizeof( vec2_t ) );
@@ -432,23 +446,27 @@ static mesh_t *Mod_BuildMeshForSurface( q2msurface_t *fa, msurface_t *out ) {
 		}
 	}
 
-	uint8_t *buffer = ( uint8_t * )Mod_Malloc( loadmodel, bufSize );
-	out->mesh = (mesh_t*)buffer;
+	uint8_t *buffer = (uint8_t *)Mod_Malloc( loadmodel, bufSize );
+	out->mesh = (mesh_t *)buffer;
 	buffer += MESH_T_SIZE_ALIGNED;
-
 
 	mesh_t *mesh = out->mesh;
 	mesh->numVerts = numVerts;
 	mesh->numElems = numElems;
 
-	mesh->xyzArray = ( vec4_t * )buffer; buffer += numVerts * sizeof( vec4_t );
-	mesh->normalsArray = ( vec4_t * )buffer; buffer += numVerts * sizeof( vec4_t );
-	mesh->stArray = ( vec2_t * )buffer; buffer += numVerts * sizeof( vec2_t );
+	mesh->xyzArray = (vec4_t *)buffer;
+	buffer += numVerts * sizeof( vec4_t );
+	mesh->normalsArray = (vec4_t *)buffer;
+	buffer += numVerts * sizeof( vec4_t );
+	mesh->stArray = (vec2_t *)buffer;
+	buffer += numVerts * sizeof( vec2_t );
 	for( j = 0; j < max_style; j++ ) {
-		mesh->lmstArray[j] = ( vec2_t * )buffer; buffer += numVerts * sizeof( vec2_t );
+		mesh->lmstArray[j] = (vec2_t *)buffer;
+		buffer += numVerts * sizeof( vec2_t );
 	}
 	for( j = 0; j < max_style; j++ ) {
-		mesh->colorsArray[j] = ( byte_vec4_t * )buffer; buffer += numVerts * sizeof( byte_vec4_t );
+		mesh->colorsArray[j] = (byte_vec4_t *)buffer;
+		buffer += numVerts * sizeof( byte_vec4_t );
 		if( r_fullbright->integer ) {
 			memset( mesh->colorsArray[j], 255, numVerts * sizeof( byte_vec4_t ) );
 		}
@@ -456,7 +474,7 @@ static mesh_t *Mod_BuildMeshForSurface( q2msurface_t *fa, msurface_t *out ) {
 	if( mapConfig.lightmapArrays ) {
 		for( j = 0; j < max_style; j++ ) {
 			if( !( j & 3 ) ) {
-				mesh->lmlayersArray[j >> 2] = ( byte_vec4_t * )( buffer );
+				mesh->lmlayersArray[j >> 2] = (byte_vec4_t *)( buffer );
 				buffer += numVerts * sizeof( byte_vec4_t );
 			}
 		}
@@ -518,7 +536,7 @@ static mesh_t *Mod_BuildMeshForSurface( q2msurface_t *fa, msurface_t *out ) {
 		// vertex colors
 		if( !r_fullbright->integer ) {
 			int ds, dt;
-			uint8_t     *lightmap;
+			uint8_t *lightmap;
 
 			ds = base_s;
 			dt = base_t;
@@ -541,7 +559,8 @@ static mesh_t *Mod_BuildMeshForSurface( q2msurface_t *fa, msurface_t *out ) {
 	}
 
 	// trifan indexes. we could probably use MF_TRIFAN here...
-	mesh->elems = elems = ( elem_t * )buffer; buffer += numElems * sizeof( elem_t );
+	mesh->elems = elems = (elem_t *)buffer;
+	buffer += numElems * sizeof( elem_t );
 	for( i = 2; i < numVerts; i++, elems += 3 ) {
 		elems[0] = 0;
 		elems[1] = 0 + i - 1;
@@ -553,20 +572,21 @@ static mesh_t *Mod_BuildMeshForSurface( q2msurface_t *fa, msurface_t *out ) {
 
 //=======================================================
 
-#define SUBDIVIDE_SIZE  64
+#define SUBDIVIDE_SIZE 64
 
 typedef struct q2mwarppoly_s {
-	vec3_t                  *verts;
+	vec3_t *verts;
 	int numverts;
-	struct q2mwarppoly_s    *next;
+	struct q2mwarppoly_s *next;
 } q2mwarppoly_t;
 
 static q2mwarppoly_t *loadbmodel_warppoly;
 
 /*
-* Mod_BoundPoly
-*/
-static void Mod_BoundPoly( int numverts, const float *verts, vec3_t mins, vec3_t maxs ) {
+ * Mod_BoundPoly
+ */
+static void Mod_BoundPoly( int numverts, const float *verts, vec3_t mins, vec3_t maxs )
+{
 	int i;
 	const float *v = verts;
 
@@ -576,13 +596,14 @@ static void Mod_BoundPoly( int numverts, const float *verts, vec3_t mins, vec3_t
 }
 
 /*
-* Mod_SubdividePolygon
-*/
-static void Mod_SubdividePolygon( int numverts, float *verts ) {
+ * Mod_SubdividePolygon
+ */
+static void Mod_SubdividePolygon( int numverts, float *verts )
+{
 	int i, j, k;
 	vec3_t mins, maxs;
 	float m;
-	float       *v;
+	float *v;
 	vec3_t front[64], back[64];
 	int f, b;
 	float dist[64];
@@ -643,7 +664,7 @@ static void Mod_SubdividePolygon( int numverts, float *verts ) {
 	}
 
 	poly = Mod_Malloc( loadmodel, sizeof( q2mwarppoly_t ) + sizeof( vec3_t ) * numverts );
-	poly->verts = ( vec3_t * )( ( uint8_t * )poly + sizeof( q2mwarppoly_t ) );
+	poly->verts = (vec3_t *)( (uint8_t *)poly + sizeof( q2mwarppoly_t ) );
 	poly->numverts = numverts;
 	memcpy( poly->verts, verts, sizeof( vec3_t ) * numverts );
 	poly->next = loadbmodel_warppoly;
@@ -651,12 +672,13 @@ static void Mod_SubdividePolygon( int numverts, float *verts ) {
 }
 
 /*
-* Mod_BuildMeshForWarpSurface
-*
-* Breaks a polygon up along axial 64 unit boundaries so
-* that turbulent and sky warps can be done reasonably.
-*/
-static void Mod_BuildMeshForWarpSurface( q2msurface_t *fa, msurface_t *out ) {
+ * Mod_BuildMeshForWarpSurface
+ *
+ * Breaks a polygon up along axial 64 unit boundaries so
+ * that turbulent and sky warps can be done reasonably.
+ */
+static void Mod_BuildMeshForWarpSurface( q2msurface_t *fa, msurface_t *out )
+{
 	vec3_t verts[64];
 	int numVerts;
 	int numElems;
@@ -664,7 +686,7 @@ static void Mod_BuildMeshForWarpSurface( q2msurface_t *fa, msurface_t *out ) {
 	int index;
 	float *vec;
 	q2mwarppoly_t *poly, *next;
-	
+
 	elem_t *elems;
 
 	loadbmodel_warppoly = NULL;
@@ -704,19 +726,23 @@ static void Mod_BuildMeshForWarpSurface( q2msurface_t *fa, msurface_t *out ) {
 	bufSize += MESH_T_SIZE_ALIGNED;
 	bufSize += numElems * sizeof( elem_t );
 
-	uint8_t *buffer = ( uint8_t * )Mod_Malloc( loadmodel, bufSize );
-	out->mesh = (mesh_t*)buffer;
+	uint8_t *buffer = (uint8_t *)Mod_Malloc( loadmodel, bufSize );
+	out->mesh = (mesh_t *)buffer;
 	buffer += MESH_T_SIZE_ALIGNED;
-	
+
 	mesh_t *mesh = out->mesh;
 	mesh->numVerts = 0;
 	mesh->numElems = 0;
 
-	mesh->xyzArray = ( vec4_t * )buffer; buffer += numVerts * sizeof( vec4_t );
-	mesh->normalsArray = ( vec4_t * )buffer; buffer += numVerts * sizeof( vec4_t );
-	mesh->stArray = ( vec2_t * )buffer; buffer += numVerts * sizeof( vec2_t );
+	mesh->xyzArray = (vec4_t *)buffer;
+	buffer += numVerts * sizeof( vec4_t );
+	mesh->normalsArray = (vec4_t *)buffer;
+	buffer += numVerts * sizeof( vec4_t );
+	mesh->stArray = (vec2_t *)buffer;
+	buffer += numVerts * sizeof( vec2_t );
 
-	mesh->elems = ( elem_t * )buffer; buffer += numElems * sizeof( elem_t );
+	mesh->elems = (elem_t *)buffer;
+	buffer += numElems * sizeof( elem_t );
 
 	for( poly = loadbmodel_warppoly; poly; poly = next ) {
 		float s, t;
@@ -780,11 +806,12 @@ static void Mod_BuildMeshForWarpSurface( q2msurface_t *fa, msurface_t *out ) {
 //=======================================================
 
 /*
-* Mod_SurfaceFlags
-*
-* Convert Q2 surface bitflags to Q3 bitflags
-*/
-static int Mod_SurfaceFlags( int oldflags ) {
+ * Mod_SurfaceFlags
+ *
+ * Convert Q2 surface bitflags to Q3 bitflags
+ */
+static int Mod_SurfaceFlags( int oldflags )
+{
 	int flags = 0;
 
 	if( oldflags & Q2_SURF_SKY ) {
@@ -800,13 +827,13 @@ static int Mod_SurfaceFlags( int oldflags ) {
 	return flags;
 }
 
-
 //=======================================================
 
 /*
-* Mod_ApplySuperStylesToFace
-*/
-static void Mod_ApplySuperStylesToFace( const q2msurface_t *in, msurface_t *out ) {
+ * Mod_ApplySuperStylesToFace
+ */
+static void Mod_ApplySuperStylesToFace( const q2msurface_t *in, msurface_t *out )
+{
 	int j, k;
 	float *lmArray;
 	uint8_t *lmlayersArray;
@@ -850,16 +877,17 @@ static void Mod_ApplySuperStylesToFace( const q2msurface_t *in, msurface_t *out 
 }
 
 /*
-* Mod_CreateFaces
-*/
-static void Mod_CreateFaces( void ) {
-	q2msurface_t    *in;
+ * Mod_CreateFaces
+ */
+static void Mod_CreateFaces( void )
+{
+	q2msurface_t *in;
 	int i, count;
 
 	in = loadmodel_surfaces;
 	count = loadmodel_numsurfaces;
-	msurface_t *out = Mod_Malloc( loadmodel, count * sizeof( *out ) );
-	cplane_t* planes = Mod_Malloc( loadmodel, count * sizeof(cplane_t) );
+	msurface_t *out = Mod_Malloc( loadmodel, count * sizeof( msurface_t ) );
+	//cplane_t *planes = Mod_Malloc( loadmodel, count * sizeof( cplane_t ) );
 
 	loadbmodel->surfaces = out;
 	loadbmodel->numsurfaces = count;
@@ -867,40 +895,38 @@ static void Mod_CreateFaces( void ) {
 	R_SortSuperLightStyles( loadmodel );
 
 	for( i = 0; i < count; i++, in++, out++ ) {
-
 		out->facetype = FACETYPE_PLANAR;
 		out->shader = in->texinfo->shader;
 		out->flags = Mod_SurfaceFlags( in->texinfo->flags );
-		
-		VectorCopy( in->plane->normal, planes[i].normal);
-		planes[i].dist = in->plane->dist;
-		planes[i].type = PLANE_NONAXIAL;
-		planes[i].signbits = 0;
-		out->plane = &planes[i];
 
-		if(!in->texinfo->shader) {
+	 // VectorCopy( in->plane->normal, planes[i].normal );
+	 // planes[i].dist = in->plane->dist;
+	 // planes[i].type = PLANE_NONAXIAL;
+	 // planes[i].signbits = 0;
+		out->plane = in->plane;
+
+		if( !in->texinfo->shader ) {
 			continue;
 		}
 
 		{
 			q2mtexinfo_t *texinfo = in->texinfo;
 			image_t *baseimage = Mod_GetBaseImage( texinfo );
-			if(strncmp(extensionWAL,baseimage->extension, sizeof(baseimage->extension)) != 0) {
-				
+			if( strncmp( extensionWAL, baseimage->extension, sizeof( baseimage->extension ) ) != 0 ) {
 				char texture[MAX_QPATH];
-  			Q_snprintfz( texture, sizeof( texture ), "%s.wal", texinfo->texture );
-  			int file;
+				Q_snprintfz( texture, sizeof( texture ), "%s.wal", texinfo->texture );
+				int file;
 				q2miptex_t miptex;
-  			int size = FS_FOpenFile( texture, &file, FS_READ );
-  			if( size > 0 && size > sizeof( miptex ) ) {
-  				FS_Seek( file, (size_t)&( ( (q2miptex_t *)0 )->width ), FS_SEEK_SET );
-  				FS_Read( &miptex.width, sizeof( miptex.width ), file );
-  				FS_Read( &miptex.height, sizeof( miptex.height ), file );
-  				FS_FCloseFile( file );
+				int size = FS_FOpenFile( texture, &file, FS_READ );
+				if( size > 0 && size > sizeof( miptex ) ) {
+					FS_Seek( file, ( size_t ) & ( ( (q2miptex_t *)0 )->width ), FS_SEEK_SET );
+					FS_Read( &miptex.width, sizeof( miptex.width ), file );
+					FS_Read( &miptex.height, sizeof( miptex.height ), file );
+					FS_FCloseFile( file );
 
-  				texinfo->wal_width = LittleLong( miptex.width );
-  				texinfo->wal_height = LittleLong( miptex.height );
-  			}
+					texinfo->wal_width = LittleLong( miptex.width );
+					texinfo->wal_height = LittleLong( miptex.height );
+				}
 			}
 			if( !texinfo->wal_width || !texinfo->wal_height ) {
 				texinfo->wal_width = baseimage->width;
@@ -926,21 +952,21 @@ LIGHT SAMPLING
 =============================================================================
 */
 
-static bool Mod_RecursiveLightPoint_r( mnode_t *node, vec3_t start, vec3_t end, vec3_t lightpoint, size_t *lightindex ) {
+static bool Mod_RecursiveLightPoint_r( mnode_t *node, vec3_t start, vec3_t end, vec3_t lightpoint, size_t *lightindex )
+{
 	int i;
 	int nodenum;
 	float front, back, frac;
 	int side;
-	cplane_t        *plane;
+	cplane_t *plane;
 	vec3_t mid;
-	q2msurface_t    *surf;
+	q2msurface_t *surf;
 	int ds, dt;
-	q2mtexinfo_t    *tex;
+	q2mtexinfo_t *tex;
 
 	do {
 		if( !node->plane ) {
-			return false;       // didn't hit anything
-
+			return false; // didn't hit anything
 		}
 		// calculate mid point
 		plane = node->plane;
@@ -972,8 +998,7 @@ static bool Mod_RecursiveLightPoint_r( mnode_t *node, vec3_t start, vec3_t end, 
 	for( i = 0; i < loadmodel_nodefaceinfo[nodenum].numfaces; i++, surf++ ) {
 		tex = surf->texinfo;
 		if( tex->flags & ( Q2_SURF_WARP | Q2_SURF_SKY ) ) {
-			continue;   // no lightmaps
-
+			continue; // no lightmaps
 		}
 		ds = DotProduct( mid, tex->vecs[0] ) + tex->vecs[0][3];
 		if( ds < surf->texturemins[0] ) {
@@ -1017,7 +1042,7 @@ static bool Mod_RecursiveLightPoint_r( mnode_t *node, vec3_t start, vec3_t end, 
 
 			// search for an existing grid element that matches this one
 			for( elem = loadmodel_lighthash_table[hashKey]; elem; elem = elem->hash_next ) {
-				if( *( int * )styles != *( int * )elem->styles ) {
+				if( *(int *)styles != *(int *)elem->styles ) {
 					continue;
 				}
 
@@ -1039,7 +1064,7 @@ static bool Mod_RecursiveLightPoint_r( mnode_t *node, vec3_t start, vec3_t end, 
 			elem = &loadmodel_lighthash[loadmodel_numlighthashelems++];
 			for( maps = 0; maps < MAX_LIGHTMAPS && styles[maps] != 255; maps++ )
 				VectorCopy( ambient[maps], elem->ambient[maps] );
-			*( int * )elem->styles = *( int * )styles;
+			*(int *)elem->styles = *(int *)styles;
 
 			// add to hash table
 			elem->hash_next = loadmodel_lighthash_table[hashKey];
@@ -1054,9 +1079,10 @@ static bool Mod_RecursiveLightPoint_r( mnode_t *node, vec3_t start, vec3_t end, 
 }
 
 /*
-* Mod_RecursiveLightPoint
-*/
-static size_t Mod_RecursiveLightPoint( vec3_t start, vec3_t lightpoint ) {
+ * Mod_RecursiveLightPoint
+ */
+static size_t Mod_RecursiveLightPoint( vec3_t start, vec3_t lightpoint )
+{
 	vec3_t end;
 	size_t lightindex;
 
@@ -1072,9 +1098,10 @@ static size_t Mod_RecursiveLightPoint( vec3_t start, vec3_t lightpoint ) {
 }
 
 /*
-* Mod_PointCluster
-*/
-static int Mod_PointCluster( vec3_t point ) {
+ * Mod_PointCluster
+ */
+static int Mod_PointCluster( vec3_t point )
+{
 	mleaf_t *leaf;
 
 	leaf = Mod_PointInLeaf( point, loadmodel );
@@ -1085,9 +1112,10 @@ static int Mod_PointCluster( vec3_t point ) {
 }
 
 /*
-* Mod_TraceLightGrid
-*/
-static void Mod_TraceLightGrid( void ) {
+ * Mod_TraceLightGrid
+ */
+static void Mod_TraceLightGrid( void )
+{
 	int j, num, mod;
 	int x, y, z;
 	int numPoints;
@@ -1167,16 +1195,17 @@ static void Mod_TraceLightGrid( void ) {
 			}
 
 			// store index as a pointer
-			loadbmodel->lightarray[num + mod] = lightindex;
+			loadbmodel->lightarray[num + mod] = &loadbmodel->lightgrid[lightindex];
 			mod -= gridBounds[3];
 		}
 	}
 }
 
 /*
-* Mod_BuildLightGrid
-*/
-static void Mod_BuildLightGrid( vec3_t gridSize ) {
+ * Mod_BuildLightGrid
+ */
+static void Mod_BuildLightGrid( vec3_t gridSize )
+{
 	unsigned j;
 	unsigned count;
 
@@ -1201,9 +1230,10 @@ static void Mod_BuildLightGrid( vec3_t gridSize ) {
 
 	// allocate lightgrid indexes
 	loadbmodel->numlightarrayelems = count;
-	loadbmodel->lightarray = Mod_Malloc( loadmodel, sizeof( *loadbmodel->lightarray ) * count );
-	memset( loadbmodel->lightarray, 0, sizeof( *loadbmodel->lightarray ) * count );
+	loadbmodel->lightarray = Mod_Malloc( loadmodel, sizeof( mgridlight_t * ) * count );
+	memset( loadbmodel->lightarray, 0, sizeof( mgridlight_t * ) * count );
 
+	
 	// hash table, containing only elements with styles and ambient lighting
 	loadmodel_numlighthashelems = 0;
 	loadmodel_lighthash = Mod_Malloc( loadmodel, count * sizeof( *loadmodel_lighthash ) );
@@ -1217,18 +1247,22 @@ static void Mod_BuildLightGrid( vec3_t gridSize ) {
 	// allocate the real lightgrid and update pointers
 	loadbmodel->numlightgridelems = loadmodel_numlighthashelems;
 	loadbmodel->lightgrid = Mod_Malloc( loadmodel, loadbmodel->numlightgridelems * sizeof( *loadbmodel->lightgrid ) );
+	
+	for(size_t i = 0; i < count; i++) {
+		loadbmodel->lightarray[i] = loadbmodel->lightgrid + i;
+	}
 
 	if( loadmodel_numlighthashelems ) {
 		float latlong[2];
 
 		// set light direction for all elements to negative Z
-		float normal[] = {0,0,1};
+		float normal[] = { 0, 0, 1 };
 		NormToLatLong( normal, latlong );
 
 		for( j = 0; j < loadbmodel->numlightgridelems; j++ ) {
 			int i;
 
-			*( int * )loadbmodel->lightgrid[j].styles = *( int * )loadmodel_lighthash[j].styles;
+			*(int *)loadbmodel->lightgrid[j].styles = *(int *)loadmodel_lighthash[j].styles;
 			for( i = 0; i < MAX_LIGHTMAPS && loadmodel_lighthash[j].styles[i] != 255; i++ ) {
 				VectorCopy( loadmodel_lighthash[j].ambient[i], loadbmodel->lightgrid[j].ambient[i] );
 				VectorScale( loadmodel_lighthash[j].ambient[i], 0.2, loadbmodel->lightgrid[j].diffuse[i] );
@@ -1241,12 +1275,13 @@ static void Mod_BuildLightGrid( vec3_t gridSize ) {
 }
 
 /*
-* Mod_Finish
-*/
-static void Mod_Finish( void ) {
+ * Mod_Finish
+ */
+static void Mod_Finish( void )
+{
 	int i;
 	vec3_t gridSize = { 0, 0, 0 };
-	vec3_t ambient = { 0.2f, 0.2f, 0.2f };  // give Q2 maps some ambient lighting by default
+	vec3_t ambient = { 0.2f, 0.2f, 0.2f }; // give Q2 maps some ambient lighting by default
 
 	Mod_BuildLightGrid( gridSize );
 
@@ -1322,9 +1357,10 @@ Q2 BRUSHMODEL LOADING
 */
 
 /*
-* Mod_Q2LoadLighting
-*/
-static void Mod_Q2LoadLighting( const lump_t *l ) {
+ * Mod_Q2LoadLighting
+ */
+static void Mod_Q2LoadLighting( const lump_t *l )
+{
 	R_InitLightStyles( loadmodel );
 
 	if( !l->filelen ) {
@@ -1339,16 +1375,17 @@ static void Mod_Q2LoadLighting( const lump_t *l ) {
 }
 
 /*
-* Mod_Q2LoadSubmodels
-*/
-static void Mod_Q2LoadSubmodels( const lump_t *l ) {
+ * Mod_Q2LoadSubmodels
+ */
+static void Mod_Q2LoadSubmodels( const lump_t *l )
+{
 	int i, j, count;
 	q2dmodel_t *in;
 	mmodel_t *out;
 	mbrushmodel_t *bmodel;
 	model_t *mod_inline;
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q2LoadSubmodels: funny lump size in %s", loadmodel->name );
 	}
@@ -1356,7 +1393,7 @@ static void Mod_Q2LoadSubmodels( const lump_t *l ) {
 	out = Mod_Malloc( loadmodel, count * sizeof( *out ) );
 
 	mod_inline = Mod_Malloc( loadmodel, count * ( sizeof( *mod_inline ) + sizeof( *bmodel ) ) );
-	loadmodel->extradata = bmodel = ( mbrushmodel_t * )( ( uint8_t * )mod_inline + count * sizeof( *mod_inline ) );
+	loadmodel->extradata = bmodel = (mbrushmodel_t *)( (uint8_t *)mod_inline + count * sizeof( *mod_inline ) );
 
 	loadbmodel = bmodel;
 	loadbmodel->submodels = out;
@@ -1379,15 +1416,16 @@ static void Mod_Q2LoadSubmodels( const lump_t *l ) {
 }
 
 /*
-* Mod_Q2LoadPlanes
-*/
-static void Mod_Q2LoadPlanes( const lump_t *l ) {
+ * Mod_Q2LoadPlanes
+ */
+static void Mod_Q2LoadPlanes( const lump_t *l )
+{
 	int i, j;
-	cplane_t    *out;
-	q2dplane_t  *in;
+	cplane_t *out;
+	q2dplane_t *in;
 	int count;
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q2LoadPlanes: funny lump size in %s", loadmodel->name );
 	}
@@ -1415,14 +1453,15 @@ static void Mod_Q2LoadPlanes( const lump_t *l ) {
 }
 
 /*
-* Mod_Q2LoadVertexes
-*/
-static void Mod_Q2LoadVertexes( const lump_t *l ) {
+ * Mod_Q2LoadVertexes
+ */
+static void Mod_Q2LoadVertexes( const lump_t *l )
+{
 	q2dvertex_t *in;
 	q2dvertex_t *out;
 	int i, count;
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q2LoadVertexes: funny lump size in %s", loadmodel->name );
 	}
@@ -1440,14 +1479,15 @@ static void Mod_Q2LoadVertexes( const lump_t *l ) {
 }
 
 /*
-* Mod_Q2LoadEdges
-*/
-static void Mod_Q2LoadEdges( const lump_t *l ) {
+ * Mod_Q2LoadEdges
+ */
+static void Mod_Q2LoadEdges( const lump_t *l )
+{
 	q2dedge_t *in;
 	q2dedge_t *out;
 	int i, count;
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q2LoadEdges: funny lump size in %s", loadmodel->name );
 	}
@@ -1464,16 +1504,17 @@ static void Mod_Q2LoadEdges( const lump_t *l ) {
 }
 
 /*
-* Mod_Q2LoadTexinfo
-*/
-static void Mod_Q2LoadTexinfo( const lump_t *l ) {
+ * Mod_Q2LoadTexinfo
+ */
+static void Mod_Q2LoadTexinfo( const lump_t *l )
+{
 	q2texinfo_t *in;
 	q2mtexinfo_t *out, *step;
 	int i, j, count;
 	int next;
 	char rawtext[8192], *shadertext;
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q2LoadTexinfo: funny lump size in %s", loadmodel->name );
 	}
@@ -1569,16 +1610,16 @@ static void Mod_Q2LoadTexinfo( const lump_t *l ) {
 		}
 
 		out->shader = R_LoadShaderText( out->texture, SHADER_TYPE_DELUXEMAP, false, shadertext );
-		
 	}
 }
 
 /*
-* Mod_Q2LoadFaces
-*/
-static void Mod_Q2LoadFaces( const lump_t *l ) {
-	q2dface_t       *in;
-	q2msurface_t    *out;
+ * Mod_Q2LoadFaces
+ */
+static void Mod_Q2LoadFaces( const lump_t *l )
+{
+	q2dface_t *in;
+	q2msurface_t *out;
 	int i, j, count;
 	int planenum, side;
 	int ti;
@@ -1586,7 +1627,7 @@ static void Mod_Q2LoadFaces( const lump_t *l ) {
 	int lightmaps[MAX_LIGHTMAPS];
 	uint8_t lightmapStyles[MAX_LIGHTMAPS], vertexStyles[MAX_LIGHTMAPS];
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q2LoadFaces: funny lump size in %s", loadmodel->name );
 	}
@@ -1630,7 +1671,7 @@ static void Mod_Q2LoadFaces( const lump_t *l ) {
 		j = LittleLong( in->lightofs );
 		if( j == -1 || j >= loadmodel_lightdatasize ) {
 			out->samples = NULL;
-			out->styles[0] = 0;     // default to black lightmap, unless it's a water or sky surface
+			out->styles[0] = 0; // default to black lightmap, unless it's a water or sky surface
 			out->styles[1] = 255;
 		} else {
 			out->samples = loadmodel_lightdata + j;
@@ -1675,14 +1716,15 @@ static void Mod_Q2LoadFaces( const lump_t *l ) {
 }
 
 /*
-* Mod_Q2LoadNodes
-*/
-static void Mod_Q2LoadNodes( const lump_t *l ) {
+ * Mod_Q2LoadNodes
+ */
+static void Mod_Q2LoadNodes( const lump_t *l )
+{
 	int i, j, count, p;
-	q2dnode_t   *in;
-	mnode_t     *out;
+	q2dnode_t *in;
+	mnode_t *out;
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q2LoadNodes: funny lump size in %s", loadmodel->name );
 	}
@@ -1701,8 +1743,22 @@ static void Mod_Q2LoadNodes( const lump_t *l ) {
 			if( p >= 0 ) {
 				out->children[j] = loadbmodel->nodes + p;
 			} else {
-				out->children[j] = ( mnode_t * )( loadbmodel->leafs + ( -1 - p ) );
+				out->children[j] = (mnode_t *)( loadbmodel->leafs + ( -1 - p ) );
 			}
+		}
+
+		bool badBounds = false;
+		for( j = 0; j < 3; j++ ) {
+			out->mins[j] = (float)LittleLong( in->mins[j] );
+			out->maxs[j] = (float)LittleLong( in->maxs[j] );
+			if( out->mins[j] > out->maxs[j] )
+				badBounds = true;
+		}
+
+		if( badBounds || VectorCompare( out->mins, out->maxs ) ) {
+			ri.Com_DPrintf( S_COLOR_YELLOW "WARNING: bad node %i bounds:\n", i );
+			ri.Com_DPrintf( S_COLOR_YELLOW "mins: %i %i %i\n", Q_rint( out->mins[0] ), Q_rint( out->mins[1] ), Q_rint( out->mins[2] ) );
+			ri.Com_DPrintf( S_COLOR_YELLOW "maxs: %i %i %i\n", Q_rint( out->maxs[0] ), Q_rint( out->maxs[1] ), Q_rint( out->maxs[2] ) );
 		}
 
 		loadmodel_nodefaceinfo[i].firstface = LittleShort( in->firstface );
@@ -1711,13 +1767,14 @@ static void Mod_Q2LoadNodes( const lump_t *l ) {
 }
 
 /*
-* Mod_Q2LoadSurfedges
-*/
-static void Mod_Q2LoadSurfedges( const lump_t *l ) {
+ * Mod_Q2LoadSurfedges
+ */
+static void Mod_Q2LoadSurfedges( const lump_t *l )
+{
 	int i, count;
-	int     *in, *out;
+	int *in, *out;
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q2LoadSurfedges: funny lump size in %s", loadmodel->name );
 	}
@@ -1732,26 +1789,27 @@ static void Mod_Q2LoadSurfedges( const lump_t *l ) {
 }
 
 /*
-* Mod_Q2LoadLeafs
-*/
-static void Mod_Q2LoadLeafs( const lump_t *l, const lump_t *msLump ) {
+ * Mod_Q2LoadLeafs
+ */
+static void Mod_Q2LoadLeafs( const lump_t *l, const lump_t *msLump )
+{
 	int i, j, k;
 	int count, countMarkSurfaces;
-	q2dleaf_t   *in;
-	mleaf_t     *out;
+	q2dleaf_t *in;
+	mleaf_t *out;
 	size_t size;
-	uint8_t     *buffer;
+	uint8_t *buffer;
 	bool badBounds;
-	short       *inMarkSurfaces;
+	short *inMarkSurfaces;
 	int numMarkSurfaces, firstMarkSurface;
 
-	inMarkSurfaces = ( void * )( mod_base + msLump->fileofs );
+	inMarkSurfaces = (void *)( mod_base + msLump->fileofs );
 	if( msLump->filelen % sizeof( *inMarkSurfaces ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q2LoadMarksurfaces: funny lump size in %s", loadmodel->name );
 	}
 	countMarkSurfaces = msLump->filelen / sizeof( *inMarkSurfaces );
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q2LoadLeafs: funny lump size in %s", loadmodel->name );
 	}
@@ -1793,7 +1851,7 @@ static void Mod_Q2LoadLeafs( const lump_t *l, const lump_t *msLump ) {
 
 		numMarkSurfaces = LittleShort( in->numleaffaces );
 		if( !numMarkSurfaces ) {
-			//out->cluster = -1;
+			// out->cluster = -1;
 			continue;
 		}
 
@@ -1802,29 +1860,29 @@ static void Mod_Q2LoadLeafs( const lump_t *l, const lump_t *msLump ) {
 			ri.Com_Error( ERR_DROP, "Mod_Q2LoadBmodel: bad marksurfaces in leaf %i", i );
 		}
 
-		size = numMarkSurfaces * 2 * sizeof( unsigned );
-		buffer = ( uint8_t * )Mod_Malloc( loadmodel, size );
+		size = ( numMarkSurfaces + 1 ) * 2 * sizeof( msurface_t * );
+		buffer = (uint8_t *)Mod_Malloc( loadmodel, size );
 
-		out->numVisSurfaces = numMarkSurfaces;
-		out->visSurfaces = ( unsigned * )buffer;
-		buffer += numMarkSurfaces * sizeof( unsigned );
+		out->firstVisSurface = (msurface_t **)buffer;
+		buffer += (numMarkSurfaces + 1) * sizeof( msurface_t * );
 
-		out->numFragmentSurfaces = numMarkSurfaces;
-		out->fragmentSurfaces = (unsigned * )buffer;
-		buffer += numMarkSurfaces * sizeof( unsigned );
+		out->firstFragmentSurface = (msurface_t **)buffer;
+		buffer += (numMarkSurfaces + 1) * sizeof( msurface_t * );
 
 		for( j = 0; j < numMarkSurfaces; j++ ) {
 			k = LittleLong( inMarkSurfaces[firstMarkSurface + j] );
-			out->visSurfaces[j] = k;
-			out->fragmentSurfaces[j] = k;
+
+			out->firstVisSurface[j] = loadbmodel->surfaces + k;
+			out->firstFragmentSurface[j] = loadbmodel->surfaces + k;
 		}
 	}
 }
 
 /*
-* Mod_Q2LoadEntities
-*/
-static void Mod_Q2LoadEntities( const lump_t *l ) {
+ * Mod_Q2LoadEntities
+ */
+static void Mod_Q2LoadEntities( const lump_t *l )
+{
 	char *data;
 	bool isworld;
 	char key[MAX_KEY], value[MAX_VALUE], *token;
@@ -1837,7 +1895,7 @@ static void Mod_Q2LoadEntities( const lump_t *l ) {
 
 	Q_strncpyz( sky, "env/unit1_", sizeof( sky ) );
 
-	for(; ( token = COM_Parse( &data ) ) && token[0] == '{'; ) {
+	for( ; ( token = COM_Parse( &data ) ) && token[0] == '{'; ) {
 		isworld = false;
 
 		while( 1 ) {
@@ -1847,7 +1905,6 @@ static void Mod_Q2LoadEntities( const lump_t *l ) {
 			}
 			if( token[0] == '}' ) {
 				break; // end of entity
-
 			}
 			Q_strncpyz( key, token, sizeof( key ) );
 			while( key[strlen( key ) - 1] == ' ' ) // remove trailing spaces
@@ -1856,7 +1913,6 @@ static void Mod_Q2LoadEntities( const lump_t *l ) {
 			token = COM_Parse( &data );
 			if( !token[0] ) {
 				break; // error
-
 			}
 			Q_strncpyz( value, token, sizeof( value ) );
 
@@ -1889,9 +1945,10 @@ static void Mod_Q2LoadEntities( const lump_t *l ) {
 }
 
 /*
-* Mod_Q2LoadVisibility
-*/
-static void Mod_Q2LoadVisibility( lump_t *l ) {
+ * Mod_Q2LoadVisibility
+ */
+static void Mod_Q2LoadVisibility( lump_t *l )
+{
 	unsigned i;
 	unsigned rowsize, numclusters;
 	int visdatasize;
@@ -1904,7 +1961,7 @@ static void Mod_Q2LoadVisibility( lump_t *l ) {
 		return;
 	}
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 
 	numclusters = LittleLong( in->numclusters );
 	rowsize = ( numclusters + 7 ) >> 3;
@@ -1913,18 +1970,18 @@ static void Mod_Q2LoadVisibility( lump_t *l ) {
 	out = Mod_Malloc( loadmodel, visdatasize );
 	out->numclusters = numclusters;
 	out->rowsize = rowsize;
+	loadbmodel->pvs = out;
 
 	for( i = 0; i < numclusters; i++ ) {
-		Mod_DecompressVis( ( uint8_t * )in + LittleLong( in->bitofs[i][0] ), rowsize, out->data + i * rowsize );
+		Mod_DecompressVis( (uint8_t *)in + LittleLong( in->bitofs[i][0] ), rowsize, out->data + i * rowsize );
 	}
 }
 
-
-
 /*
-* Mod_LoadQ2BrushModel
-*/
-void Mod_LoadQ2BrushModel( model_t *mod, model_t *parent, void *buffer, bspFormatDesc_t *format ) {
+ * Mod_LoadQ2BrushModel
+ */
+void Mod_LoadQ2BrushModel( model_t *mod, model_t *parent, void *buffer, bspFormatDesc_t *format )
+{
 	int i;
 	q2dheader_t *header;
 
@@ -1938,9 +1995,9 @@ void Mod_LoadQ2BrushModel( model_t *mod, model_t *parent, void *buffer, bspForma
 		}
 		T_FreeTextureBuf( &buffer );
 		pallet[255] &= LittleLong( 0xffffff ); // 255 is transparent
-		T_SetPallet(pallet);
+		T_SetPallet( pallet );
 	}
-	//T_LoadPalletQ2();
+	// T_LoadPalletQ2();
 
 	mod->type = mod_brush;
 	mod->registrationSequence = rsh.registrationSequence;
@@ -1953,8 +2010,8 @@ void Mod_LoadQ2BrushModel( model_t *mod, model_t *parent, void *buffer, bspForma
 
 	mod_bspFormat = format;
 
-	header = ( q2dheader_t * )buffer;
-	mod_base = ( uint8_t * )header;
+	header = (q2dheader_t *)buffer;
+	mod_base = (uint8_t *)header;
 
 	// swap all the lumps
 	for( i = 0; i < sizeof( *header ) / 4; i++ )
@@ -1999,12 +2056,13 @@ typedef struct q1mmiptex_s {
 } q1mmiptex_t;
 
 /*
-* Mod_Q1LoadLighting
-*/
-static void Mod_Q1LoadLighting( const lump_t *l ) {
+ * Mod_Q1LoadLighting
+ */
+static void Mod_Q1LoadLighting( const lump_t *l )
+{
 	int i;
 	uint8_t *in, *out;
-	char    *tempname;
+	char *tempname;
 	size_t tempname_size;
 	uint8_t *litdata = NULL;
 
@@ -2023,7 +2081,7 @@ static void Mod_Q1LoadLighting( const lump_t *l ) {
 	COM_ReplaceExtension( tempname, ".lit", tempname_size );
 
 	loadmodel_lightdatasize = R_LoadFile( tempname, (void **)&litdata );
-	if( loadmodel_lightdatasize > 8 && !strncmp( ( char * )litdata, "QLIT", 4 ) && LittleLong( ( (int *)litdata )[1] ) == 1 ) {
+	if( loadmodel_lightdatasize > 8 && !strncmp( (char *)litdata, "QLIT", 4 ) && LittleLong( ( (int *)litdata )[1] ) == 1 ) {
 		loadmodel_lightdatasize -= 8;
 		loadmodel_lightdata = Mod_Malloc( loadmodel, loadmodel_lightdatasize );
 		memcpy( loadmodel_lightdata, litdata + 8, loadmodel_lightdatasize );
@@ -2043,17 +2101,18 @@ static void Mod_Q1LoadLighting( const lump_t *l ) {
 }
 
 /*
-* Mod_Q1LoadSubmodels
-*/
-static unsigned Mod_Q1LoadSubmodels( const lump_t *l ) {
+ * Mod_Q1LoadSubmodels
+ */
+static unsigned Mod_Q1LoadSubmodels( const lump_t *l )
+{
 	int i, j, count;
 	unsigned numvisleafs;
-	q1dmodel_t      *in;
-	mmodel_t        *out;
-	mbrushmodel_t   *bmodel;
-	model_t         *mod_inline;
+	q1dmodel_t *in;
+	mmodel_t *out;
+	mbrushmodel_t *bmodel;
+	model_t *mod_inline;
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q1LoadSubmodels: funny lump size in %s", loadmodel->name );
 	}
@@ -2061,7 +2120,7 @@ static unsigned Mod_Q1LoadSubmodels( const lump_t *l ) {
 	out = Mod_Malloc( loadmodel, count * sizeof( *out ) );
 
 	mod_inline = Mod_Malloc( loadmodel, count * ( sizeof( *mod_inline ) + sizeof( *bmodel ) ) );
-	loadmodel->extradata = bmodel = ( mbrushmodel_t * )( ( uint8_t * )mod_inline + count * sizeof( *mod_inline ) );
+	loadmodel->extradata = bmodel = (mbrushmodel_t *)( (uint8_t *)mod_inline + count * sizeof( *mod_inline ) );
 
 	loadbmodel = bmodel;
 	loadbmodel->submodels = out;
@@ -2092,16 +2151,17 @@ static unsigned Mod_Q1LoadSubmodels( const lump_t *l ) {
 }
 
 /*
-* Mod_Q1LoadPlanes
-*/
-static void Mod_Q1LoadPlanes( const lump_t *l ) {
+ * Mod_Q1LoadPlanes
+ */
+static void Mod_Q1LoadPlanes( const lump_t *l )
+{
 	int i, j;
 	int side;
-	cplane_t    *out;
-	q1dplane_t  *in;
+	cplane_t *out;
+	q1dplane_t *in;
 	int count;
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q1LoadPlanes: funny lump size in %s", loadmodel->name );
 	}
@@ -2135,14 +2195,15 @@ static void Mod_Q1LoadPlanes( const lump_t *l ) {
 }
 
 /*
-* Mod_Q1LoadVertexes
-*/
-static void Mod_Q1LoadVertexes( const lump_t *l ) {
+ * Mod_Q1LoadVertexes
+ */
+static void Mod_Q1LoadVertexes( const lump_t *l )
+{
 	q1dvertex_t *in;
 	q2dvertex_t *out;
 	int i, count;
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q1LoadVertexes: funny lump size in %s", loadmodel->name );
 	}
@@ -2160,14 +2221,15 @@ static void Mod_Q1LoadVertexes( const lump_t *l ) {
 }
 
 /*
-* Mod_Q1LoadEdges
-*/
-static void Mod_Q1LoadEdges( const lump_t *l ) {
-	q1dedge_t   *in;
-	q2dedge_t   *out;
+ * Mod_Q1LoadEdges
+ */
+static void Mod_Q1LoadEdges( const lump_t *l )
+{
+	q1dedge_t *in;
+	q2dedge_t *out;
 	int i, count;
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q1LoadEdges: funny lump size in %s", loadmodel->name );
 	}
@@ -2183,14 +2245,13 @@ static void Mod_Q1LoadEdges( const lump_t *l ) {
 	}
 }
 
-
-
-static void Mod_Q1FixUpMiptexShader( q1mmiptex_t *miptex ) {
+static void Mod_Q1FixUpMiptexShader( q1mmiptex_t *miptex )
+{
 	unsigned j, k;
 	q1mmiptex_t *step;
 	unsigned basepass;
 	shaderpass_t *pass;
-	shader_t    *shader;
+	shader_t *shader;
 
 	shader = miptex->shader;
 	if( !shader->numpasses ) {
@@ -2206,24 +2267,19 @@ static void Mod_Q1FixUpMiptexShader( q1mmiptex_t *miptex ) {
 			return;
 		}
 		uint32_t halfWidth = miptex->width >> 1;
-		struct texture_buf_desc_s destDesc = {
-			.width = halfWidth,
- 			.height = miptex->height,
-			.def = R_BaseFormatDef(R_FORMAT_RGBA8_UNORM),
-			.alignment = 1
-		};	
-		T_ReallocTextureBuf(&dest, &destDesc);
+		struct texture_buf_desc_s destDesc = { .width = halfWidth, .height = miptex->height, .def = R_BaseFormatDef( R_FORMAT_RGBA8_UNORM ), .alignment = 1 };
+		T_ReallocTextureBuf( &dest, &destDesc );
 
 		uint32_t r = 0;
 		uint32_t g = 0;
 		uint32_t b = 0;
 		for( j = basepass; j < shader->numpasses; j++, pass++ ) {
-			const bool isLeftSide = (j > basepass);   
+			const bool isLeftSide = ( j > basepass );
 			for( size_t row = 0; row < dest.height; row++ ) {
 				for( size_t col = 0; col < dest.width; col++ ) {
-					const uint32_t c  = pallet[miptex->texdata[(row * miptex->width) + (halfWidth + col)]];
-					if(isLeftSide) {
-						*((uint32_t *)&dest.buffer[( dest.rowPitch * row ) + ( col * RT_BlockSize( dest.def ) )]) = c;
+					const uint32_t c = pallet[miptex->texdata[( row * miptex->width ) + ( halfWidth + col )]];
+					if( isLeftSide ) {
+						*( (uint32_t *)&dest.buffer[( dest.rowPitch * row ) + ( col * RT_BlockSize( dest.def ) )] ) = c;
 					}
 					r += COLOR_R( c );
 					g += COLOR_G( c );
@@ -2239,10 +2295,9 @@ static void Mod_Q1FixUpMiptexShader( q1mmiptex_t *miptex ) {
 					}
 				}
 			}
-			pass->images[0] = R_LoadImage( miptex->texture, &dest.buffer, dest.width, dest.height,  IT_SKY , 1, IMAGE_TAG_GENERIC, 4 );
+			pass->images[0] = R_LoadImage( miptex->texture, &dest.buffer, dest.width, dest.height, IT_SKY, 1, IMAGE_TAG_GENERIC, 4 );
 		}
 	} else {
-
 		for( j = basepass; j < shader->numpasses; j++, pass++ ) {
 			if( pass->flags & SHADERPASS_LIGHTMAP ) {
 				continue;
@@ -2253,55 +2308,45 @@ static void Mod_Q1FixUpMiptexShader( q1mmiptex_t *miptex ) {
 					continue;
 				}
 				if( j > basepass && miptex->fullbrights ) {
-					struct texture_buf_desc_s destDesc = { 
-						.width = step->width, 
-						.height = step->height, 
-						.def = R_BaseFormatDef( R_FORMAT_RGBA8_UNORM ), 
-						.alignment = 1 
-					};
+					struct texture_buf_desc_s destDesc = { .width = step->width, .height = step->height, .def = R_BaseFormatDef( R_FORMAT_RGBA8_UNORM ), .alignment = 1 };
 					T_ReallocTextureBuf( &dest, &destDesc );
-					
+
 					for( size_t row = 0; row < step->height; row++ ) {
 						for( size_t col = 0; col < step->width; col++ ) {
-							uint32_t* block = (uint32_t *)&dest.buffer[( dest.rowPitch * row ) + ( col * RT_BlockSize( dest.def ) )];
-							const uint8_t p =step->texdata[row * step->width + col];
-								if( p < 224 ) {
-									*block = 0; // transparent
-								} else {
-									*block = pallet[p]; // transparent
-								}
+							uint32_t *block = (uint32_t *)&dest.buffer[( dest.rowPitch * row ) + ( col * RT_BlockSize( dest.def ) )];
+							const uint8_t p = step->texdata[row * step->width + col];
+							if( p < 224 ) {
+								*block = 0; // transparent
+							} else {
+								*block = pallet[p]; // transparent
+							}
 						}
 					}
 				} else {
-					struct texture_buf_desc_s destDesc = { 
-						.width = step->width, 
-						.height = step->height, 
-						.def = R_BaseFormatDef( R_FORMAT_RGB8_UNORM ), 
-						.alignment = 1 
-					};
+					struct texture_buf_desc_s destDesc = { .width = step->width, .height = step->height, .def = R_BaseFormatDef( R_FORMAT_RGB8_UNORM ), .alignment = 1 };
 					T_ReallocTextureBuf( &dest, &destDesc );
 					for( size_t row = 0; row < step->height; row++ ) {
 						for( size_t col = 0; col < step->width; col++ ) {
-							uint8_t* block = &dest.buffer[( dest.rowPitch * row ) + ( col * RT_BlockSize( dest.def ) )];
-							const uint8_t p =step->texdata[row * step->width + col];
+							uint8_t *block = &dest.buffer[( dest.rowPitch * row ) + ( col * RT_BlockSize( dest.def ) )];
+							const uint8_t p = step->texdata[row * step->width + col];
 							*block++ = ( (uint8_t *)&pallet[p] )[0];
 							*block++ = ( (uint8_t *)&pallet[p] )[1];
 							*block++ = ( (uint8_t *)&pallet[p] )[2];
 						}
 					}
 				}
-			  pass->images[k] = R_LoadImage( step->texture, &dest.buffer, step->width, step->height, 0, 1, IMAGE_TAG_GENERIC, 3 );
+				pass->images[k] = R_LoadImage( step->texture, &dest.buffer, step->width, step->height, 0, 1, IMAGE_TAG_GENERIC, 3 );
 			}
 		}
 	}
-	T_FreeTextureBuf(&dest);
-
+	T_FreeTextureBuf( &dest );
 }
 
 /*
-* Mod_Q1MiptexHasFullbrights
-*/
-static bool Mod_Q1MiptexHasFullbrights( uint8_t *pixels, int width, int height ) {
+ * Mod_Q1MiptexHasFullbrights
+ */
+static bool Mod_Q1MiptexHasFullbrights( uint8_t *pixels, int width, int height )
+{
 	int i;
 	int size = width * height;
 
@@ -2315,16 +2360,17 @@ static bool Mod_Q1MiptexHasFullbrights( uint8_t *pixels, int width, int height )
 }
 
 /*
-* Mod_Q1LoadMiptex
-*/
-static void Mod_Q1LoadMiptex( const lump_t *l ) {
+ * Mod_Q1LoadMiptex
+ */
+static void Mod_Q1LoadMiptex( const lump_t *l )
+{
 	int i, j;
 	int count, ofs;
-	q1miptex_t  *in;
+	q1miptex_t *in;
 	q1mmiptex_t *out, *step;
 	q1mmiptex_t *anims[10];
 	q1dmiptexlump_t *miptex_lump;
-	uint8_t     *texdata, *intexdata;
+	uint8_t *texdata, *intexdata;
 	char rawtext[8192], *shadertext;
 
 	{
@@ -2343,18 +2389,18 @@ static void Mod_Q1LoadMiptex( const lump_t *l ) {
 		pallet[255] = 0; // 255 is transparent
 
 		R_FreeFile( raw );
-		T_SetPallet(pallet);
+		T_SetPallet( pallet );
 	}
 
-	//T_LoadPalletQ1(); 
+	// T_LoadPalletQ1();
 
-	miptex_lump = ( void * )( mod_base + l->fileofs );
+	miptex_lump = (void *)( mod_base + l->fileofs );
 	count = LittleLong( miptex_lump->nummiptex );
 	out = Mod_Malloc( loadmodel, count * sizeof( *out ) + l->filelen );
 
 	loadbmodel->mipTex = out;
 	loadbmodel->numMiptex = count;
-	texdata = ( uint8_t *)( out + count );
+	texdata = (uint8_t *)( out + count );
 
 	for( i = 0; i < count; i++, out++ ) {
 		ofs = LittleLong( miptex_lump->dataofs[i] );
@@ -2362,8 +2408,8 @@ static void Mod_Q1LoadMiptex( const lump_t *l ) {
 			continue;
 		}
 
-		in = ( q1miptex_t * )( ( uint8_t * )miptex_lump + ofs );
-		intexdata = ( uint8_t * )( in + 1 );
+		in = (q1miptex_t *)( (uint8_t *)miptex_lump + ofs );
+		intexdata = (uint8_t *)( in + 1 );
 
 		out->width = LittleLong( in->width );
 		out->height = LittleLong( in->height );
@@ -2406,7 +2452,7 @@ static void Mod_Q1LoadMiptex( const lump_t *l ) {
 			continue;
 		}
 		if( out->anim_next ) {
-			continue;   // already sequenced
+			continue; // already sequenced
 		}
 		if( out->texture[9] != '+' ) {
 			continue;
@@ -2522,16 +2568,17 @@ static void Mod_Q1LoadMiptex( const lump_t *l ) {
 }
 
 /*
-* Mod_Q1LoadTexinfo
-*/
-static void Mod_Q1LoadTexinfo( const lump_t *l ) {
-	q1texinfo_t     *in;
-	q1mmiptex_t     *miptex;
-	q2mtexinfo_t    *out;
+ * Mod_Q1LoadTexinfo
+ */
+static void Mod_Q1LoadTexinfo( const lump_t *l )
+{
+	q1texinfo_t *in;
+	q1mmiptex_t *miptex;
+	q2mtexinfo_t *out;
 	unsigned i, j;
 	unsigned count;
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q1LoadTexinfo: funny lump size in %s", loadmodel->name );
 	}
@@ -2569,11 +2616,12 @@ static void Mod_Q1LoadTexinfo( const lump_t *l ) {
 }
 
 /*
-* Mod_Q1LoadFaces
-*/
-static void Mod_Q1LoadFaces( const lump_t *l ) {
-	q1dface_t       *in;
-	q2msurface_t    *out;
+ * Mod_Q1LoadFaces
+ */
+static void Mod_Q1LoadFaces( const lump_t *l )
+{
+	q1dface_t *in;
+	q2msurface_t *out;
 	int i, j, count;
 	int planenum, side;
 	int ti;
@@ -2581,7 +2629,7 @@ static void Mod_Q1LoadFaces( const lump_t *l ) {
 	int lightmaps[MAX_LIGHTMAPS];
 	uint8_t lightmapStyles[MAX_LIGHTMAPS], vertexStyles[MAX_LIGHTMAPS];
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q1LoadFaces: funny lump size in %s", loadmodel->name );
 	}
@@ -2625,7 +2673,7 @@ static void Mod_Q1LoadFaces( const lump_t *l ) {
 		j = LittleLong( in->lightofs ) * LIGHTMAP_BYTES;
 		if( j < 0 || j >= loadmodel_lightdatasize ) {
 			out->samples = NULL;
-			out->styles[0] = 0;     // default to black lightmap, unless it's a water or sky surface
+			out->styles[0] = 0; // default to black lightmap, unless it's a water or sky surface
 			out->styles[1] = 255;
 		} else {
 			out->samples = loadmodel_lightdata + j;
@@ -2670,14 +2718,15 @@ static void Mod_Q1LoadFaces( const lump_t *l ) {
 }
 
 /*
-* Mod_Q1LoadNodes
-*/
-static void Mod_Q1LoadNodes( const lump_t *l ) {
+ * Mod_Q1LoadNodes
+ */
+static void Mod_Q1LoadNodes( const lump_t *l )
+{
 	int i, j, count, p;
-	q1dnode_t   *in;
-	mnode_t     *out;
+	q1dnode_t *in;
+	mnode_t *out;
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q1LoadNodes: funny lump size in %s", loadmodel->name );
 	}
@@ -2697,7 +2746,7 @@ static void Mod_Q1LoadNodes( const lump_t *l ) {
 			if( p >= 0 ) {
 				out->children[j] = loadbmodel->nodes + p;
 			} else {
-				out->children[j] = ( mnode_t * )( loadbmodel->leafs + ( -1 - p ) );
+				out->children[j] = (mnode_t *)( loadbmodel->leafs + ( -1 - p ) );
 			}
 		}
 
@@ -2707,13 +2756,14 @@ static void Mod_Q1LoadNodes( const lump_t *l ) {
 }
 
 /*
-* Mod_Q1LoadSurfedges
-*/
-static void Mod_Q1LoadSurfedges( const lump_t *l ) {
+ * Mod_Q1LoadSurfedges
+ */
+static void Mod_Q1LoadSurfedges( const lump_t *l )
+{
 	int i, count;
-	int     *in, *out;
+	int *in, *out;
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q1LoadSurfedges: funny lump size in %s", loadmodel->name );
 	}
@@ -2728,27 +2778,28 @@ static void Mod_Q1LoadSurfedges( const lump_t *l ) {
 }
 
 /*
-* Mod_Q1LoadLeafs
-*/
-static void Mod_Q1LoadLeafs( const lump_t *l, const lump_t *msLump, unsigned numvisleafs ) {
+ * Mod_Q1LoadLeafs
+ */
+static void Mod_Q1LoadLeafs( const lump_t *l, const lump_t *msLump, unsigned numvisleafs )
+{
 	int i, j, k;
 	int numclusters;
 	int count, countMarkSurfaces;
-	q1dleaf_t   *in;
-	mleaf_t     *out;
+	q1dleaf_t *in;
+	mleaf_t *out;
 	size_t size;
-	uint8_t     *buffer;
+	uint8_t *buffer;
 	bool badBounds;
-	short       *inMarkSurfaces;
+	short *inMarkSurfaces;
 	int numMarkSurfaces, firstMarkSurface;
 
-	inMarkSurfaces = ( void * )( mod_base + msLump->fileofs );
+	inMarkSurfaces = (void *)( mod_base + msLump->fileofs );
 	if( msLump->filelen % sizeof( *inMarkSurfaces ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q1LoadMarksurfaces: funny lump size in %s", loadmodel->name );
 	}
 	countMarkSurfaces = msLump->filelen / sizeof( *inMarkSurfaces );
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	if( l->filelen % sizeof( *in ) ) {
 		ri.Com_Error( ERR_DROP, "Mod_Q1LoadLeafs: funny lump size in %s", loadmodel->name );
 	}
@@ -2780,7 +2831,7 @@ static void Mod_Q1LoadLeafs( const lump_t *l, const lump_t *msLump, unsigned num
 
 		numMarkSurfaces = LittleShort( in->nummarksurfaces );
 		if( !numMarkSurfaces ) {
-			//out->cluster = -1;
+			// out->cluster = -1;
 			continue;
 		}
 
@@ -2789,21 +2840,19 @@ static void Mod_Q1LoadLeafs( const lump_t *l, const lump_t *msLump, unsigned num
 			ri.Com_Error( ERR_DROP, "Mod_Q2LoadBmodel: bad marksurfaces in leaf %i", i );
 		}
 
-		size = numMarkSurfaces * 2 * sizeof( unsigned );
-		buffer = ( uint8_t * )Mod_Malloc( loadmodel, size );
+		size = ( numMarkSurfaces + 1 ) * 2 * sizeof( msurface_t * );
+		buffer = (uint8_t *)Mod_Malloc( loadmodel, size );
 
-		out->numVisSurfaces = numMarkSurfaces;
-		out->visSurfaces = ( unsigned * )buffer;
-		buffer += numMarkSurfaces * sizeof( unsigned );
+		out->firstVisSurface = (msurface_t **)buffer;
+		buffer += ( numMarkSurfaces + 1 ) * sizeof( msurface_t * );
 
-		out->numFragmentSurfaces = numMarkSurfaces;
-		out->fragmentSurfaces = ( unsigned * )buffer;
-		buffer += numMarkSurfaces * sizeof( unsigned );
+		out->firstFragmentSurface = (msurface_t **)buffer;
+		buffer += ( numMarkSurfaces + 1 ) * sizeof( msurface_t * );
 
 		for( j = 0; j < numMarkSurfaces; j++ ) {
 			k = LittleShort( inMarkSurfaces[firstMarkSurface + j] );
-			out->visSurfaces[j] = k;
-			out->fragmentSurfaces[j] = k;
+			out->firstVisSurface[j] = loadbmodel->surfaces + k;
+			out->firstFragmentSurface[j] = loadbmodel->surfaces + k;
 		}
 	}
 
@@ -2811,11 +2860,12 @@ static void Mod_Q1LoadLeafs( const lump_t *l, const lump_t *msLump, unsigned num
 }
 
 /*
-* Mod_Q1LoadVisibility
-*
-* Decompresses PVS data, sets proper cluster values for leafs
-*/
-static void Mod_Q1LoadVisibility( lump_t *l, unsigned numvisleafs ) {
+ * Mod_Q1LoadVisibility
+ *
+ * Decompresses PVS data, sets proper cluster values for leafs
+ */
+static void Mod_Q1LoadVisibility( lump_t *l, unsigned numvisleafs )
+{
 	unsigned i;
 	unsigned rowsize, numclusters;
 	int visdatasize;
@@ -2843,7 +2893,7 @@ static void Mod_Q1LoadVisibility( lump_t *l, unsigned numvisleafs ) {
 	out->rowsize = rowsize;
 	loadbmodel->pvs = out;
 
-	in = ( void * )( mod_base + l->fileofs );
+	in = (void *)( mod_base + l->fileofs );
 	for( i = 0, leaf = loadbmodel->leafs; i < loadbmodel->numleafs; i++, leaf++ ) {
 		int visofs = leaf->cluster;
 		if( visofs >= 0 && ( i > 0 && i < numclusters + 1 ) ) {
@@ -2857,9 +2907,10 @@ static void Mod_Q1LoadVisibility( lump_t *l, unsigned numvisleafs ) {
 }
 
 /*
-* Mod_FixupQ1MipTex
-*/
-void Mod_FixupQ1MipTex( model_t *mod ) {
+ * Mod_FixupQ1MipTex
+ */
+void Mod_FixupQ1MipTex( model_t *mod )
+{
 	unsigned i, count;
 	q1mmiptex_t *out;
 	mbrushmodel_t *bmodel;
@@ -2868,7 +2919,7 @@ void Mod_FixupQ1MipTex( model_t *mod ) {
 		return;
 	}
 
-	bmodel = ( ( mbrushmodel_t * )mod->extradata );
+	bmodel = ( (mbrushmodel_t *)mod->extradata );
 	if( !bmodel ) {
 		return;
 	}
@@ -2887,9 +2938,10 @@ void Mod_FixupQ1MipTex( model_t *mod ) {
 }
 
 /*
-* Mod_LoadQ1BrushModel
-*/
-void Mod_LoadQ1BrushModel( model_t *mod, model_t *parent, void *buffer, bspFormatDesc_t *format ) {
+ * Mod_LoadQ1BrushModel
+ */
+void Mod_LoadQ1BrushModel( model_t *mod, model_t *parent, void *buffer, bspFormatDesc_t *format )
+{
 	int i;
 	int numvisleafs;
 	q1dheader_t *header;
@@ -2904,8 +2956,8 @@ void Mod_LoadQ1BrushModel( model_t *mod, model_t *parent, void *buffer, bspForma
 
 	mod_bspFormat = format;
 
-	header = ( q1dheader_t * )buffer;
-	mod_base = ( uint8_t * )header;
+	header = (q1dheader_t *)buffer;
+	mod_base = (uint8_t *)header;
 
 	// swap all the lumps
 	for( i = 0; i < sizeof( header ) / 4; i++ )
@@ -2927,5 +2979,5 @@ void Mod_LoadQ1BrushModel( model_t *mod, model_t *parent, void *buffer, bspForma
 
 	Mod_Finish();
 }
-	
-//Mem_ValidationAllAllocations();
+
+// Mem_ValidationAllAllocations();

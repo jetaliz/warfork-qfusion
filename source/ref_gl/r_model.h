@@ -132,11 +132,6 @@ typedef struct mleaf_s
 	msurface_t		**firstVisSurface;
 	msurface_t		**firstFragmentSurface;
 
-	unsigned numVisSurfaces;
-	unsigned *visSurfaces;
-
-	unsigned numFragmentSurfaces;
-	unsigned *fragmentSurfaces;
 } mleaf_t;
 
 typedef struct
