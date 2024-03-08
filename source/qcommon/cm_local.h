@@ -186,9 +186,6 @@ struct cmodel_state_s
 	cbrush_t *oct_markbrushes[1];
 	cmodel_t oct_cmodel[1];
 
-	int *map_brush_checkcheckouts;
-	int *map_face_checkcheckouts;
-
 	// ==== Q1 specific stuff ===
 	int numclipnodes;
 	cnode_t *map_clipnodes;

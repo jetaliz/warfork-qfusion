@@ -416,7 +416,6 @@ static void CMod_LoadBrushes( cmodel_state_t *cms, lump_t *l ) {
 
 	out = cms->map_brushes = Mem_Alloc( cms->mempool, count * sizeof( *out ) );
 	cms->numbrushes = count;
-	cms->map_brush_checkcheckouts = Mem_Alloc( cms->mempool, cms->numbrushes * sizeof( int ) );
 
 	for( i = 0; i < count; i++, in++, out++ ) {
 		contents = LittleLong( in->contents );

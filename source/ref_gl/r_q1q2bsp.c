@@ -450,7 +450,7 @@ static mesh_t *Mod_BuildMeshForSurface( q2msurface_t *fa, msurface_t *out )
 	out->mesh = (mesh_t *)buffer;
 	buffer += MESH_T_SIZE_ALIGNED;
 
-	mesh_t *mesh = out->mesh;
+	mesh_t *const mesh = out->mesh;
 	mesh->numVerts = numVerts;
 	mesh->numElems = numElems;
 
@@ -677,7 +677,7 @@ static void Mod_SubdividePolygon( int numverts, float *verts )
  * Breaks a polygon up along axial 64 unit boundaries so
  * that turbulent and sky warps can be done reasonably.
  */
-static void Mod_BuildMeshForWarpSurface( q2msurface_t *fa, msurface_t *out )
+static mesh_t* Mod_BuildMeshForWarpSurface( q2msurface_t *fa, msurface_t *out )
 {
 	vec3_t verts[64];
 	int numVerts;
@@ -718,7 +718,7 @@ static void Mod_BuildMeshForWarpSurface( q2msurface_t *fa, msurface_t *out )
 	}
 
 	if( !numVerts || !numElems ) {
-		return;
+		return NULL;
 	}
 
 	// build mesh
@@ -801,6 +801,7 @@ static void Mod_BuildMeshForWarpSurface( q2msurface_t *fa, msurface_t *out )
 		VectorCopy( fa->plane->normal, mesh->normalsArray[i] );
 		mesh->normalsArray[i][3] = 0.0f;
 	}
+	return mesh;
 }
 
 //=======================================================
@@ -881,29 +882,19 @@ static void Mod_ApplySuperStylesToFace( const q2msurface_t *in, msurface_t *out 
  */
 static void Mod_CreateFaces( void )
 {
-	q2msurface_t *in;
-	int i, count;
 
-	in = loadmodel_surfaces;
-	count = loadmodel_numsurfaces;
-	msurface_t *out = Mod_Malloc( loadmodel, count * sizeof( msurface_t ) );
-	//cplane_t *planes = Mod_Malloc( loadmodel, count * sizeof( cplane_t ) );
-
-	loadbmodel->surfaces = out;
-	loadbmodel->numsurfaces = count;
+	loadbmodel->surfaces = Mod_Malloc( loadmodel, loadmodel_numsurfaces * sizeof( msurface_t ) );
+	loadbmodel->numsurfaces = loadmodel_numsurfaces;
 
 	R_SortSuperLightStyles( loadmodel );
 
-	for( i = 0; i < count; i++, in++, out++ ) {
+	for(size_t i = 0; i < loadbmodel->numsurfaces; i++) {
+		q2msurface_t *const in = &loadmodel_surfaces[i];
+		msurface_t *const out = &loadbmodel->surfaces[i];
+
 		out->facetype = FACETYPE_PLANAR;
 		out->shader = in->texinfo->shader;
 		out->flags = Mod_SurfaceFlags( in->texinfo->flags );
-
-	 // VectorCopy( in->plane->normal, planes[i].normal );
-	 // planes[i].dist = in->plane->dist;
-	 // planes[i].type = PLANE_NONAXIAL;
-	 // planes[i].signbits = 0;
-		out->plane = in->plane;
 
 		if( !in->texinfo->shader ) {
 			continue;
@@ -935,9 +926,20 @@ static void Mod_CreateFaces( void )
 		}
 
 		if( in->texinfo->flags & Q2_SURF_WARP ) {
-			Mod_BuildMeshForWarpSurface( in, out );
+			mesh_t* mesh = Mod_BuildMeshForWarpSurface( in, out );
+			if( mesh) {
+				out->numVerts = out->mesh->numVerts;
+				out->numElems = out->mesh->numElems;
+				out->plane = in->plane;
+			}
+			assert(out->plane);
 		} else {
-			Mod_BuildMeshForSurface( in, out );
+			mesh_t* mesh = Mod_BuildMeshForSurface( in, out );
+			if( mesh) {
+				out->numVerts = out->mesh->numVerts;
+				out->numElems = out->mesh->numElems;
+				out->plane = in->plane;
+			}
 		}
 
 		Mod_ApplySuperStylesToFace( in, out );
@@ -1632,7 +1634,7 @@ static void Mod_Q2LoadFaces( const lump_t *l )
 		ri.Com_Error( ERR_DROP, "Mod_Q2LoadFaces: funny lump size in %s", loadmodel->name );
 	}
 	count = l->filelen / sizeof( *in );
-	out = Mod_Malloc( loadmodel, count * sizeof( *out ) );
+	out = Mod_Malloc( loadmodel, count * sizeof( q2msurface_t) );
 
 	loadmodel_surfaces = out;
 	loadmodel_numsurfaces = count;
@@ -1654,6 +1656,7 @@ static void Mod_Q2LoadFaces( const lump_t *l )
 		if( side ) {
 			planenum++;
 		}
+		assert(planenum < loadbmodel->numplanes);
 		out->plane = loadbmodel->planes + planenum;
 
 		Mod_CalcSurfaceExtents( out );
