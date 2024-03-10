@@ -1197,6 +1197,7 @@ static void Mod_TraceLightGrid( void )
 			}
 
 			// store index as a pointer
+			assert(lightindex < loadmodel_numlighthashelems);
 			loadbmodel->lightarray[num + mod] = &loadbmodel->lightgrid[lightindex];
 			mod -= gridBounds[3];
 		}
@@ -1232,9 +1233,8 @@ static void Mod_BuildLightGrid( vec3_t gridSize )
 
 	// allocate lightgrid indexes
 	loadbmodel->numlightarrayelems = count;
-	loadbmodel->lightarray = Mod_Malloc( loadmodel, sizeof( mgridlight_t * ) * count );
-	memset( loadbmodel->lightarray, 0, sizeof( mgridlight_t * ) * count );
-
+	loadbmodel->lightarray = Q_CallocAligned( count, 16, sizeof( mgridlight_t * ) );
+	Q_LinkToPool(loadbmodel->lightarray, loadmodel->mempool);
 	
 	// hash table, containing only elements with styles and ambient lighting
 	loadmodel_numlighthashelems = 0;
@@ -1249,8 +1249,12 @@ static void Mod_BuildLightGrid( vec3_t gridSize )
 	// allocate the real lightgrid and update pointers
 	loadbmodel->numlightgridelems = loadmodel_numlighthashelems;
 	loadbmodel->lightgrid = Mod_Malloc( loadmodel, loadbmodel->numlightgridelems * sizeof( *loadbmodel->lightgrid ) );
-	
-	for(size_t i = 0; i < count; i++) {
+
+	// agh hack we are overruning the number of lightarray elements in R_LightForOrigin 
+	// force the number of lightgrid elements to match the number of numlightarrayelems 
+	loadbmodel->numlightarrayelems = loadbmodel->numlightgridelems;  
+	for(size_t i = 0; i < loadbmodel->numlightgridelems; i++) {
+		assert(i < loadbmodel->numlightgridelems);
 		loadbmodel->lightarray[i] = loadbmodel->lightgrid + i;
 	}
 
