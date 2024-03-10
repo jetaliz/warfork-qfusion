@@ -27,6 +27,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "r_texture_buf.h"
 #include "r_texture_buffer_load.h"
 #include "r_texture_format.h"
+#include "../ref_base/r_math_util.h"
 
 #define LIGHTGRID_HASH_SIZE 8192
 
@@ -66,7 +67,6 @@ typedef struct q2msurface_s {
 typedef struct q2lighthash_s {
 	uint8_t styles[MAX_LIGHTMAPS];
 	uint8_t ambient[MAX_LIGHTMAPS][3];
-
 	struct q2lighthash_s *hash_next;
 } q2lighthash_t;
 
@@ -1197,8 +1197,7 @@ static void Mod_TraceLightGrid( void )
 			}
 
 			// store index as a pointer
-			assert(lightindex < loadmodel_numlighthashelems);
-			loadbmodel->lightarray[num + mod] = &loadbmodel->lightgrid[lightindex];
+			loadbmodel->lightarray[num + mod] =  (mgridlight_t*)lightindex;
 			mod -= gridBounds[3];
 		}
 	}
@@ -1250,20 +1249,14 @@ static void Mod_BuildLightGrid( vec3_t gridSize )
 	loadbmodel->numlightgridelems = loadmodel_numlighthashelems;
 	loadbmodel->lightgrid = Mod_Malloc( loadmodel, loadbmodel->numlightgridelems * sizeof( *loadbmodel->lightgrid ) );
 
-	// agh hack we are overruning the number of lightarray elements in R_LightForOrigin 
-	// force the number of lightgrid elements to match the number of numlightarrayelems 
-	loadbmodel->numlightarrayelems = loadbmodel->numlightgridelems;  
-	for(size_t i = 0; i < loadbmodel->numlightgridelems; i++) {
-		assert(i < loadbmodel->numlightgridelems);
-		loadbmodel->lightarray[i] = loadbmodel->lightgrid + i;
-	}
+  for(size_t i = 0; i < count; i++) {
+  	loadbmodel->lightarray[i] = &loadbmodel->lightgrid[(size_t)loadbmodel->lightarray[i]]; // abusing pointers and size_t 
+  }
 
 	if( loadmodel_numlighthashelems ) {
-		float latlong[2];
-
-		// set light direction for all elements to negative Z
+		uint8_t latlong[2];
 		float normal[] = { 0, 0, 1 };
-		NormToLatLong( normal, latlong );
+		R_NormToLatLong( normal, latlong );
 
 		for( j = 0; j < loadbmodel->numlightgridelems; j++ ) {
 			int i;
