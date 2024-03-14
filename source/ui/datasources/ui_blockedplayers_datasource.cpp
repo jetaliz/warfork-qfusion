@@ -29,6 +29,8 @@ namespace WSWUI
 		blockentry_t entry = (*UI_IMPORT.GetBlocklist())[row_index];
 		for( Rocket::Core::StringList::const_iterator it = cols.begin(); it != cols.end(); ++it )
 		{
+			if (entry.steamid == 0) continue;
+
 			if(*it == "name") row.push_back(entry.name);
 			else if(*it == "steamid") row.push_back(va("%llu", entry.steamid) );
 			else if(*it == "index") row.push_back(va("%i", row_index));
