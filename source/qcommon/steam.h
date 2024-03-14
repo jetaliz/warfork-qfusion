@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../steamshim/src/steamshim_types.h"
 #include <stdint.h>
 // #include "../qcommon/qcommon.h"
-
+#define STEAMID_CHARS 18
 void Steam_Init( void );
 void Steam_Shutdown( void );
 int Steam_Active();

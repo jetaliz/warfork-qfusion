@@ -32,7 +32,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "cg_public.h"
 #include "cg_syscalls.h"
-#include <cstdint>
 
 #define CG_OBITUARY_HUD	    1
 #define CG_OBITUARY_CENTER  2
@@ -924,7 +923,6 @@ extern cvar_t *cg_laserBeamSubdivisions;
 extern cvar_t *cg_projectileAntilagOffset;
 extern cvar_t *cg_raceGhosts;
 extern cvar_t *cg_raceGhostsAlpha;
-extern cvar_t *cg_chatBlocklist;
 extern cvar_t *cg_chatBeep;
 extern cvar_t *cg_chatFilter;
 extern cvar_t *cg_chatFilterTV;
@@ -972,6 +970,10 @@ void CG_Reset( void );
 void CG_Precache( void );
 char *_CG_CopyString( const char *in, const char *filename, int fileline );
 #define CG_CopyString( in ) _CG_CopyString( in, __FILE__, __LINE__ )
+
+extern blockentry_t blockentries[MAX_BLOCKS];
+void CG_ReadBlockList( void );
+bool CG_FilterSteamID( uint64_t steamid );
 
 void CG_UseItem( const char *name );
 void CG_RegisterCGameCommands( void );

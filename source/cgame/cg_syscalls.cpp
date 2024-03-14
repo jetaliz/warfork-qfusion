@@ -64,6 +64,8 @@ extern "C" QF_DLL_EXPORT cgame_export_t *GetCGameAPI( cgame_import_t *import )
 
 	globals.CallbackRequestAvatar = CG_CallbackRequestAvatar;
 
+	globals.blockentries = &blockentries;
+
 	return &globals;
 }
 

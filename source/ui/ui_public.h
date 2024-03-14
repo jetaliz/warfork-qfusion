@@ -37,6 +37,7 @@ enum {
 };
 
 #include "../cgame/ref.h"
+#include "../cgame/blocklist.h"
 
 //
 // these are the functions exported by the refresh module
@@ -188,6 +189,8 @@ typedef struct
 
 	// steam
 	void *( *Steam_OpenProfile )( uint64_t steamid );
+
+	blockentry_t (*( *GetBlocklist )( void ))[MAX_BLOCKS];
 } ui_import_t;
 
 typedef struct

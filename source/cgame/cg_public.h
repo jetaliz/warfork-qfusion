@@ -43,6 +43,8 @@ typedef void ( *fdrawchar_t )( int x, int y, int w, int h, float s1, float t1, f
 
 // cg_public.h -- client game dll information visible to engine
 
+#include "blocklist.h"
+
 #define	CGAME_API_VERSION   98
 
 //
@@ -367,6 +369,9 @@ typedef struct
 
 
 	void ( *CallbackRequestAvatar )( uint64_t steamid, char *avatar );
+
+
+	blockentry_t (* blockentries) [MAX_BLOCKS];
 } cgame_export_t;
 
 #endif

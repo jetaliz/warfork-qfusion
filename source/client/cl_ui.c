@@ -156,6 +156,11 @@ static int CL_UIModule_PlayerNum( void )
 	return cl.playernum;
 }
 
+blockentry_t (*GetBlocklist(void))[MAX_BLOCKS] {
+	if (!cge) return NULL;
+	return cge->blockentries;
+}
+
 //==============================================
 
 /*
@@ -309,6 +314,7 @@ void CL_UIModule_Init( void )
 	import.L10n_GetUserLanguage = &L10n_GetUserLanguage;
 
 	import.Steam_OpenProfile = &Steam_OpenProfile;
+	import.GetBlocklist = GetBlocklist;
 
 #ifndef UI_HARD_LINKED
 	funcs[0].name = "GetUIAPI";

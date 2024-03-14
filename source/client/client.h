@@ -636,6 +636,7 @@ extern float scr_con_current;
 extern float scr_conlines;       // lines of console to display
 
 extern ref_export_t re;		// interface to refresh .dll
+extern cgame_export_t *cge; // interface to cgame .dll
 
 //
 // cl_mm.c

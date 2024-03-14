@@ -18,7 +18,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
+#include <cstdint>
 #include "cg_local.h"
+#include "blocklist.h"
+
+#include "../qcommon/steam.h"
 
 /*
 ==========================================================================
@@ -51,8 +55,7 @@ static void CG_SC_ChatPrint( void )
 		return;
 
 	if (*cgs.configStrings[CS_USESTEAMAUTH] == '1')
-		// strstr will always work for steamid64
-		if (cg_chatBlocklist->string[0] && strstr(cg_chatBlocklist->string, va("%llu", cgs.clientInfo[who-1].steamid) ))
+		if (CG_FilterSteamID(cgs.clientInfo[who-1].steamid))
 			return;
 
 	if( !name )
@@ -944,10 +947,118 @@ void CG_GameCommand( const char *command )
 /*
 ==========================================================================
 
+BLOCKLIST
+
+==========================================================================
+*/
+
+blockentry_t blockentries[MAX_BLOCKS];
+int numblocks;
+
+
+void CG_ReadBlockList( void )
+{
+	trap_Cmd_ExecuteText( EXEC_APPEND, "exec blocklist.cfg silent\n" );
+}
+
+static void CG_WriteBlockList( void )
+{
+	int file;
+	char name[MAX_QPATH];
+	char string[MAX_STRING_CHARS] = {0};
+	int i;
+
+	Q_strncpyz( name, "blocklist.cfg", sizeof( name ) );
+
+	if( trap_FS_FOpenFile( name, &file, FS_WRITE ) == -1 )
+	{
+		CG_Printf( "Couldn't open %s\n", name );
+		return;
+	}
+
+	for( i = 0; i < numblocks; i++ )
+	{
+		if (!blockentries[i].steamid)
+			continue;
+
+		Q_snprintfz( string, sizeof( string ), "block \"%s\" \"%llu\"\r\n", blockentries[i].name, blockentries[i].steamid );
+		trap_FS_Write( string, strlen( string ), file );
+	}
+
+	trap_FS_FCloseFile( file );
+}
+
+static void CG_Cmd_Block_f( void )
+{
+	if( trap_Cmd_Argc() < 2 )
+	{
+		CG_Printf( "Usage: 'block <name> <steamid>'\n" );
+		return;
+	}
+
+
+	int i;
+
+	for( i = 0; i < numblocks; i++ )
+		if( !blockentries[i].steamid )
+			break; // free spot
+
+	if( i == numblocks )
+	{
+		if( numblocks == MAX_BLOCKS )
+		{
+			CG_Printf( "Chat block list is full!\n" );
+			return;
+		}
+		numblocks++;
+	}
+
+	Q_strncpyz( blockentries[i].name, trap_Cmd_Argv( 1 ), sizeof( blockentries[i].name) );
+	blockentries[i].steamid = atoll(trap_Cmd_Argv( 2 ));
+	CG_WriteBlockList();
+}
+static void CG_Cmd_Unblock_f( void )
+{
+	if( trap_Cmd_Argc() < 1 )
+	{
+		CG_Printf( "Usage: 'unblock <steamid>'\n" );
+		return;
+	}
+
+	for( int i = 0; i < numblocks; i++ )
+		if( blockentries[i].steamid == atoll(trap_Cmd_Argv( 1 )) )
+		{
+			blockentries[i].steamid = 0;
+			blockentries[i].name[0] = '\0';
+			break;
+		}
+
+	CG_WriteBlockList();
+}
+
+bool CG_FilterSteamID( uint64_t steamid )
+{
+	for( int i = 0; i < MAX_BLOCKS; i++ )
+	{
+		if( !blockentries[i].steamid )
+			continue;
+
+		if( blockentries[i].steamid == steamid )
+			return true;
+	}
+
+	return false;
+}
+
+/*
+==========================================================================
+
 CGAME COMMANDS
 
 ==========================================================================
 */
+
+
 
 /*
 * CG_UseItem
@@ -1299,6 +1410,8 @@ static const cgcmd_t cgcmds[] =
 	{ "viewpos", CG_Viewpos_f, true },
 	{ "players", NULL, false },
 	{ "spectators", NULL, false },
+	{ "block", CG_Cmd_Block_f, false },
+	{ "unblock", CG_Cmd_Unblock_f, false },
 
 	{ NULL, NULL, false }
 };

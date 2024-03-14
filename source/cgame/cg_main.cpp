@@ -86,7 +86,6 @@ cvar_t *cg_laserBeamSubdivisions;
 cvar_t *cg_projectileAntilagOffset;
 cvar_t *cg_raceGhosts;
 cvar_t *cg_raceGhostsAlpha;
-cvar_t *cg_chatBlocklist;
 cvar_t *cg_chatBeep;
 cvar_t *cg_chatFilter;
 cvar_t *cg_chatFilterTV;
@@ -820,7 +819,6 @@ static void CG_RegisterVariables( void )
 	cg_raceGhosts =		trap_Cvar_Get( "cg_raceGhosts", "0", CVAR_ARCHIVE );
 	cg_raceGhostsAlpha =	trap_Cvar_Get( "cg_raceGhostsAlpha", "0.25", CVAR_ARCHIVE );
 
-	cg_chatBlocklist =		trap_Cvar_Get( "cg_chatBlocklist", "", CVAR_ARCHIVE );
 	cg_chatBeep =		trap_Cvar_Get( "cg_chatBeep", "1", CVAR_ARCHIVE );
 	cg_chatFilter =		trap_Cvar_Get( "cg_chatFilter", "0", CVAR_ARCHIVE );
 	cg_chatFilterTV =	trap_Cvar_Get( "cg_chatFilterTV", "2", CVAR_ARCHIVE );
@@ -1221,6 +1219,8 @@ void CG_Init( const char *serverName, unsigned int playerNum,
 	CG_ClearDecals();
 	CG_ClearPolys();
 	CG_ClearEffects();
+
+	CG_ReadBlockList();
 
 	CG_InitChat( &cg.chat );
 

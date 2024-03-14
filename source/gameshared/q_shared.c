@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "q_arch.h"
 #include "q_math.h" // fixme : needed for MAX_S_COLORS define
-#include <threads.h>
 #include "q_shared.h"
 
 //============================================================================

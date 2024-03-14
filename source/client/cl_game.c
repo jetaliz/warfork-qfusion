@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cin.h"
 #include "../qcommon/asyncstream.h"
 
-static cgame_export_t *cge;
+cgame_export_t *cge;
 
 EXTERN_API_FUNC void *GetCGameAPI( void * );
 
