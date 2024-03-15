@@ -16,7 +16,7 @@ uint16_t T_LogicalH(const  struct texture_buf_s *buf )
 	}
 	return buf->height;
 }
-uint16_t T_LogicalW(const  struct texture_buf_s *buf )
+uint16_t T_LogicalW( const struct texture_buf_s *buf )
 {
 	switch( buf->def->base ) {
 		case R_BASE_BLOCKED_COMPRESSED:
@@ -24,7 +24,7 @@ uint16_t T_LogicalW(const  struct texture_buf_s *buf )
 		default:
 			break;
 	}
-	return buf->height;
+	return buf->width;
 }
 uint16_t T_PixelW(const  struct texture_buf_s *buf )
 {
