@@ -50,7 +50,7 @@ static bool processCommand(PipeBuffer cmd, ShimCmd cmdtype, unsigned int len)
 {
   #if 1
     if (false) {}
-#define PRINTGOTCMD(x) else if (cmdtype && cmdtype == x) printf("Child got " #x ".\n")
+#define PRINTGOTCMD(x) else if (cmdtype && cmdtype == x) dbgprintf("Child got " #x ".\n")
     PRINTGOTCMD(SHIMCMD_BYE);
     // PRINTGOTCMD(SHIMCMD_PUMP);
     PRINTGOTCMD(SHIMCMD_REQUESTSTEAMID);
@@ -168,6 +168,12 @@ static bool processCommand(PipeBuffer cmd, ShimCmd cmdtype, unsigned int len)
                 GSteamGameServer->EndAuthSession(steamID);
             }
             break;
+        case SHIMCMD_OPENPROFILE:
+            {
+                uint64 steamID = cmd.ReadLong();
+                SteamFriends()->ActivateGameOverlayToUser("steamid", steamID);
+            }
+            break;
     } // switch
 
     return true;
@@ -267,6 +273,10 @@ int main(int argc, char **argv)
 {
 #ifndef _WIN32
     signal(SIGPIPE, SIG_IGN);
+
+    if( argc > 1 && strcmp(argv[1], "steamdebug") ) {
+        debug = true;
+    }
 #endif
 
     dbgprintf("Child starting mainline.\n");
@@ -317,7 +327,8 @@ char *argv[MAX_NUM_ARGVS];
 
 int CALLBACK WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
 {
-    if( strstr( GetCommandLineA(), "steamdbg" ) ) {
+    if( strstr( GetCommandLineA(), "steamdebug" ) ) {
+        debug = true;
         FreeConsole();
         AllocConsole();
         freopen( "CONOUT$", "w", stdout );

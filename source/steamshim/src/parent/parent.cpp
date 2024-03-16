@@ -22,7 +22,7 @@ freely, subject to the following restrictions:
 #include <cstring>
 #include <stdio.h>
 #define DEBUGPIPE 1
-#include "parent_private.h"
+#include "parent.h"
 #include "../steamshim.h"
 #include "../steamshim_private.h"
 #include "../os.h"
@@ -50,7 +50,7 @@ static STEAMSHIM_Event* ProcessEvent(){
 
     #if DEBUGPIPE
     if (0) {}
-    #define PRINTGOTEVENT(x) else if (type == x) printf("Parent got " #x ".\n")
+    #define PRINTGOTEVENT(x) else if (type == x) dbgprintf("Parent got " #x ".\n")
     PRINTGOTEVENT(SHIMEVENT_BYE);
     PRINTGOTEVENT(SHIMEVENT_STATSRECEIVED);
     PRINTGOTEVENT(SHIMEVENT_STATSSTORED);
@@ -126,8 +126,9 @@ static bool setEnvironmentVars(PipeType pipeChildRead, PipeType pipeChildWrite)
 } 
 
 extern "C" {
-  int STEAMSHIM_init(bool runclient, bool runserver)
+  int STEAMSHIM_init(SteamshimOptions *options)
   {
+    debug = options->debug;
 
 
     PipeType pipeParentRead = NULLPIPE;
@@ -136,9 +137,9 @@ extern "C" {
     PipeType pipeChildWrite = NULLPIPE;
     ProcessType childPid;
 
-    if (runclient)
+    if (options->runclient)
         setEnvVar("STEAMSHIM_RUNCLIENT", "1");
-    if (runserver)
+    if (options->runserver)
         setEnvVar("STEAMSHIM_RUNSERVER", "1");
 
 
@@ -150,7 +151,7 @@ extern "C" {
         printf("steamshim: Failed to set environment variables\n");
         return 0;
     }
-    else if (!launchChild(&childPid, STEAM_BLOB_LAUNCH_NAME))
+    else if (!launchChild(&childPid))
     {
         printf("steamshim: Failed to launch application\n");
         return 0;
@@ -160,6 +161,7 @@ extern "C" {
     GPipeWrite = pipeParentWrite;
 
     char status;
+     
     readPipe(GPipeRead, &status, sizeof status);
 
     if (!status){
@@ -232,12 +234,18 @@ extern "C" {
   }
 
   void STEAMSHIM_getPersonaName(){
-
       Write1ByteMessage(SHIMCMD_REQUESTPERSONANAME);
   }
 
   void STEAMSHIM_getAuthSessionTicket(){
       Write1ByteMessage(SHIMCMD_REQUESTAUTHSESSIONTICKET);
+  }
+  
+  void STEAMSHIM_openProfile(uint64_t steamid) {
+      PipeBuffer buf;
+      buf.WriteByte(SHIMCMD_OPENPROFILE);
+      buf.WriteLong(steamid);
+      buf.Transmit();
   }
 
   void STEAMSHIM_beginAuthSession(uint64_t steamid, SteamAuthTicket_t* ticket){
@@ -256,7 +264,7 @@ extern "C" {
     buf.Transmit();
   }
 
-  void STEAMSHIM_setRichPresence(int num, char** key, char** val){
+  void STEAMSHIM_setRichPresence(int num, const char** key, const char** val){
       PipeBuffer buf;
       buf.WriteByte(SHIMCMD_SETRICHPRESENCE);
       buf.WriteInt(num);

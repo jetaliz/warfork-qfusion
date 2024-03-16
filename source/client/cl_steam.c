@@ -3,10 +3,11 @@
 #include "client.h"
 #include "../steamshim/src/parent/parent.h"
 #include <string.h>
+#include <stdio.h>
 
 static void printEvent( const STEAMSHIM_Event *e )
 {
-	if( !e )
+	if( !steam_debug->integer || !e )
 		return;
 
 	Com_Printf( "%sokay, ival=%d, fval=%f, lval=%llu, name='%s').\n", e->okay ? "" : "!", e->ivalue, e->fvalue, e->lvalue, e->name );
@@ -72,10 +73,10 @@ void Steam_GetPersonaName( char *name, size_t namesize )
 	STEAMSHIM_getPersonaName();
 	const STEAMSHIM_Event *evt = blockOnEvent(SHIMEVENT_PERSONANAMERECIEVED);
 	strncpy(name, evt->name, namesize);
+}
 
-
-	printf("making beacon\n");
-	STEAMSHIM_createBeacon(1, "a", "b");
+void Steam_OpenProfile(uint64_t steamid) { 
+	STEAMSHIM_openProfile(steamid);
 }
 
 void Steam_SetRichPresence( int num, const char **key, const char **val )
@@ -104,5 +105,15 @@ void Steam_RequestAvatar(uint64_t steamid, int size)
 */
 void Steam_AdvertiseGame( const uint8_t *ip, unsigned short port )
 {
-	// UNIMPLEMENTED_DBGBREAK();
+	const char* keys[1] = {"connect"};
+	const char* values[1];
+
+	char connectstr[64];
+	if (port) {
+		snprintf( connectstr,sizeof connectstr, "+connect %d.%d.%d.%d:%i",ip[0],ip[1],ip[2],ip[3],port);
+		values[0] = connectstr;
+	} else {
+		values[0] = "";
+	}
+	Steam_SetRichPresence(1, keys, values);
 }

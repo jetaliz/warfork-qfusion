@@ -29,7 +29,7 @@ namespace {
 					info.address.c_str(), info.hostname.c_str(), info.map.c_str(),
 					info.curuser, info.maxuser, info.gametype.c_str(),
 					info.modname.c_str(), int(info.instagib), info.skilllevel,
-					int(info.password), int(info.mm), info.ping );
+					int(info.password), int(info.steam), info.ping );
 	}
 
 	// TODO: move this as general utility
@@ -43,7 +43,7 @@ ServerInfo::ServerInfo( const char *adr, const char *info )
 	:	has_changed(false), ping_updated(false), has_ping(false), address( adr ),
 		iaddress( addr_to_int( adr ) ), hostname(""), cleanname(""), map(""), curuser(0),
 		maxuser(0), bots(0), gametype(""), modname(""), instagib(false), race(false), skilllevel(0),
-		password(false), mm(false), tv(false), ping(0), ping_retries(0), favorite(false)
+		password(false), steam(false), tv(false), ping(0), ping_retries(0), favorite(false)
 {
 	if( info )
 		fromInfo( info );
@@ -80,7 +80,7 @@ void ServerInfo::fromOther( const ServerInfo &other )
 	race = other.race;
 	skilllevel = other.skilllevel;
 	password = other.password;
-	mm = other.mm;
+	steam = other.steam;
 	tv = other.tv;
 	ping = other.ping;
 	ping_retries = other.ping_retries;
@@ -204,13 +204,22 @@ void ServerInfo::fromInfo( const char *info )
 				}
 			}
 		}
-		else if( cmd == "mm" ) { // MATCHMAKING
-			int tmpmm;
+		// else if( cmd == "mm" ) { // MATCHMAKING
+		// 	int tmpmm;
+		// 	std::stringstream toint( value );
+		// 	toint >> tmpmm;
+		// 	if( !toint.fail() && (tmpmm != 0) != mm ) {
+		// 		has_changed = true;
+		// 		mm = tmpmm != 0;
+		// 	}
+		// }
+		else if( cmd == "stm" ) { // STEAM AUTHENTICATED
+			int tmpstm;
 			std::stringstream toint( value );
-			toint >> tmpmm;
-			if( !toint.fail() && (tmpmm != 0) != mm ) {
+			toint >> tmpstm;
+			if( !toint.fail() && (tmpstm != 0) != steam) {
 				has_changed = true;
-				mm = tmpmm != 0;
+				steam = tmpstm != 0;
 			}
 		}
 		else if( cmd == "mo" ) { // MOD NAME
@@ -336,14 +345,14 @@ void ServerInfo::fixStrings()
 // 3) hostname ASC
 bool ServerInfo::DefaultCompareBinary( const ServerInfo *lhs, const ServerInfo *rhs )
 {
+	if( lhs->steam > rhs->steam ) return true;
+	if( lhs->steam < rhs->steam ) return false;
+
 	if( lhs->curuser > rhs->curuser ) return true;
 	if( lhs->curuser < rhs->curuser ) return false;
 
 	if( lhs->ping < rhs->ping ) return true;
 	if( lhs->ping > rhs->ping ) return false;
-
-	//if( lhs->mm > rhs->mm ) return true;
-	//if( lhs->mm < rhs->mm ) return false;
 
 	return LessPtrBinary<std::string, &ServerInfo::locleanname>( lhs, rhs );
 }
@@ -486,8 +495,8 @@ void ServerBrowserDataSource::GetRow( StringList &row, const String &table, int 
 			row.push_back( va( "%d", info.skilllevel ) );
 		else if( *it == "password" )
 			row.push_back( info.password ? "yes" : "no" );
-		else if( *it == "mm" )
-			row.push_back( info.mm ? "yes" : "no" );
+		else if( *it == "steam" )
+			row.push_back( info.steam ? "yes" : "no" );
 		else if( *it == "ping" )
 			row.push_back( va( "%d", info.ping ) );
 		else if( *it == "address" )
@@ -799,7 +808,7 @@ void ServerBrowserDataSource::compileSuggestionsList( void )
 			}
 			else {
 				ServerInfo *gtBestInfo = *(gtBest->second).begin();
-				if( gtBestInfo->curuser < info->curuser || int(gtBestInfo->mm) < int(info->mm) ) {
+				if( gtBestInfo->curuser < info->curuser || int(gtBestInfo->steam) < int(info->steam) ) {
 					insertInfo = true;
 				}
 			}
@@ -863,8 +872,8 @@ void ServerBrowserDataSource::sortByField( const char *field )
 		sortCompare = ServerInfo::LessPtrBinary<int, &ServerInfo::skilllevel>;
 	else if( column == "password" )
 		sortCompare = ServerInfo::LessPtrBinary<bool, &ServerInfo::password>;
-	else if( column == "mm" )
-		sortCompare = ServerInfo::LessPtrBinary<bool, &ServerInfo::mm>;
+	else if( column == "steam" )
+		sortCompare = ServerInfo::LessPtrBinary<bool, &ServerInfo::steam>;
 	else if( column == "ping" )
 		sortCompare = ServerInfo::LessPtrBinary<unsigned int, &ServerInfo::ping>;
 	else if( column.empty() )

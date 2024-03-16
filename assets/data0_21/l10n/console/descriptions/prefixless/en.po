@@ -414,6 +414,14 @@ msgid "addip"
 msgstr "<ip address> Adds IP addresses to the filter list."
 
 #. Console/prefixless
+msgid "ban"
+msgstr "<steamid64> <time> Bans a user for specified time."
+
+#. Console/prefixless
+msgid "mute"
+msgstr "<steamid64> <time> Mutes a user for specified time."
+
+#. Console/prefixless
 msgid "addnode"
 msgstr "Allows you to manually place a navigation node at your current position in the map, helping to improve bot pathfinding in specific areas."
 
@@ -882,6 +890,14 @@ msgstr "<name> Records a demo with the specified name.\n"
 #. Console/prefixless
 msgid "removeip"
 msgstr "<ip address> Removes IP addresses from the filter list."
+
+#. Console/prefixless
+msgid "removeban"
+msgstr "<steamid64> Unbans a user by steam id."
+
+#. Console/prefixless
+msgid "removemute"
+msgstr "<steamid64> Removes a server mute."
 
 #. Console/prefixless
 msgid "requestservers"

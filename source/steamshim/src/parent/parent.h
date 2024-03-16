@@ -24,13 +24,21 @@ freely, subject to the following restrictions:
 #include <stdint.h>
 #include "../steamshim.h"
 #include "../steamshim_types.h"
+
+
+typedef struct { 
+  bool debug;
+  bool runclient;
+  bool runserver;
+} SteamshimOptions;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // pass runclient to connect to the steam app, runserver to host a game server
 // return of 0 means failure
-int STEAMSHIM_init(bool runclient, bool runserver);
+int STEAMSHIM_init(SteamshimOptions* options);
 void STEAMSHIM_deinit(void);
 int STEAMSHIM_alive(void);
 const STEAMSHIM_Event *STEAMSHIM_pump(void);
@@ -42,6 +50,7 @@ void STEAMSHIM_beginAuthSession(uint64_t steamid, SteamAuthTicket_t* ticket);
 void STEAMSHIM_endAuthSession(uint64_t steamid);
 void STEAMSHIM_createBeacon(uint32_t openSlots, char* connectString, char* metadata);
 void STEAMSHIM_requestAvatar(uint64_t steamid, int size);
+void STEAMSHIM_openProfile(uint64_t steamid);
 #ifdef __cplusplus
 }
 #endif

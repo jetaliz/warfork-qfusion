@@ -185,6 +185,10 @@ typedef struct
 	void ( *L10n_LoadLangPOFile )( const char *filepath );
 	const char *( *L10n_TranslateString )( const char *string );
 	const char *( *L10n_GetUserLanguage )( void );
+
+	// steam
+	void *( *Steam_OpenProfile )( uint64_t steamid );
+	bool ( *GetBlocklistItem )( size_t index, uint64_t* steamid_out, char* name, size_t* name_len_in_out );
 } ui_import_t;
 
 typedef struct

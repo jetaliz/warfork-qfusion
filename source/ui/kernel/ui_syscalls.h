@@ -2,6 +2,7 @@
 #define __UI_SYSCALLS_H__
 
 #include "ui_public.h"
+#include <cstdint>
 
 // in ui_public.cpp
 extern "C" QF_DLL_EXPORT ui_export_t *GetUIAPI( ui_import_t *import );
@@ -455,6 +456,14 @@ namespace trap
 
 		inline const char *L10n_GetUserLanguage( void ) {
 			return UI_IMPORT.L10n_GetUserLanguage();
+		}
+
+		// steam
+		inline void Steam_OpenProfile( uint64_t steamid ) {
+			UI_IMPORT.Steam_OpenProfile(steamid);
+		}
+		inline bool GetBlocklistItem( size_t index, uint64_t* steamid_out, char* name, size_t* name_len_in_out ) {
+			return UI_IMPORT.GetBlocklistItem( index, steamid_out, name, name_len_in_out );
 		}
 }
 

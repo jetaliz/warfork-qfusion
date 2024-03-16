@@ -367,6 +367,18 @@ typedef struct
 
 
 	void ( *CallbackRequestAvatar )( uint64_t steamid, char *avatar );
+
+
+	/**
+	 * Retrieves the blocklist item at the given index.
+	 *
+	 * @param index      index of the blocklist item
+	 * @param steamid_out steamid of the blocked user
+	 * @param name       name of the blocked user
+	 * @param name_len_in_out length of the name buffer, updated with the actual length
+	 * @return whether the index is valid
+	 */
+	bool ( *GetBlocklistItem )( size_t index, uint64_t* steamid_out, char* name, size_t* name_len_in_out );
 } cgame_export_t;
 
 #endif

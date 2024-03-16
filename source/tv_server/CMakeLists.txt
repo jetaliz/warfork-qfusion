@@ -2,9 +2,7 @@ project(${QFUSION_TVSERVER_NAME})
 
 include_directories(${MINIZ_INCLUDE_DIR} ${CURL_INCLUDE_DIR})
 
-if (BUILD_STEAMLIB)
-    set(STEAMSHIMPARENT_LIBRARY steamshim_parent)
-endif()
+set(STEAMSHIMPARENT_LIBRARY steamshim_parent)
 
 
 file(GLOB TV_SERVER_HEADERS

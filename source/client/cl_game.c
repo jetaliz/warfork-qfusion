@@ -764,3 +764,12 @@ void CL_GameModule_CallbackRequestAvatar( uint64_t steamid, char* avatar )
 		cge->CallbackRequestAvatar( steamid, avatar );
 }
 
+/*
+* CL_GameModule_CallbackRequestAvatar
+*/
+bool CL_GameModule_GetBlocklistItem( size_t index, uint64_t* steamid_out, char* name, size_t* name_len_in_out )
+{
+	if ( cge )
+		return cge->GetBlocklistItem(index, steamid_out, name, name_len_in_out);
+	return false;
+}

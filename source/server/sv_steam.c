@@ -5,7 +5,7 @@
 
 static void printEvent( const STEAMSHIM_Event *e )
 {
-	if( !e )
+	if( !steam_debug->integer || !e )
 		return;
 
 	Com_Printf( "%sokay, ival=%d, fval=%f, lval=%llu, name='%s').\n", e->okay ? "" : "!", e->ivalue, e->fvalue, e->lvalue, e->name );

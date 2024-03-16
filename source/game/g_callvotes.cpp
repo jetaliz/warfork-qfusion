@@ -119,7 +119,7 @@ static void G_AppendString( char **pdst, const char *src, size_t *pdst_len, size
 	*pdst = dst;
 }
 
-static http_response_code_t G_PlayerlistWebRequest( http_query_method_t method, const char *resource, 
+http_response_code_t G_PlayerlistWebRequest( http_query_method_t method, const char *resource, 
 	const char *query_string, char **content, size_t *content_length )
 {
 	int i;
@@ -135,9 +135,11 @@ static http_response_code_t G_PlayerlistWebRequest( http_query_method_t method, 
 			G_AppendString( &msg, va( 
 				"{\n"
 				"\"value\"" " " "\"%i\"" "\n"
+				"\"steamid\"" " " "\"%llu\"" "\n"
 				"\"name\"" " " "\"%s\"" "\n"
 				"}\n", 
 				i,
+				game.clients[i].steamid,
 				game.clients[i].netname
 				), &msg_len, &msg_size );
 		}
@@ -1186,7 +1188,11 @@ static void G_VoteKickBanPassed( callvotedata_t *vote )
 	if( !ent->r.inuse || !ent->r.client )  // may have disconnected along the callvote time
 		return;
 
-	trap_Cmd_ExecuteText( EXEC_APPEND, va( "addip %s %i\n", ent->r.client->ip, 15 ) );
+	if (ent->r.client->authenticated) {
+		trap_Cmd_ExecuteText( EXEC_APPEND, va( "ban %llu %llu\n", ent->r.client->steamid, 15 ) );
+	} else {
+		trap_Cmd_ExecuteText( EXEC_APPEND, va( "addip %s %i\n", ent->r.client->ip, 15 ) );
+	}
 	trap_DropClient( ent, DROP_TYPE_NORECONNECT, "Kicked" );
 }
 
@@ -1271,23 +1277,11 @@ static void G_VoteMutePassed( callvotedata_t *vote )
 	if( !ent->r.inuse || !ent->r.client )  // may have disconnect along the callvote time
 		return;
 
-	ent->r.client->muted |= 1;
-	ent->r.client->level.stats.muted_count++;
-}
-
-// vsay mute
-static void G_VoteVMutePassed( callvotedata_t *vote )
-{
-	int who;
-	edict_t *ent;
-
-	memcpy( &who, vote->data, sizeof( int ) );
-	ent = &game.edicts[who+1];
-	if( !ent->r.inuse || !ent->r.client )  // may have disconnect along the callvote time
-		return;
-
-	ent->r.client->muted |= 2;
-	ent->r.client->level.stats.muted_count++;
+	if (ent->r.client->authenticated) {
+		trap_Cmd_ExecuteText( EXEC_APPEND, va( "mute %llu %llu\n", ent->r.client->steamid, 15 ) );
+	} else {
+		ent->r.client->muted = 1;
+	}
 }
 
 /*
@@ -1371,21 +1365,11 @@ static void G_VoteUnmutePassed( callvotedata_t *vote )
 	if( !ent->r.inuse || !ent->r.client )  // may have disconnect along the callvote time
 		return;
 
-	ent->r.client->muted &= ~1;
-}
-
-// vsay unmute
-static void G_VoteVUnmutePassed( callvotedata_t *vote )
-{
-	int who;
-	edict_t *ent;
-
-	memcpy( &who, vote->data, sizeof( int ) );
-	ent = &game.edicts[who+1];
-	if( !ent->r.inuse || !ent->r.client )  // may have disconnect along the callvote time
-		return;
-
-	ent->r.client->muted &= ~2;
+	if (ent->r.client->authenticated){
+		trap_Cmd_ExecuteText( EXEC_APPEND, va( "removemute %llu\n", ent->r.client->steamid ) );
+	} else {
+		ent->r.client->muted = 0;
+	}
 }
 
 /*
@@ -2782,18 +2766,6 @@ void G_CallVotes_Init( void )
 	callvote->need_auth = true;
 	callvote->help = G_LevelCopyString( "Disallows chat messages from the muted player" );
 
-	callvote = G_RegisterCallvote( "vmute" );
-	callvote->expectedargs = 1;
-	callvote->validate = G_VoteMuteValidate;
-	callvote->execute = G_VoteVMutePassed;
-	callvote->current = NULL;
-	callvote->extraHelp = G_VoteMuteExtraHelp;
-	callvote->argument_format = G_LevelCopyString( "<player>" );
-	callvote->argument_type = G_LevelCopyString( "option" );
-	callvote->webRequest = G_PlayerlistWebRequest;
-	callvote->need_auth = true;
-	callvote->help = G_LevelCopyString( "Disallows voice chat messages from the muted player" );
-
 	callvote = G_RegisterCallvote( "unmute" );
 	callvote->expectedargs = 1;
 	callvote->validate = G_VoteUnmuteValidate;
@@ -2805,18 +2777,6 @@ void G_CallVotes_Init( void )
 	callvote->webRequest = G_PlayerlistWebRequest;
 	callvote->need_auth = true;
 	callvote->help = G_LevelCopyString( "Reallows chat messages from the unmuted player" );
-
-	callvote = G_RegisterCallvote( "vunmute" );
-	callvote->expectedargs = 1;
-	callvote->validate = G_VoteUnmuteValidate;
-	callvote->execute = G_VoteVUnmutePassed;
-	callvote->current = NULL;
-	callvote->extraHelp = G_VoteUnmuteExtraHelp;
-	callvote->argument_format = G_LevelCopyString( "<player>" );
-	callvote->argument_type = G_LevelCopyString( "option" );
-	callvote->webRequest = G_PlayerlistWebRequest;
-	callvote->need_auth = true;
-	callvote->help = G_LevelCopyString( "Reallows voice chat messages from the unmuted player" );
 
 	callvote = G_RegisterCallvote( "numbots" );
 	callvote->expectedargs = 1;

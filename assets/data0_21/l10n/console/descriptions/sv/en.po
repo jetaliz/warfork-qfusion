@@ -198,6 +198,11 @@ msgstr "<0/1> The server will appear on the public server list.\n"
 "^6Enable: sv_public \"1\""
 
 #. Console/sv
+msgid "sv_whitelist"
+msgstr "<steamid64|steamid64|steamid64> List of steamid64s to allow into the server. Requires 'sv_useSteamAuth 1'. Other players will be kicked on connecting\n"
+"^6Example: sv_whitelist \"76561199071513456|76561197974895275|76561177271855275\""
+
+#. Console/sv
 msgid "sv_pure"
 msgstr "<0/1> The server will check the validity of client files.\n"
 "^6Disable: sv_pure \"0\"\n"

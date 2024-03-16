@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "g_local.h"
+#include <cstdint>
 
 /*
 * Cmd_ConsoleSay_f
@@ -119,7 +120,17 @@ typedef struct
 {
 	unsigned mask;
 	unsigned compare;
+} ipaddr_t;
+
+typedef struct
+{
+	union {
+		uint64_t steamid;
+		ipaddr_t ip;
+	};
 	unsigned timeout;
+	bool steamban;
+	bool ismute;
 } ipfilter_t;
 
 #define	MAX_IPFILTERS	1024
@@ -166,8 +177,8 @@ static bool StringToFilter( char *s, ipfilter_t *f )
 		s++;
 	}
 
-	f->mask = *(unsigned *)m;
-	f->compare = *(unsigned *)b;
+	f->ip.mask = *(unsigned *)m;
+	f->ip.compare = *(unsigned *)b;
 
 	return true;
 }
@@ -214,9 +225,24 @@ bool SV_FilterPacket( char *from )
 	in = *(unsigned *)m;
 
 	for( i = 0; i < numipfilters; i++ )
-		if( ( in & ipfilters[i].mask ) == ipfilters[i].compare
+		if( !ipfilters[i].steamban && ( in & ipfilters[i].ip.mask ) == ipfilters[i].ip.compare
 			&& (!ipfilters[i].timeout || ipfilters[i].timeout > game.serverTime) )
 			return true;
+
+	return false;
+}
+
+bool SV_FilterSteamID( uint64_t id, bool ismute ) {
+	if( !filterban->integer )
+		return false;
+
+	int i;
+
+	for( i = 0; i < numipfilters; i++ )
+		if( ipfilters[i].steamban && ipfilters[i].steamid == id
+			&& (!ipfilters[i].timeout || ipfilters[i].timeout > game.serverTime) )
+			return ipfilters[i].ismute == ismute;
+
 
 	return false;
 }
@@ -259,11 +285,24 @@ void SV_WriteIPList( void )
 	{
 		if (ipfilters[i].timeout && ipfilters[i].timeout <= game.serverTime)
 			continue;
-		*(unsigned *)b = ipfilters[i].compare;
-		if( ipfilters[i].timeout )
-			Q_snprintfz( string, sizeof( string ), "addip %i.%i.%i.%i %.2f\r\n", b[0], b[1], b[2], b[3], (ipfilters[i].timeout - game.serverTime)/(1000.0f*60.0f) );
-		else
-			Q_snprintfz( string, sizeof( string ), "addip %i.%i.%i.%i\r\n", b[0], b[1], b[2], b[3] );
+
+
+		float timeout = (ipfilters[i].timeout - game.serverTime)/(1000.0f*60.0f);
+		if (ipfilters[i].steamban) {
+			uint64_t id = ipfilters[i].steamid;
+
+			const char *type = ipfilters[i].ismute ? "mute" : "ban";
+			if( ipfilters[i].timeout )
+				Q_snprintfz( string, sizeof( string ), "%s %llu %.2f\r\n", type, id, timeout);
+			else
+				Q_snprintfz( string, sizeof( string ), "%s %llu\r\n", type, id );
+		}else{
+			*(unsigned *)b = ipfilters[i].ip.compare;
+			if( ipfilters[i].timeout )
+				Q_snprintfz( string, sizeof( string ), "addip %i.%i.%i.%i %.2f\r\n", b[0], b[1], b[2], b[3], timeout );
+			else
+				Q_snprintfz( string, sizeof( string ), "addip %i.%i.%i.%i\r\n", b[0], b[1], b[2], b[3] );
+		}
 		trap_FS_Write( string, strlen( string ), file );
 	}
 
@@ -284,7 +323,7 @@ static void Cmd_AddIP_f( void )
 	}
 
 	for( i = 0; i < numipfilters; i++ )
-		if( ipfilters[i].compare == 0xffffffff || (ipfilters[i].timeout && ipfilters[i].timeout <= game.serverTime) )
+		if( (!ipfilters[i].steamban && ipfilters[i].ip.compare == 0xffffffff) || (ipfilters[i].timeout && ipfilters[i].timeout <= game.serverTime) )
 			break; // free spot
 	if( i == numipfilters )
 	{
@@ -296,11 +335,64 @@ static void Cmd_AddIP_f( void )
 		numipfilters++;
 	}
 
+
+	ipfilters[i].ismute = false;
+	ipfilters[i].steamban = false;
 	ipfilters[i].timeout = 0;
 	if( !StringToFilter( trap_Cmd_Argv( 1 ), &ipfilters[i] ) )
-		ipfilters[i].compare = 0xffffffff;
+		ipfilters[i].ip.compare = 0xffffffff;
 	else if( trap_Cmd_Argc() == 3 )
 		ipfilters[i].timeout = game.serverTime + atof( trap_Cmd_Argv(2) )*60*1000;
+
+	SV_WriteIPList();
+}
+
+static void CmdAddSteamIpListEntry(bool mute) {
+	int i;
+
+	for( i = 0; i < numipfilters; i++ )
+		if( (!ipfilters[i].steamban && ipfilters[i].ip.compare == 0xffffffff) || (ipfilters[i].timeout && ipfilters[i].timeout <= game.serverTime) )
+			break; // free spot
+	if( i == numipfilters )
+	{
+		if( numipfilters == MAX_IPFILTERS )
+		{
+			G_Printf( "IP filter list is full\n" );
+			return;
+		}
+		numipfilters++;
+	}
+
+	ipfilters[i].ismute = mute;
+	ipfilters[i].steamban = true;
+	ipfilters[i].timeout = 0;
+	ipfilters[i].steamid = atoll(trap_Cmd_Argv(1));
+
+	if( trap_Cmd_Argc() == 3 )
+		ipfilters[i].timeout = game.serverTime + atof( trap_Cmd_Argv(2) )*60*1000;
+
+}
+
+static void Cmd_Ban_f( void )
+{
+	if( trap_Cmd_Argc() < 2 )
+	{
+		G_Printf( "Usage: ban <steamid64> [time-mins]\n" );
+		return;
+	}
+	CmdAddSteamIpListEntry(false);
+	SV_WriteIPList();
+}
+
+static void Cmd_Mute_f( void )
+{
+	if( trap_Cmd_Argc() < 2 )
+	{
+		G_Printf( "Usage: mute <steamid64> [time-mins]\n" );
+		return;
+	}
+	CmdAddSteamIpListEntry(true);
+	SV_WriteIPList();
 }
 
 /*
@@ -321,8 +413,8 @@ static void Cmd_RemoveIP_f( void )
 		return;
 
 	for( i = 0; i < numipfilters; i++ )
-		if( ipfilters[i].mask == f.mask
-			&& ipfilters[i].compare == f.compare )
+		if( !ipfilters[i].steamban && ipfilters[i].ip.mask == f.ip.mask
+			&& ipfilters[i].ip.compare == f.ip.compare )
 		{
 			for( j = i+1; j < numipfilters; j++ )
 				ipfilters[j-1] = ipfilters[j];
@@ -330,7 +422,56 @@ static void Cmd_RemoveIP_f( void )
 			G_Printf( "Removed.\n" );
 			return;
 		}
-		G_Printf( "Didn't find %s.\n", trap_Cmd_Argv( 1 ) );
+	G_Printf( "Didn't find %s.\n", trap_Cmd_Argv( 1 ) );
+
+	SV_WriteIPList();
+}
+
+static void CmdRemoveSteamIpListEntry(bool mute){
+	int i, j;
+
+	uint64_t steamid = atoll(trap_Cmd_Argv(1));
+	if ( !steamid )
+		return;
+
+	for( i = 0; i < numipfilters; i++ )
+		if( ipfilters[i].steamban && ipfilters[i].ismute == mute && ipfilters[i].steamid == steamid )
+		{
+			for( j = i+1; j < numipfilters; j++ )
+				ipfilters[j-1] = ipfilters[j];
+			numipfilters--;
+			G_Printf( "Removed.\n" );
+			return;
+		}
+	G_Printf( "Didn't find %s.\n", trap_Cmd_Argv( 1 ) );
+
+}
+
+/*
+* Cmd_RemoveBan_f
+*/
+static void Cmd_RemoveBan_f( void )
+{
+	if( trap_Cmd_Argc() < 2 )
+	{
+		G_Printf( "Usage: removeban <steamid64>\n" );
+		return;
+	}
+
+	CmdRemoveSteamIpListEntry(false);
+	SV_WriteIPList();
+}
+
+static void Cmd_RemoveMute_f( void )
+{
+	if( trap_Cmd_Argc() < 2 )
+	{
+		G_Printf( "Usage: removemute <steamid64>\n" );
+		return;
+	}
+
+	CmdRemoveSteamIpListEntry(true);
+	SV_WriteIPList();
 }
 
 /*
@@ -344,12 +485,21 @@ static void Cmd_ListIP_f( void )
 	G_Printf( "Filter list:\n" );
 	for( i = 0; i < numipfilters; i++ )
 	{
-		*(unsigned *)b = ipfilters[i].compare;
-		if( ipfilters[i].timeout && ipfilters[i].timeout > game.serverTime )
-			G_Printf( "%3i.%3i.%3i.%3i %.2f\n", b[0], b[1], b[2], b[3],
-			(float)(ipfilters[i].timeout-game.serverTime)/(60*1000.0f) );
-		else if( !ipfilters[i].timeout )
-			G_Printf( "%3i.%3i.%3i.%3i\n", b[0], b[1], b[2], b[3] );
+		float timeout = (float)(ipfilters[i].timeout-game.serverTime)/(60*1000.0f);
+		if (ipfilters[i].steamban){
+			uint64_t id = ipfilters[i].steamid;
+			if( ipfilters[i].timeout && ipfilters[i].timeout > game.serverTime )
+				G_Printf( "%llu %.2f\n", id, timeout );
+			else if( !ipfilters[i].timeout )
+				G_Printf( "%llu\n", id);
+		}else{
+			*(unsigned *)b = ipfilters[i].ip.compare;
+			if( ipfilters[i].timeout && ipfilters[i].timeout > game.serverTime )
+				G_Printf( "%3i.%3i.%3i.%3i %.2f\n", b[0], b[1], b[2], b[3],
+				(float)(ipfilters[i].timeout-game.serverTime)/(60*1000.0f) );
+			else if( !ipfilters[i].timeout )
+				G_Printf( "%3i.%3i.%3i.%3i\n", b[0], b[1], b[2], b[3] );
+		}
 	}
 }
 
@@ -394,6 +544,10 @@ void G_AddServerCommands( void )
 	trap_Cmd_AddCommand( "removeip", Cmd_RemoveIP_f );
 	trap_Cmd_AddCommand( "listip", Cmd_ListIP_f );
 	trap_Cmd_AddCommand( "writeip", Cmd_WriteIP_f );
+	trap_Cmd_AddCommand( "ban",  Cmd_Ban_f );
+	trap_Cmd_AddCommand( "removeban", Cmd_RemoveBan_f );
+	trap_Cmd_AddCommand( "mute",  Cmd_Mute_f );
+	trap_Cmd_AddCommand( "removemute",  Cmd_RemoveMute_f );
 
 	// MBotGame: Add AI related commands
 	trap_Cmd_AddCommand( "botdebug", AIDebug_ToogleBotDebug );
@@ -429,6 +583,8 @@ void G_RemoveCommands( void )
 	trap_Cmd_RemoveCommand( "removeip" );
 	trap_Cmd_RemoveCommand( "listip" );
 	trap_Cmd_RemoveCommand( "writeip" );
+	trap_Cmd_RemoveCommand( "ban" );
+	trap_Cmd_RemoveCommand( "removeban" );
 
 	// Remove AI related commands
 	trap_Cmd_RemoveCommand( "botdebug" );
