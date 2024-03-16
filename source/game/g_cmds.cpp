@@ -698,8 +698,10 @@ void Cmd_Say_f( edict_t *ent, bool arg0, bool checkflood )
 	if( ent->r.client && ent->r.client->muted )
 		return;
 
-	if (ent->r.client->authenticated && SV_FilterSteamID(ent->r.client->steamid,true))
+	if (ent->r.client->authenticated && SV_FilterSteamID(ent->r.client->steamid,true)) { 
+		G_PrintMsg(ent, "You are muted.\n");
 		return;
+	}
 
 	if( trap_Cmd_Argc() < 2 && !arg0 )
 		return;
