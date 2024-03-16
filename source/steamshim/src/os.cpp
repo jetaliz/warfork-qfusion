@@ -69,26 +69,22 @@ bool setEnvVar(const char *key, const char *val)
     return (SetEnvironmentVariableA(key, val) != 0);
 } // setEnvVar
 
-bool launchChild(ProcessType *pid, const char* name)
+bool launchChild(ProcessType *pid)
 {
     STARTUPINFOA si = { sizeof( si ) };
     memset( pid, 0, sizeof( *pid ) );
 
-    char exename[32] = ".\\";
-    strncpy(exename+2, name, 30);
-
-    char args[32] = { 0 };
-    if (debug){
-        snprintf(args, sizeof(args) - 1, ".\\%s steamdebug", name);
-    } else {
-        snprintf(args, sizeof(args) - 1, ".\\%s", name);
-    }
+    const char *args;
+    if (debug)
+        args = STEAM_BLOB_LAUNCH_NAME " steamdebug";
+    else
+        args = STEAM_BLOB_LAUNCH_NAME;
     
-    DWORD dwAttrib = GetFileAttributesA(exename);
+    DWORD dwAttrib = GetFileAttributesA(STEAM_BLOB_LAUNCH_NAME);
     if (dwAttrib == INVALID_FILE_ATTRIBUTES ||
          (dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) return false;
 
-    bool bResult = ( CreateProcessA( exename, args, NULL, NULL, TRUE, 0, NULL,
+    bool bResult = ( CreateProcessA(NULL, args, NULL, NULL, TRUE, 0, NULL,
                               NULL, &si, pid) != 0);
     return bResult;
 } // launchChild
@@ -113,11 +109,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #else  // everyone else that isn't Windows.
 #include <unistd.h>
 
-bool launchChild(ProcessType *pid, const char* name )
+bool launchChild(ProcessType *pid)
 {
-
-    char exename[32] = "./";
-    strncpy(exename+2, name, 30);
+    const char *exename = "./" STEAM_BLOB_LAUNCH_NAME;
 
 
     if (access(exename, F_OK) < 0) return false;
@@ -127,9 +121,11 @@ bool launchChild(ProcessType *pid, const char* name )
         return false;
     else if (*pid != 0)  // we're the parent
         return true;  // we'll let the pipe fail if this didn't work.
-    char* GArgv[3] = {exename, NULL, NULL};
+
+    char* GArgv[3] = {strdup(exename), NULL, NULL};
     if (debug)
         GArgv[1] = strdup("steamdebug");
+
     execvp(GArgv[0], GArgv);
 
     // still here? It failed! Terminate, closing child's ends of the pipes.

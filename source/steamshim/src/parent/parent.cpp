@@ -151,7 +151,7 @@ extern "C" {
         printf("steamshim: Failed to set environment variables\n");
         return 0;
     }
-    else if (!launchChild(&childPid, STEAM_BLOB_LAUNCH_NAME))
+    else if (!launchChild(&childPid))
     {
         printf("steamshim: Failed to launch application\n");
         return 0;
