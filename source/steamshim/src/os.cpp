@@ -74,7 +74,7 @@ bool launchChild(ProcessType *pid)
     STARTUPINFOA si = { sizeof( si ) };
     memset( pid, 0, sizeof( *pid ) );
 
-    const char *args;
+    LPSTR args;
     if (debug)
         args = STEAM_BLOB_LAUNCH_NAME " steamdebug";
     else
