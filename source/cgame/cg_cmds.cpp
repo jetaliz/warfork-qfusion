@@ -19,8 +19,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include <cstdint>
+#include <map>
+#include <string>
 #include "cg_local.h"
-#include "blocklist.h"
 
 #include "../qcommon/steam.h"
 
@@ -952,9 +953,29 @@ BLOCKLIST
 ==========================================================================
 */
 
-blockentry_t blockentries[MAX_BLOCKS];
-int numblocks;
+static std::map<uint64_t, std::string> blocklist;
 
+bool CG_GetBlocklistItem(size_t index, uint64_t* steamid_out, char* name, size_t* name_len_in_out) {
+	if (index >= blocklist.size()) {
+		return false;
+	}
+
+	auto it = blocklist.begin();
+	for (size_t i = 0; i < index; i++)
+		it++;
+
+	if (steamid_out)
+		*steamid_out = it->first;
+
+	if (!name || !name_len_in_out) {
+		return true;
+	}
+
+	Q_strncpyz(name, it->second.c_str(), *name_len_in_out);
+	*name_len_in_out = it->second.length();
+
+	return true;
+}
 
 void CG_ReadBlockList( void )
 {
@@ -976,12 +997,9 @@ static void CG_WriteBlockList( void )
 		return;
 	}
 
-	for( i = 0; i < numblocks; i++ )
+	for( auto const &it : blocklist )
 	{
-		if (!blockentries[i].steamid)
-			continue;
-
-		Q_snprintfz( string, sizeof( string ), "block \"%s\" \"%llu\"\r\n", blockentries[i].name, blockentries[i].steamid );
+		Q_snprintfz( string, sizeof( string ), "block \"%s\" \"%llu\"\r\n", it.second.c_str(), it.first);
 		trap_FS_Write( string, strlen( string ), file );
 	}
 
@@ -996,25 +1014,14 @@ static void CG_Cmd_Block_f( void )
 		return;
 	}
 
-
-	int i;
-
-	for( i = 0; i < numblocks; i++ )
-		if( !blockentries[i].steamid )
-			break; // free spot
-
-	if( i == numblocks )
+	if (blocklist.find(atoll(trap_Cmd_Argv( 2 ))) != blocklist.end())
 	{
-		if( numblocks == MAX_BLOCKS )
-		{
-			CG_Printf( "Chat block list is full!\n" );
-			return;
-		}
-		numblocks++;
+		CG_Printf( "Player already blocked\n" );
+		return;
 	}
 
-	Q_strncpyz( blockentries[i].name, trap_Cmd_Argv( 1 ), sizeof( blockentries[i].name) );
-	blockentries[i].steamid = atoll(trap_Cmd_Argv( 2 ));
+	blocklist[atoll(trap_Cmd_Argv( 2 ))] = std::string(trap_Cmd_Argv( 1 ));
+
 	CG_WriteBlockList();
 }
 static void CG_Cmd_Unblock_f( void )
@@ -1025,29 +1032,14 @@ static void CG_Cmd_Unblock_f( void )
 		return;
 	}
 
-	for( int i = 0; i < numblocks; i++ )
-		if( blockentries[i].steamid == atoll(trap_Cmd_Argv( 1 )) )
-		{
-			blockentries[i].steamid = 0;
-			blockentries[i].name[0] = '\0';
-			break;
-		}
+	blocklist.erase( atoll(trap_Cmd_Argv( 1 )) );
 
 	CG_WriteBlockList();
 }
 
 bool CG_FilterSteamID( uint64_t steamid )
 {
-	for( int i = 0; i < MAX_BLOCKS; i++ )
-	{
-		if( !blockentries[i].steamid )
-			continue;
-
-		if( blockentries[i].steamid == steamid )
-			return true;
-	}
-
-	return false;
+	return blocklist.find(steamid) != blocklist.end();
 }
 
 /*

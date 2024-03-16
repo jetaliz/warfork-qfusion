@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "cin.h"
 #include "../qcommon/asyncstream.h"
 
-cgame_export_t *cge;
+static cgame_export_t *cge;
 
 EXTERN_API_FUNC void *GetCGameAPI( void * );
 
@@ -764,3 +764,12 @@ void CL_GameModule_CallbackRequestAvatar( uint64_t steamid, char* avatar )
 		cge->CallbackRequestAvatar( steamid, avatar );
 }
 
+/*
+* CL_GameModule_CallbackRequestAvatar
+*/
+bool CL_GameModule_GetBlocklistItem( size_t index, uint64_t* steamid_out, char* name, size_t* name_len_in_out )
+{
+	if ( cge )
+		return cge->GetBlocklistItem(index, steamid_out, name, name_len_in_out);
+	return false;
+}

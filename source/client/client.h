@@ -446,6 +446,7 @@ void CL_GameModule_AddMovement( vec3_t movement );
 void CL_GameModule_TouchEvent( int id, touchevent_t type, int x, int y, unsigned int time );
 bool CL_GameModule_IsTouchDown( int id );
 void CL_GameModule_CallbackRequestAvatar( uint64_t steamid, char* avatar );
+bool CL_GameModule_GetBlocklistItem( size_t index, uint64_t* steamid_out, char* name, size_t* name_len_in_out );
 
 //
 // cl_sound.c
@@ -636,7 +637,6 @@ extern float scr_con_current;
 extern float scr_conlines;       // lines of console to display
 
 extern ref_export_t re;		// interface to refresh .dll
-extern cgame_export_t *cge; // interface to cgame .dll
 
 //
 // cl_mm.c

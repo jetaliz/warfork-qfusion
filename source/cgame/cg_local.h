@@ -971,7 +971,8 @@ void CG_Precache( void );
 char *_CG_CopyString( const char *in, const char *filename, int fileline );
 #define CG_CopyString( in ) _CG_CopyString( in, __FILE__, __LINE__ )
 
-extern blockentry_t blockentries[MAX_BLOCKS];
+
+bool CG_GetBlocklistItem(size_t index, uint64_t* steamid_out, char* name, size_t* name_len_in_out);
 void CG_ReadBlockList( void );
 bool CG_FilterSteamID( uint64_t steamid );
 

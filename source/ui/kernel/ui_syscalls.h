@@ -462,6 +462,9 @@ namespace trap
 		inline void Steam_OpenProfile( uint64_t steamid ) {
 			UI_IMPORT.Steam_OpenProfile(steamid);
 		}
+		inline bool GetBlocklistItem( size_t index, uint64_t* steamid_out, char* name, size_t* name_len_in_out ) {
+			return UI_IMPORT.GetBlocklistItem( index, steamid_out, name, name_len_in_out );
+		}
 }
 
 #endif

@@ -43,8 +43,6 @@ typedef void ( *fdrawchar_t )( int x, int y, int w, int h, float s1, float t1, f
 
 // cg_public.h -- client game dll information visible to engine
 
-#include "blocklist.h"
-
 #define	CGAME_API_VERSION   98
 
 //
@@ -371,7 +369,16 @@ typedef struct
 	void ( *CallbackRequestAvatar )( uint64_t steamid, char *avatar );
 
 
-	blockentry_t (* blockentries) [MAX_BLOCKS];
+	/**
+	 * Retrieves the blocklist item at the given index.
+	 *
+	 * @param index      index of the blocklist item
+	 * @param steamid_out steamid of the blocked user
+	 * @param name       name of the blocked user
+	 * @param name_len_in_out length of the name buffer, updated with the actual length
+	 * @return whether the index is valid
+	 */
+	bool ( *GetBlocklistItem )( size_t index, uint64_t* steamid_out, char* name, size_t* name_len_in_out );
 } cgame_export_t;
 
 #endif
