@@ -458,6 +458,10 @@
 						<div class="title">Simple items</div>
 						<input cvar="cg_simpleItems" type="checkbox" realtime="1"/>
 						<br/>
+
+						<div class="title">Enable view animation</div>
+						<input cvar="cg_viewBob" type="checkbox" realtime="1"/>
+						<br/>
                         
                         <div class="title">Show damage numbers</div>
 						<input cvar="cg_damageNumbers" type="checkbox" realtime="1"/>
