@@ -170,13 +170,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 				<div id="players-container">
 					<div id="players_left_frame">
 						<datagrid id="players_datagrid" source="" onrowselect="$onPlayersRowSelect">
-							<col fields="name" width="150dp">In Game</col>
+							<col fields="name" width="150dp" formatter="colorcode">In Game</col>
 						</datagrid>
 					</div>
 					<div id="players_spacer_frame" >&nbsp;</div>
 					<div id="players_right_frame">
 						<datagrid id="blocked_datagrid" source="" onrowselect="$onBlockedRowSelect">
-							<col fields="name" width="150dp">Blocked</col>
+							<col fields="name" width="150dp" formatter="colorcode">Blocked</col>
 						</datagrid>
 					</div>
 					<br/>
