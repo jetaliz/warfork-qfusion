@@ -638,6 +638,10 @@ void SV_Map( const char *level, bool devmap )
 			svs.clients[i].state = CS_CONNECTING;
 		}
 
+		// we never kick the clients or stop the server proper, so make sure to tell steam we're done with the session
+		if (svs.clients[i].steamid)
+			Steam_EndAuthSession(svs.clients[i].steamid);
+
 		// limit number of connected multiview clients
 		if( svs.clients[i].mv )
 		{
