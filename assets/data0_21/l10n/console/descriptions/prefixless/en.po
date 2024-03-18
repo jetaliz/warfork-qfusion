@@ -415,11 +415,11 @@ msgstr "<ip address> Adds IP addresses to the filter list."
 
 #. Console/prefixless
 msgid "ban"
-msgstr "<steamid64> <time> Bans a user for specified time."
+msgstr "<steamid64> <time> Bans a player by SteamID for a specified duration."
 
 #. Console/prefixless
 msgid "mute"
-msgstr "<steamid64> <time> Mutes a user for specified time."
+msgstr "<steamid64> <time> Mutes a player by SteamID for a specified duration."
 
 #. Console/prefixless
 msgid "addnode"
@@ -844,7 +844,8 @@ msgstr "[ip:port] Used by the Server Browser to initiate ping requests to server
 
 #. Console/prefixless
 msgid "players"
-msgstr "Lists all players in-game."
+msgstr "Lists all players in-game.\n"
+"^6Note: Displays the Player ID, Operator Status, and Steam ID."
 
 #. Console/prefixless
 msgid "position"
@@ -893,11 +894,11 @@ msgstr "<ip address> Removes IP addresses from the filter list."
 
 #. Console/prefixless
 msgid "removeban"
-msgstr "<steamid64> Unbans a user by steam id."
+msgstr "<steamid64> Unbans a player by SteamID."
 
 #. Console/prefixless
 msgid "removemute"
-msgstr "<steamid64> Removes a server mute."
+msgstr "<steamid64> Unmutes a player by SteamID."
 
 #. Console/prefixless
 msgid "requestservers"
@@ -1040,7 +1041,14 @@ msgstr "<id\playername> Prints your or a specified players stats.\n"
 #. Console/prefixless
 msgid "status"
 msgstr "Displays the server status in console.\n"
-"^6Note: Map, Player ID, Score, Ping, Player Names, Last Message, Address, Port, Rate, etc."
+"^6Note: This command is restricted to rcon. Displays the Map, Player ID, Steam ID, Score, Ping, Player Names, Last Message, Address, Port, Rate, etc."
+
+#. Console/prefixless
+msgid "steam_debug"
+msgstr "<0/1> Launches a debug window when starting Warfork to troubleshoot Steam-related issues.\n"
+"^6Disable: steam_debug \"0\"\n"
+"^6Enable: steam_debug \"1\"\n"
+"^6Note: Windows users only. The debug window is a separate application accessible by alt-tabbing out of Warfork."
 
 #. Console/prefixless
 msgid "stop"

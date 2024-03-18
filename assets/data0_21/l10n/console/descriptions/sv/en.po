@@ -199,8 +199,9 @@ msgstr "<0/1> The server will appear on the public server list.\n"
 
 #. Console/sv
 msgid "sv_whitelist"
-msgstr "<steamid64|steamid64|steamid64> List of steamid64s to allow into the server. Requires 'sv_useSteamAuth 1'. Other players will be kicked on connecting\n"
-"^6Example: sv_whitelist \"76561199071513456|76561197974895275|76561177271855275\""
+msgstr "<steamid64|steamid64|steamid64> Specifies a list of 64-bit SteamID's (SteamID64) allowed to access the server.\n"
+"^6Note: This command requires sv_useSteamAuth \"1\". Other players attempting to connect will be kicked.\n"
+"^6Example: sv_whitelist \"76561197974895275|76561197960287930|76561198799681010\""
 
 #. Console/sv
 msgid "sv_pure"
