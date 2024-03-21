@@ -67,6 +67,7 @@ file(GLOB child_SRC
 if (BUILD_STEAMLIB)
     add_executable(wf_steam ${STEAM_SERVER_BINARY_TYPE} ${child_SRC})
     target_link_libraries(wf_steam ${STEAMWORKS_LIBRARY})
+    set_target_properties(wf_steam PROPERTIES BUILD_WITH_INSTALL_RPATH true INSTALL_RPATH "$ORIGIN")
     qf_set_output_dir(wf_steam "")
 
     add_custom_command(TARGET wf_steam
