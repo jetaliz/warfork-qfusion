@@ -122,7 +122,6 @@ static void G_AppendString( char **pdst, const char *src, size_t *pdst_len, size
 http_response_code_t G_PlayerlistWebRequest( http_query_method_t method, const char *resource, 
 	const char *query_string, char **content, size_t *content_length )
 {
-	int i;
 	char *msg = NULL;
 	size_t msg_len = 0, msg_size = 0;
 
@@ -133,21 +132,25 @@ http_response_code_t G_PlayerlistWebRequest( http_query_method_t method, const c
 	char cleanname[MAX_NAME_BYTES];
 	strncpy( cleanname, game.clients[0].netname, MAX_NAME_BYTES );
 
-	for( i = 0; i < gs.maxclients; i++ ) {
-		if( trap_GetClientState( i ) >= CS_SPAWNED ) {
-			G_AppendString( &msg, va( 
-				"{\n"
-				"\"value\"" " " "\"%i\"" "\n"
-				"\"steamid\"" " " "\"%llu\"" "\n"
-				"\"name\"" " " "\"%s\"" "\n"
-				"\"cleanname\"" " " "\"%s\"" "\n"
-				"}\n", 
-				i,
-				game.clients[i].steamid,
-				game.clients[i].netname,
-				COM_RemoveColorTokens( cleanname )
-				), &msg_len, &msg_size );
-		}
+	edict_t *ent;
+
+	for( ent = game.edicts+1; PLAYERNUM( ent ) < gs.maxclients; ent++ )
+	{
+		if( trap_GetClientState( PLAYERNUM( ent ) ) < CS_SPAWNED || ent->r.svflags & SVF_FAKECLIENT )
+			continue;
+
+		G_AppendString( &msg, va( 
+			"{\n"
+			"\"value\"" " " "\"%i\"" "\n"
+			"\"steamid\"" " " "\"%llu\"" "\n"
+			"\"name\"" " " "\"%s\"" "\n"
+			"\"cleanname\"" " " "\"%s\"" "\n"
+			"}\n", 
+			PLAYERNUM( ent ),
+			ent->r.client->steamid,
+			ent->r.client->netname,
+			COM_RemoveColorTokens( cleanname )
+			), &msg_len, &msg_size );
 	}
 
 	*content = msg;
