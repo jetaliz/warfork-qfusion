@@ -103,6 +103,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 			// grab information for the picked row from the table
 			String name = data.getField( 'players', selectedRow, 'name' );
+			String cleanname = data.getField( 'players', selectedRow, 'cleanname' );
 			int playerid = data.getField( 'players', selectedRow, 'value' ).toInt();
 			String steamid = data.getField( 'players', selectedRow, 'steamid' );
 
@@ -112,7 +113,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 			viewprofileBtn.css( 'display', 'inline-block' );
 			viewprofileBtn.css( 'visibility', 'visible' );
-			blockBtn.setInnerRML("Block " + name);
+			blockBtn.setInnerRML("Block " + cleanname);
 			@selname = name;
 			@selsteamid = steamid;
 
@@ -129,6 +130,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 			DataSource @data = getDataSource( 'blockedplayers' );
 
 			String name = data.getField( 'players', selectedRow, 'name' );
+			String cleanname = data.getField( 'players', selectedRow, 'cleanname' );
 			int idx = data.getField( 'players', selectedRow, 'index' ).toInt();
 			String steamid = data.getField( 'players', selectedRow, 'steamid' );
 
@@ -138,7 +140,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 			viewprofileBtn.css( 'display', 'inline-block' );
 			viewprofileBtn.css( 'visibility', 'visible' );
-			blockBtn.setInnerRML("Unblock " + name);
+			blockBtn.setInnerRML("Unblock " + cleanname);
 			@selname = name;
 			@selsteamid = steamid;
 

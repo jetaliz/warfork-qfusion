@@ -130,6 +130,9 @@ http_response_code_t G_PlayerlistWebRequest( http_query_method_t method, const c
 		return HTTP_RESP_BAD_REQUEST;
 	}
 
+	char cleanname[MAX_NAME_BYTES];
+	strncpy( cleanname, game.clients[0].netname, MAX_NAME_BYTES );
+
 	for( i = 0; i < gs.maxclients; i++ ) {
 		if( trap_GetClientState( i ) >= CS_SPAWNED ) {
 			G_AppendString( &msg, va( 
@@ -137,10 +140,12 @@ http_response_code_t G_PlayerlistWebRequest( http_query_method_t method, const c
 				"\"value\"" " " "\"%i\"" "\n"
 				"\"steamid\"" " " "\"%llu\"" "\n"
 				"\"name\"" " " "\"%s\"" "\n"
+				"\"cleanname\"" " " "\"%s\"" "\n"
 				"}\n", 
 				i,
 				game.clients[i].steamid,
-				game.clients[i].netname
+				game.clients[i].netname,
+				COM_RemoveColorTokens( cleanname )
 				), &msg_len, &msg_size );
 		}
 	}
