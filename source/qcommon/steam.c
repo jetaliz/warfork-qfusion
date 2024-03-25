@@ -64,9 +64,7 @@ void Steam_Init( void )
 	 SteamshimOptions opts;
 	 opts.debug = steam_debug->integer;
 	 opts.runserver = true;
-#ifndef DEDICATED_ONLY 
-	 opts.runclient = true;
-#endif
+	 opts.runclient = !dedicated->integer;
 	int r = STEAMSHIM_init( &opts );
 	if( !r ) {
 		Com_Printf( "Steam initialization failed.\n" );
