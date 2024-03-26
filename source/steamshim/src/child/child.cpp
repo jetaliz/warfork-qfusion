@@ -201,6 +201,8 @@ static void processCommands()
 
         if (!processCommand(buf, cmd, evlen))
             return; // we were told to exit
+    } else {
+        usleep(1000);
     }
   }
 } 
