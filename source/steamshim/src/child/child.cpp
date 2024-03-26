@@ -21,6 +21,8 @@ freely, subject to the following restrictions:
 #include <cstddef>
 #include <cstdint>
 #include <ctime>
+#include <chrono>
+#include <thread>
 
 #include "child_private.h"
 #include "../steamshim_private.h"
@@ -202,7 +204,7 @@ static void processCommands()
         if (!processCommand(buf, cmd, evlen))
             return; // we were told to exit
     } else {
-        usleep(1000);
+        std::this_thread::sleep_for(std::chrono::microseconds(1000));
     }
   }
 } 
