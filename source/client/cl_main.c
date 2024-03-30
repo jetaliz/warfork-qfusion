@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "ftlib.h"
 #include "../qcommon/asyncstream.h"
 #include "../qalgo/hash.h"
+#include <stdlib.h>
 
 cvar_t *cl_stereo_separation;
 cvar_t *cl_stereo;
@@ -264,6 +265,12 @@ void CL_Quit( void )
 static void CL_Quit_f( void )
 {
 	CL_Quit();
+}
+
+static void CL_Crash_f( void )
+{
+	Com_Printf("Manual crash triggered\n");
+	abort();
 }
 
 /*
@@ -2281,6 +2288,7 @@ static void CL_InitLocal( void )
 	Cmd_AddCommand( "record", CL_Record_f );
 	Cmd_AddCommand( "stop", CL_Stop_f );
 	Cmd_AddCommand( "quit", CL_Quit_f );
+	Cmd_AddCommand( "inducegamecrashforrealz", CL_Crash_f );
 	Cmd_AddCommand( "connect", CL_Connect_f );
 #if defined(TCP_ALLOW_CONNECT) && defined(TCP_ALLOW_CONNECT_CLIENT)
 	Cmd_AddCommand( "tcpconnect", CL_TCPConnect_f );
