@@ -486,7 +486,10 @@ static void Cmd_PlayersExt_f( edict_t *ent, bool onlyspecs )
 
 			cl = ent->r.client;
 
-			Q_snprintfz( line, sizeof( line ), "%3i %-16s" S_COLOR_WHITE "%s %llu\n", i, cl->netname, cl->isoperator ? "op" : "no", ent->r.client->steamid);
+			char name[MAX_NAME_BYTES];
+			Q_strncpyz( name, cl->netname, sizeof( name ) );
+
+			Q_snprintfz( line, sizeof( line ), "%3i %-16s" S_COLOR_WHITE "%s %llu\n", i, COM_RemoveColorTokens(name), cl->isoperator ? "op" : "no", ent->r.client->steamid);
 
 			if( strlen( line ) + strlen( msg ) > sizeof( msg ) - 100 )
 			{
@@ -507,7 +510,7 @@ static void Cmd_PlayersExt_f( edict_t *ent, bool onlyspecs )
 	}
 
 	if( count )
-		Q_strncatz( msg, "--- ------------------------------\n", sizeof( msg ) );
+		Q_strncatz( msg, "--- --------------- -- -------------\n", sizeof( msg ) );
 	Q_strncatz( msg, va( "%3i %s\n", count, trap_Cmd_Argv( 0 ) ), sizeof( msg ) );
 	G_PrintMsg( ent, "%s", msg );
 
