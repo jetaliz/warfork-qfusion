@@ -128,16 +128,15 @@ http_response_code_t G_PlayerlistWebRequest( http_query_method_t method, const c
 	if( method != HTTP_METHOD_GET && method != HTTP_METHOD_HEAD ) {
 		return HTTP_RESP_BAD_REQUEST;
 	}
-
-	char cleanname[MAX_NAME_BYTES];
-	strncpy( cleanname, game.clients[0].netname, MAX_NAME_BYTES );
-
 	edict_t *ent;
 
 	for( ent = game.edicts+1; PLAYERNUM( ent ) < gs.maxclients; ent++ )
 	{
 		if( trap_GetClientState( PLAYERNUM( ent ) ) < CS_SPAWNED || ent->r.svflags & SVF_FAKECLIENT )
 			continue;
+
+		char cleanname[MAX_NAME_BYTES];
+		strncpy( cleanname, ent->r.client->netname, MAX_NAME_BYTES );
 
 		G_AppendString( &msg, va( 
 			"{\n"
