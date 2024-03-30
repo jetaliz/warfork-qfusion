@@ -110,7 +110,7 @@ void Steam_AdvertiseGame( const uint8_t *ip, unsigned short port )
 
 	char connectstr[64];
 	if (port) {
-		snprintf( connectstr,sizeof connectstr, "+connect %d.%d.%d.%d:%i",ip[0],ip[1],ip[2],ip[3],port);
+		snprintf( connectstr,sizeof connectstr, "%d.%d.%d.%d:%i",ip[0],ip[1],ip[2],ip[3],port);
 		values[0] = connectstr;
 	} else {
 		values[0] = "";
