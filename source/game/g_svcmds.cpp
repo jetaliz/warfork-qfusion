@@ -429,6 +429,7 @@ static void Cmd_RemoveIP_f( void )
 
 static void CmdRemoveSteamIpListEntry(bool mute){
 	int i, j;
+	bool found = false;
 
 	uint64_t steamid = atoll(trap_Cmd_Argv(1));
 	if ( !steamid )
@@ -440,10 +441,13 @@ static void CmdRemoveSteamIpListEntry(bool mute){
 			for( j = i+1; j < numipfilters; j++ )
 				ipfilters[j-1] = ipfilters[j];
 			numipfilters--;
+			i--;
+			found = true;
 			G_Printf( "Removed.\n" );
-			return;
 		}
-	G_Printf( "Didn't find %s.\n", trap_Cmd_Argv( 1 ) );
+
+	if (!found)
+		G_Printf( "Didn't find %s.\n", trap_Cmd_Argv( 1 ) );
 
 }
 
