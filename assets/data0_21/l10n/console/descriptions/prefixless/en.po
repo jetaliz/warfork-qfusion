@@ -415,11 +415,11 @@ msgstr "<ip address> Adds IP addresses to the filter list."
 
 #. Console/prefixless
 msgid "ban"
-msgstr "<steamid64> <time> Bans a player by SteamID for a specified duration."
+msgstr "<steamid64> <minutes> Bans a player by SteamID for a specified duration."
 
 #. Console/prefixless
 msgid "mute"
-msgstr "<steamid64> <time> Mutes a player by SteamID for a specified duration."
+msgstr "<steamid64> <minutes> Mutes a player by SteamID for a specified duration."
 
 #. Console/prefixless
 msgid "addnode"
