@@ -1029,6 +1029,15 @@ static void G_VoteKickExtraHelp( edict_t *ent )
 	G_PrintMsg( ent, "%s", msg );
 }
 
+static bool G_IsPrivilegedClient(edict_t ent)
+{
+	if (ent.r.client->isoperator)
+		return true;
+	if (ent.r.client->isTV)
+		return true;
+	return false;
+}
+
 static bool G_VoteKickValidate( callvotedata_t *vote, bool first )
 {
 	int who = -1;
@@ -1044,9 +1053,9 @@ static bool G_VoteKickValidate( callvotedata_t *vote, bool first )
 
 		if( who != -1 )
 		{
-			if( game.edicts[who+1].r.client->isoperator )
+			if( G_IsPrivilegedClient(game.edicts[who+1]) )
 			{
-				G_PrintMsg( vote->caller, S_COLOR_RED"%s is a game operator.\n", game.edicts[who+1].r.client->netname );
+				G_PrintMsg( vote->caller, S_COLOR_RED"%s cannot be kicked.\n", game.edicts[who+1].r.client->netname );
 				return false;
 			}
 
@@ -1144,9 +1153,9 @@ static bool G_VoteKickBanValidate( callvotedata_t *vote, bool first )
 
 		if( who != -1 )
 		{
-			if( game.edicts[who+1].r.client->isoperator )
+			if ( G_IsPrivilegedClient(game.edicts[who+1]) )
 			{
-				G_PrintMsg( vote->caller, S_COLOR_RED"%s is a game operator.\n", game.edicts[who+1].r.client->netname );
+				G_PrintMsg( vote->caller, S_COLOR_RED"%s cannot be kicked.\n", game.edicts[who+1].r.client->netname );
 				return false;
 			}
 
@@ -1249,6 +1258,12 @@ static bool G_VoteMuteValidate( callvotedata_t *vote, bool first )
 		else
 		{
 			G_PrintMsg( vote->caller, "%sNo such player\n", S_COLOR_RED );
+			return false;
+		}
+
+		if( G_IsPrivilegedClient(game.edicts[who+1]) )
+		{
+			G_PrintMsg( vote->caller, S_COLOR_RED"%s cannot be muted.\n", game.edicts[who+1].r.client->netname );
 			return false;
 		}
 	}
