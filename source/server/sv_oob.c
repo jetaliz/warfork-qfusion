@@ -816,6 +816,7 @@ static void SVC_DirectConnect( const socket_t *socket, const netadr_t *address )
 				Com_DPrintf( "%s:reconnect rejected : too soon\n", NET_AddressToString( address ) );
 				return;
 			}
+			SV_DropClient(cl, DROP_TYPE_GENERAL, "New connection from IP");
 			Com_Printf( "%s:reconnect\n", NET_AddressToString( address ) );
 			newcl = cl;
 			break;
