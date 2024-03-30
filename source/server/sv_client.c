@@ -506,7 +506,7 @@ static void SV_Begin_f( client_t *client )
 
 	if (Cvar_Integer("sv_useSteamAuth") != 0 && !client->authenticated && !client->tvclient)
 	{
-		SV_DropClient( client, DROP_TYPE_GENERAL, "Client did not authenticate when steam authentication required (is steam running?)." );
+		SV_DropClient( client, DROP_TYPE_GENERAL, "Steam authentication failed. Please ensure Steam is running and restart Warfork." );
 		return;
 	}
 
