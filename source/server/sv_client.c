@@ -506,7 +506,7 @@ static void SV_Begin_f( client_t *client )
 
 	if (Cvar_Integer("sv_useSteamAuth") != 0 && !client->authenticated && !client->tvclient)
 	{
-		SV_DropClient( client, DROP_TYPE_GENERAL, "Steam authentication failed. Please ensure Steam is running and restart Warfork." );
+		SV_DropClient( client, DROP_TYPE_GENERAL, "Steam authentication timed out. Please ensure Steam is running and restart Warfork." );
 		return;
 	}
 
@@ -1260,7 +1260,7 @@ void SV_ParseClientMessage( client_t *client, msg_t *msg )
 
 				int result = Steam_BeginAuthSession(client->steamid, &ticket);
 				if (result != 0){
-					SV_DropClient(client, DROP_TYPE_GENERAL, "steam auth failure");
+					SV_DropClient(client, DROP_TYPE_GENERAL, "Steam authentication failed. Make sure you aren't already connected on this account");
 					break;
 				}
 
