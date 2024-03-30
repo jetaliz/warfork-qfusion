@@ -48,6 +48,7 @@ typedef enum STEAMSHIM_EventType
     SHIMEVENT_BEACONCREATED,
     SHIMEVENT_AVATARRECIEVED,
     SHIMEVENT_COMMANDLINERECIEVED,
+    SHIMEVENT_GAMEJOINREQUESTED,
 } STEAMSHIM_EventType;
 
 /* not all of these fields make sense in a given event. */

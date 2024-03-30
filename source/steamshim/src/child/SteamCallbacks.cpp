@@ -28,16 +28,26 @@ freely, subject to the following restrictions:
 #include "./child_private.h"
 #include "../steamshim_private.h"
 #include "../steamshim.h"
+#include <cstdint>
 
 SteamCallbacks::SteamCallbacks()
     : m_CallbackCreateBeacon( this, &SteamCallbacks::OnCreateBeacon ),
-    m_CallbackPersonaStateChange( this, &SteamCallbacks::OnPersonaStateChange)
+    m_CallbackPersonaStateChange( this, &SteamCallbacks::OnPersonaStateChange),
+    m_CallbackGameRichPresenceJoinRequested( this, &SteamCallbacks::OnGameJoinRequested)
 {
 } 
 
 void SteamCallbacks::OnCreateBeacon(UserStatsReceived_t *pCallback)
 {
-} 
+}
+void SteamCallbacks::OnGameJoinRequested(GameRichPresenceJoinRequested_t *pCallback)
+{
+    PipeBuffer msg;
+    msg.WriteByte(SHIMEVENT_GAMEJOINREQUESTED);
+    msg.WriteLong(pCallback->m_steamIDFriend.ConvertToUint64());
+    msg.WriteString(pCallback->m_rgchConnect);
+    msg.Transmit();
+}
 
 void SteamCallbacks::OnPersonaStateChange(PersonaStateChange_t *pCallback)
 {

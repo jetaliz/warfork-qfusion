@@ -2500,7 +2500,7 @@ void G_OperatorVote_Cmd( edict_t *ent )
 
 		if( !steam || !steam[0] || !splayer || !splayer[0] )
 		{
-			G_PrintMsg( ent, "Usage 'putteam <player id > <team name>'.\n" );
+			G_PrintMsg( ent, "Usage 'putteam <player id> <team name>'.\n" );
 			return;
 		}
 

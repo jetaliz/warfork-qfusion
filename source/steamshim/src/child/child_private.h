@@ -29,6 +29,7 @@ public:
     SteamCallbacks();
 	STEAM_CALLBACK(SteamCallbacks, OnCreateBeacon, UserStatsReceived_t, m_CallbackCreateBeacon);
 	STEAM_CALLBACK(SteamCallbacks, OnPersonaStateChange, PersonaStateChange_t, m_CallbackPersonaStateChange);
+	STEAM_CALLBACK(SteamCallbacks, OnGameJoinRequested, GameRichPresenceJoinRequested_t, m_CallbackGameRichPresenceJoinRequested);
 
 };
 

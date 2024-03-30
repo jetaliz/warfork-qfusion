@@ -2,6 +2,7 @@
 #include "../qcommon/steam.h"
 #include "client.h"
 #include "../steamshim/src/parent/parent.h"
+#include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -42,6 +43,12 @@ void CL_Steam_RunFrame( void )
 			case SHIMEVENT_AVATARRECIEVED: 
 				{
           CL_GameModule_CallbackRequestAvatar(evt->lvalue, evt->name);
+				}
+				break;
+			case SHIMEVENT_GAMEJOINREQUESTED:
+				{
+					uint64_t inviter = evt->lvalue;
+					CL_ParseSteamConnectString(evt->name);
 				}
 				break;
 			default: break;

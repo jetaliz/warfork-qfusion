@@ -3155,17 +3155,19 @@ void CL_AsyncStreamRequest( const char *url, const char **headers, int timeout, 
 	}
 }
 
+void CL_ParseSteamConnectString(const char* cmdline){
+	if (!cmdline[0]) return;
+	if (Q_strrstr(cmdline, "\"")) {
+		// block potential command injection
+		return;
+	}
+	Cbuf_ExecuteText(EXEC_NOW, va("connect \"%s\"", cmdline));
+}
+
 static void CL_SteamCommandLineInit(){
 	if (Steam_Active()) {
 		const char *cmdline = Steam_CommandLine();
-		printf("Steam command line: %s\n", cmdline);
-		if (!cmdline[0]) return;
-		if (Q_strrstr(cmdline, "\"")) {
-			// block potential command injection
-			return;
-		}
-		printf("Steam command line executing: %s\n", cmdline);
-		Cbuf_ExecuteText(EXEC_NOW, va("connect \"%s\"", cmdline));
+		CL_ParseSteamConnectString(cmdline);
 	}
 }
 

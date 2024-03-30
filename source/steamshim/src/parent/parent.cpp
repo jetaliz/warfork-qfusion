@@ -67,6 +67,7 @@ static STEAMSHIM_Event* ProcessEvent(){
     PRINTGOTEVENT(SHIMEVENT_AUTHSESSIONVALIDATED);
     PRINTGOTEVENT(SHIMEVENT_AVATARRECIEVED);
     PRINTGOTEVENT(SHIMEVENT_COMMANDLINERECIEVED);
+    PRINTGOTEVENT(SHIMEVENT_GAMEJOINREQUESTED);
     #undef PRINTGOTEVENT
     else printf("Parent got unknown shimevent %d.\n", (int) type);
     #endif
@@ -105,6 +106,9 @@ static STEAMSHIM_Event* ProcessEvent(){
                 memcpy(event.name, image, STEAM_AVATAR_SIZE);
             }
             break;
+        case SHIMEVENT_GAMEJOINREQUESTED:
+            event.lvalue = buf.ReadLong();
+            [[fallthrough]];
         case SHIMEVENT_COMMANDLINERECIEVED:
             {
                 char *string = (char*)buf.ReadString();
