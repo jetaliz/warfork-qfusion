@@ -903,7 +903,7 @@ void SP_target_kill( edict_t *self );
 //
 void SV_ResetPacketFiltersTimeouts( void );
 bool SV_FilterPacket( char *from );
-bool SV_FilterSteamID( uint64_t id, bool ismute );
+bool SV_FilterSteamID( uint64_t id, bool ismute, bool isshadowmute );
 void G_AddServerCommands( void );
 void G_RemoveCommands( void );
 void SV_ReadIPList( void );

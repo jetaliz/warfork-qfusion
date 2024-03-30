@@ -701,7 +701,7 @@ void Cmd_Say_f( edict_t *ent, bool arg0, bool checkflood )
 	if( ent->r.client && ent->r.client->muted )
 		return;
 
-	if (ent->r.client->authenticated && SV_FilterSteamID(ent->r.client->steamid,true)) { 
+	if (ent->r.client->authenticated && SV_FilterSteamID(ent->r.client->steamid, true, false)) { 
 		G_PrintMsg(ent, "You are muted.\n");
 		return;
 	}
@@ -737,7 +737,12 @@ void Cmd_Say_f( edict_t *ent, bool arg0, bool checkflood )
 	if( !Q_stricmp( text, "gg" ) || !Q_stricmp( text, "good game" ) )
 		G_AwardFairPlay( ent );
 
-	G_ChatMsg( NULL, ent, false, "%s", text );
+	if (ent->r.client->authenticated && SV_FilterSteamID(ent->r.client->steamid, true, true)) { 
+		// chat message is only sent to the player
+		G_ChatMsg( ent, ent, false, "%s", text );
+	}else {
+		G_ChatMsg( NULL, ent, false, "%s", text );
+	}
 }
 
 /*
@@ -854,7 +859,7 @@ static void G_vsay_f( edict_t *ent, bool team )
 	if( ent->r.client && ent->r.client->muted )
 		return;
 
-	if (ent->r.client->authenticated && SV_FilterSteamID(ent->r.client->steamid, true))
+	if (ent->r.client->authenticated && SV_FilterSteamID(ent->r.client->steamid, true, false))
 		return;
 
 	if( ( !GS_TeamBasedGametype() || GS_InvidualGameType() ) && ent->s.team != TEAM_SPECTATOR )
@@ -907,6 +912,13 @@ static void G_vsay_f( edict_t *ent, bool team )
 				Q_strncatz( saystring, " ", sizeof( saystring ) );
 			}
 			text = saystring;
+		}
+
+
+		if (ent->r.client->authenticated && SV_FilterSteamID(ent->r.client->steamid, true, true)) { 
+			// if shadowmuted only send the message back to the player
+			G_ChatMsg( ent, ent, false, "(v) %s", text );
+			return;
 		}
 
 		if( team )

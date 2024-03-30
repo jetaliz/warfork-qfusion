@@ -131,6 +131,7 @@ typedef struct
 	unsigned timeout;
 	bool steamban;
 	bool ismute;
+	bool shadowmute;
 } ipfilter_t;
 
 #define	MAX_IPFILTERS	1024
@@ -232,7 +233,7 @@ bool SV_FilterPacket( char *from )
 	return false;
 }
 
-bool SV_FilterSteamID( uint64_t id, bool ismute ) {
+bool SV_FilterSteamID( uint64_t id, bool ismute, bool isshadowmute ) {
 	if( !filterban->integer )
 		return false;
 
@@ -241,7 +242,7 @@ bool SV_FilterSteamID( uint64_t id, bool ismute ) {
 	for( i = 0; i < numipfilters; i++ )
 		if( ipfilters[i].steamban && ipfilters[i].steamid == id
 			&& (!ipfilters[i].timeout || ipfilters[i].timeout > game.serverTime) )
-			return ipfilters[i].ismute == ismute;
+			return (ipfilters[i].ismute == ismute && ipfilters[i].shadowmute == isshadowmute);
 
 
 	return false;
@@ -291,11 +292,17 @@ void SV_WriteIPList( void )
 		if (ipfilters[i].steamban) {
 			uint64_t id = ipfilters[i].steamid;
 
-			const char *type = ipfilters[i].ismute ? "mute" : "ban";
-			if( ipfilters[i].timeout )
-				Q_snprintfz( string, sizeof( string ), "%s %llu %.2f\r\n", type, id, timeout);
-			else
-				Q_snprintfz( string, sizeof( string ), "%s %llu\r\n", type, id );
+			if( ipfilters[i].timeout ){
+				if (ipfilters[i].ismute)
+					Q_snprintfz( string, sizeof( string ), "mute %llu %i %.2f\r\n", id, ipfilters[i].shadowmute, timeout);
+				else
+					Q_snprintfz( string, sizeof( string ), "ban %llu %.2f\r\n", id, timeout);
+			} else {
+				if (ipfilters[i].ismute)
+					Q_snprintfz( string, sizeof( string ), "mute %llu %i\r\n", id, ipfilters[i].shadowmute);
+				else
+					Q_snprintfz( string, sizeof( string ), "ban %llu \r\n", id);
+			}
 		}else{
 			*(unsigned *)b = ipfilters[i].ip.compare;
 			if( ipfilters[i].timeout )
@@ -348,6 +355,7 @@ static void Cmd_AddIP_f( void )
 }
 
 static void CmdAddSteamIpListEntry(bool mute) {
+	if (!atoll(trap_Cmd_Argv(1))) return;
 	int i;
 
 	for( i = 0; i < numipfilters; i++ )
@@ -365,11 +373,18 @@ static void CmdAddSteamIpListEntry(bool mute) {
 
 	ipfilters[i].ismute = mute;
 	ipfilters[i].steamban = true;
+	ipfilters[i].shadowmute = false;
 	ipfilters[i].timeout = 0;
 	ipfilters[i].steamid = atoll(trap_Cmd_Argv(1));
 
-	if( trap_Cmd_Argc() == 3 )
-		ipfilters[i].timeout = game.serverTime + atof( trap_Cmd_Argv(2) )*60*1000;
+	if( trap_Cmd_Argc() > 2 ) {
+		ipfilters[i].shadowmute = atoi( trap_Cmd_Argv(2) );
+	}
+	if (trap_Cmd_Argc() > 3 ){
+		ipfilters[i].timeout = game.serverTime + atof( trap_Cmd_Argv(3) )*60*1000;
+	}
+	
+
 
 }
 
@@ -388,7 +403,7 @@ static void Cmd_Mute_f( void )
 {
 	if( trap_Cmd_Argc() < 2 )
 	{
-		G_Printf( "Usage: mute <steamid64> [time-mins]\n" );
+		G_Printf( "Usage: mute <steamid64> <shadow 0/1> [time-mins]\n" );
 		return;
 	}
 	CmdAddSteamIpListEntry(true);

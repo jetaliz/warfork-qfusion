@@ -419,7 +419,7 @@ msgstr "<steamid64> <minutes> Bans a player by SteamID for a specified duration.
 
 #. Console/prefixless
 msgid "mute"
-msgstr "<steamid64> <minutes> Mutes a player by SteamID for a specified duration."
+msgstr "<steamid64> <shadow 0/1> <minutes> Mutes a player by SteamID for a specified duration. If shadow is 1 the player will not be able to tell if they are muted."
 
 #. Console/prefixless
 msgid "addnode"

@@ -1300,7 +1300,7 @@ static void G_VoteMutePassed( callvotedata_t *vote )
 		return;
 
 	if (ent->r.client->authenticated) {
-		trap_Cmd_ExecuteText( EXEC_APPEND, va( "mute %llu %llu\n", ent->r.client->steamid, 15 ) );
+		trap_Cmd_ExecuteText( EXEC_APPEND, va( "mute %llu 0 %llu\n", ent->r.client->steamid, 15 ) );
 	} else {
 		ent->r.client->muted = 1;
 	}
