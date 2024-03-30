@@ -47,6 +47,7 @@ typedef enum STEAMSHIM_EventType
     SHIMEVENT_AUTHSESSIONVALIDATED,
     SHIMEVENT_BEACONCREATED,
     SHIMEVENT_AVATARRECIEVED,
+    SHIMEVENT_COMMANDLINERECIEVED,
 } STEAMSHIM_EventType;
 
 /* not all of these fields make sense in a given event. */

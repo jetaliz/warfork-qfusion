@@ -27,6 +27,8 @@ void Steam_Init( void );
 void Steam_Shutdown( void );
 int Steam_Active();
 
+const char *Steam_CommandLine();
+
 extern cvar_t *steam_debug;
 
 #endif // _STEAM_LIB_H_

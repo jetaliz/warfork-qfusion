@@ -176,6 +176,15 @@ static bool processCommand(PipeBuffer cmd, ShimCmd cmdtype, unsigned int len)
                 SteamFriends()->ActivateGameOverlayToUser("steamid", steamID);
             }
             break;
+        case SHIMCMD_REQUESTCOMMANDLINE:
+            {
+                char cmdline[1024] = {0};
+                SteamApps()->GetLaunchCommandLine(cmdline, 1024);
+                msg.WriteByte(SHIMEVENT_COMMANDLINERECIEVED);
+                msg.WriteString(cmdline);
+                msg.Transmit();
+            }
+            break;
     } // switch
 
     return true;

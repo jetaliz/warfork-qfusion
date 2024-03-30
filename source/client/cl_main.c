@@ -3155,6 +3155,20 @@ void CL_AsyncStreamRequest( const char *url, const char **headers, int timeout, 
 	}
 }
 
+static void CL_SteamCommandLineInit(){
+	if (Steam_Active()) {
+		const char *cmdline = Steam_CommandLine();
+		printf("Steam command line: %s\n", cmdline);
+		if (!cmdline[0]) return;
+		if (Q_strrstr(cmdline, "\"")) {
+			// block potential command injection
+			return;
+		}
+		printf("Steam command line executing: %s\n", cmdline);
+		Cbuf_ExecuteText(EXEC_NOW, va("connect \"%s\"", cmdline));
+	}
+}
+
 //============================================================================
 
 /*
@@ -3221,6 +3235,7 @@ void CL_Init( void )
 
 	ML_Init();
 
+	CL_SteamCommandLineInit();
 }
 
 /*

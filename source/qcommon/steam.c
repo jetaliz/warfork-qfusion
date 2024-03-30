@@ -88,3 +88,8 @@ int Steam_Active(){
 	return STEAMSHIM_alive();
 }
 
+const char *Steam_CommandLine() {
+	STEAMSHIM_requestCommandLine();
+	const STEAMSHIM_Event *e = blockOnEvent(SHIMEVENT_COMMANDLINERECIEVED);
+	return e->name;
+}

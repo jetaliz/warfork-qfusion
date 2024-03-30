@@ -51,6 +51,7 @@ void STEAMSHIM_endAuthSession(uint64_t steamid);
 void STEAMSHIM_createBeacon(uint32_t openSlots, char* connectString, char* metadata);
 void STEAMSHIM_requestAvatar(uint64_t steamid, int size);
 void STEAMSHIM_openProfile(uint64_t steamid);
+void STEAMSHIM_requestCommandLine();
 #ifdef __cplusplus
 }
 #endif
