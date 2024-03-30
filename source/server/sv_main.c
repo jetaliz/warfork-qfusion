@@ -956,7 +956,7 @@ void SV_Init( void )
 	sv_masterservers_steam =	Cvar_Get( "masterservers_steam", DEFAULT_MASTER_SERVERS_STEAM_IPS, CVAR_LATCH );
 
 	sv_debug_serverCmd =	    Cvar_Get( "sv_debug_serverCmd", "0", CVAR_ARCHIVE );
-	sv_useSteamAuth = Cvar_Get( "sv_useSteamAuth", "0", CVAR_SERVERINFO|CVAR_LATCH );
+	sv_useSteamAuth = Cvar_Get( "sv_useSteamAuth", "1", CVAR_SERVERINFO|CVAR_LATCH );
 
 	sv_MOTD = Cvar_Get( "sv_MOTD", "0", CVAR_ARCHIVE );
 	sv_MOTDFile = Cvar_Get( "sv_MOTDFile", "", CVAR_ARCHIVE );
@@ -1004,12 +1004,11 @@ void SV_Init( void )
 
 	SV_Web_Init();
 
-	if (!Steam_Active()){
-		printf("Steam is not active, disabling sv_useSteamAuth\n");
-		sv_useSteamAuth->integer = 0;
+	if (Steam_Active()) {
+		if (!dedicated->integer)
+			Cvar_ForceSet( "sv_useSteamAuth", "1" );
+	} else {
 		Cvar_ForceSet( "sv_useSteamAuth", "0" );
-	}else{
-		printf("Steam is active, enabling sv_useSteamAuth\n");
 	}
 
 	sv_initialized = true;
