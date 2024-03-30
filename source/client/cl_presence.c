@@ -512,8 +512,10 @@ static cl_presence_state_t cl_presence_state;
 void UpdatePresenceIfChanged( RichPresence presence )
 {
 	if( memcmp( &cl_presence_state.steam_old_presence, &presence, sizeof( presence ) ) != 0 && Steam_Active()) {
+		char steam_display[128];
+		Q_snprintfz(steam_display, sizeof steam_display, "%s | %s", presence.state, presence.details);
 		char* keys[3] = {"score", "details","steam_display"};
-		char* values[3] = {presence.state,presence.state,"#Status_Score"};
+		char* values[3] = {steam_display,presence.details,"#Status_Score"};
 		Steam_SetRichPresence(3, keys, values);
 		cl_presence_state.steam_old_presence = presence;
 	}
