@@ -132,7 +132,7 @@ http_response_code_t G_PlayerlistWebRequest( http_query_method_t method, const c
 
 	for( ent = game.edicts+1; PLAYERNUM( ent ) < gs.maxclients; ent++ )
 	{
-		if( trap_GetClientState( PLAYERNUM( ent ) ) < CS_SPAWNED || ent->r.svflags & SVF_FAKECLIENT )
+		if( trap_GetClientState( PLAYERNUM( ent ) ) < CS_SPAWNED || ent->r.svflags & SVF_FAKECLIENT || ent->r.client->isTV )
 			continue;
 
 		char cleanname[MAX_NAME_BYTES];
