@@ -2455,6 +2455,25 @@ void G_OperatorVote_Cmd( edict_t *ent )
 		return;
 	}
 
+  time_t timer;
+  char timestamp[26];
+  struct tm* tm_info;
+
+  timer = time(NULL);
+  tm_info = localtime(&timer);
+
+  strftime(timestamp, 26, "%H:%M:%S", tm_info);
+	Com_Printf(
+			"[%s] %s " S_COLOR_YELLOW "(%llu / %s)" S_COLOR_WHITE " requested an opcall: %s %s %s\n",
+			timestamp,
+			ent->r.client->netname,
+			ent->r.client->steamid,
+			ent->r.client->ip,
+			trap_Cmd_Argv( 1 ),
+			trap_Cmd_Argv( 2 ),
+			trap_Cmd_Argv( 3 )
+		);
+
 	if( !Q_stricmp( trap_Cmd_Argv( 1 ), "cancelvote" ) )
 	{
 		forceVote = VOTED_NO;
