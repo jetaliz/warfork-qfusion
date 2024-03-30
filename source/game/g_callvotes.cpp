@@ -1388,7 +1388,7 @@ static void G_VoteUnmutePassed( callvotedata_t *vote )
 		return;
 
 	if (ent->r.client->authenticated){
-		trap_Cmd_ExecuteText( EXEC_APPEND, va( "removemute %llu\n", ent->r.client->steamid ) );
+		trap_Cmd_ExecuteText( EXEC_APPEND, va( "removemute %llu 15\n", ent->r.client->steamid ) );
 	} else {
 		ent->r.client->muted = 0;
 	}

@@ -453,6 +453,9 @@ static void CmdRemoveSteamIpListEntry(bool mute){
 	for( i = 0; i < numipfilters; i++ )
 		if( ipfilters[i].steamban && ipfilters[i].ismute == mute && ipfilters[i].steamid == steamid )
 		{
+			// skip if the timeout is going to be longer than argv 2 so that callvote unmute can't delete a permanent unmute
+			if (trap_Cmd_Argc() > 2 && (!ipfilters[i].timeout || (ipfilters[i].timeout - game.serverTime)/(1000.0f*60.0f) > atoll(trap_Cmd_Argv(2))))
+				continue;
 			for( j = i+1; j < numipfilters; j++ )
 				ipfilters[j-1] = ipfilters[j];
 			numipfilters--;
