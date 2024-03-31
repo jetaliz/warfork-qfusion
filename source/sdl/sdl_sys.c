@@ -110,6 +110,10 @@ int main( int argc, char **argv )
 	chdir( resourcesPath );
 #endif
 
+#if defined (__linux__)
+	SDL_SetHint(SDL_HINT_VIDEODRIVER, "x11");
+#endif
+
 #if defined( __WIN32__ )
 #if defined( _DEBUG )
 	SDL_SetHint( SDL_HINT_ALLOW_TOPMOST, "0" );
