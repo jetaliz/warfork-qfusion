@@ -1256,7 +1256,7 @@ void SV_ParseClientMessage( client_t *client, msg_t *msg )
 					break;
 				}
 				client->steamid = atoll(steamid);
-
+				client->authenticated = true;
 
 				int result = Steam_BeginAuthSession(client->steamid, &ticket);
 				if (result != 0){
@@ -1279,7 +1279,6 @@ void SV_ParseClientMessage( client_t *client, msg_t *msg )
 						SV_DropClient(client, DROP_TYPE_GENERAL, "you are not whitelisted!");
 				}
 
-				client->authenticated = true;
 
 				edict_t	*ent;
 				int edictnum;
