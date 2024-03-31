@@ -604,8 +604,8 @@ msgstr "<value> Sets the operator password. Operator is disabled if empty."
 
 #. Console/g
 msgid "g_permanent_operators"
-msgstr "<value> A comma separated list of 64-bit SteamID's (SteamID64) to grant operator access.\n"
-"^6Example: 76561197974895275,76561197960287930,76561198799681010"
+msgstr "<value> A colon separated list of 64-bit SteamID's (SteamID64) to grant operator access.\n"
+"^6Example: 76561197974895275:76561197960287930:76561198799681010"
 
 #. Console/g
 msgid "g_postmatch_timelimit"

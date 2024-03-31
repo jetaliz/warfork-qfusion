@@ -1267,13 +1267,13 @@ void SV_ParseClientMessage( client_t *client, msg_t *msg )
 				if ( sv_whitelist->string[0] ){
 					bool whitelisted = false;
 
-					char *pch = strtok(sv_whitelist->string, ",");
+					char *pch = strtok(sv_whitelist->string, ":");
 					while (pch != NULL){
 						if (atoll(pch) == atoll(steamid)){
 							whitelisted = true;
 							break;
 						}
-						pch = strtok(NULL, ",");
+						pch = strtok(NULL, ":");
 					}
 					if (!whitelisted)
 						SV_DropClient(client, DROP_TYPE_GENERAL, "you are not whitelisted!");

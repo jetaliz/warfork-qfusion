@@ -815,7 +815,7 @@ void ClientAuth ( edict_t *ent, uint64_t steamid )
 
 
 	if ( g_permanent_operators->string[0] ){
-		char *pch = strtok(g_permanent_operators->string, ",");
+		char *pch = strtok(g_permanent_operators->string, ":");
 		while (pch != NULL){
 			uint64_t testid = atoll(pch);
 
@@ -827,7 +827,7 @@ void ClientAuth ( edict_t *ent, uint64_t steamid )
 				break;
 			}
 
-			pch = strtok(NULL, ",");
+			pch = strtok(NULL, ":");
 		}
 	}
 }
