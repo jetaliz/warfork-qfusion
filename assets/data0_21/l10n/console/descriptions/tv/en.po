@@ -95,11 +95,15 @@ msgstr "<value> Seconds a client must wait until they can reconnect with a TV se
 #. Console/tv
 msgid "tv_server"
 msgstr "<0/1> Whether or not the server is a TV server.\n"
+"^6Disable: tv_server \"0\"\n"
+"^6Enable: tv_server \"1\"\n"
 "^6Note: This cvar is write protected."
 
 #. Console/tv
 msgid "tv_tcp"
-msgstr "<0/1> Whether or not to allow TCP connections."
+msgstr "<0/1> Whether or not to allow TCP connections.\n"
+"^6Disable: tv_tcp \"0\"\n"
+"^6Enable: tv_tcp \"1\""
 
 #. Console/tv
 msgid "tv_timeout"
@@ -108,7 +112,9 @@ msgstr "<value>	Kicks players from TV server if connection is lost for more than
 
 #. Console/tv
 msgid "tv_udp"
-msgstr "<0/1> Whether or not to allow UDP connections."
+msgstr "<0/1> Whether or not to allow UDP connections.\n"
+"^6Disable: tv_udp \"0\"\n"
+"^6Enable: tv_udp \"1\""
 
 #. Console/tv
 msgid "tv_zombietime"
