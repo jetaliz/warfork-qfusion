@@ -599,12 +599,12 @@ static bool R_RegisterGLExtensions( void )
 
 #ifndef USE_SDL2
 #ifdef GLX_VERSION
-	if( R_TryLoadProcAddress( glx_ext_swap_control_SGI_funcs ) ) {
+	if( R_TryLoadGLProcAddress( glx_ext_swap_control_SGI_funcs ) ) {
 		glConfig.ext.swap_control = 1;
 	}
 #endif
 #ifdef _WIN32
-	if( R_TryLoadProcAddress( wgl_ext_swap_interval_EXT_funcs ) ) {
+	if( R_TryLoadGLProcAddress( wgl_ext_swap_interval_EXT_funcs ) ) {
 		glConfig.ext.swap_control = 1;
 	}
 #endif
