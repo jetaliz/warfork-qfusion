@@ -49,14 +49,14 @@ bool T_LoadImagePCX(char *filename, struct texture_buf_s* buffer, uint8_t** pall
 	pcx->palette_type = LittleShort( pcx->palette_type );
 	
 	if( (sizeof(*pcx) + (pcx->ymax * pcx->xmax) + sizeof(uint32_t) * 256) > len ) {
-		ri.Com_DPrintf( S_COLOR_YELLOW "PCX file %s was malformed", filename );
+		ri.Com_Printf( S_COLOR_YELLOW "PCX file %s was malformed", filename );
 		return false;
 	}
 
 
 	if( pcx->manufacturer != 0x0a || pcx->version != 5 || pcx->encoding != 1 || pcx->bits_per_pixel != 8 ||
 		len < 768 ) {
-		ri.Com_DPrintf( S_COLOR_YELLOW "Bad pcx file %s\n", filename );
+		ri.Com_Printf( S_COLOR_YELLOW "Bad pcx file %s\n", filename );
 		R_FreeFile( pcx );
 		return false;
 	}

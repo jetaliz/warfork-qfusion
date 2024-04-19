@@ -1988,7 +1988,9 @@ void Mod_LoadQ2BrushModel( model_t *mod, model_t *parent, void *buffer, bspForma
 	{
 		uint8_t *pal = NULL;
 		struct texture_buf_s buffer = {0};
-		T_LoadImagePCX( "textures/colormap.pcx", &buffer, &pal );
+		if(!T_LoadImagePCX( "textures/colormap.pcx", &buffer, &pal )) {
+			ri.Com_Error( ERR_DROP, "Failed to load colormap.pcx" );
+		}
 		for( size_t i = 0; i < 256; i++ ) {
 			uint32_t v = COLOR_RGBA( pal[i * 3 + 0], pal[i * 3 + 1], pal[i * 3 + 2], 255 );
 			pallet[i] = LittleLong( v );
