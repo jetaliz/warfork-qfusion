@@ -421,67 +421,6 @@ static const gl_extension_func_t glx_ext_swap_control_SGI_funcs[] =
 #endif // USE_SDL2
 
 
-////
-//// OpenGL extensions list
-////
-//// short notation: vendor, name, default value, list of functions
-//// extended notation: vendor, name, default value, list of functions, required extension
-//static const gl_extension_t gl_extensions_decl[] =
-//{
-//	// extensions required by meta-extension gl_ext_GLSL
-//	 GL_EXTENSION( ARB, multitexture, true, true, &gl_ext_multitexture_ARB_funcs )
-//	,GL_EXTENSION( ARB, vertex_buffer_object, true, true, &gl_ext_vertex_buffer_object_ARB_funcs )
-//	,GL_EXTENSION_EXT( ARB, vertex_shader, 1, true, true, NULL, multitexture )
-//	,GL_EXTENSION_EXT( ARB, fragment_shader, 1, true, true, NULL, vertex_shader )
-//	,GL_EXTENSION_EXT( ARB, shader_objects, 1, true,true,  NULL, fragment_shader )
-//	,GL_EXTENSION_EXT( ARB, shading_language_100, 1, true, true, NULL, shader_objects )
-//
-//	// meta GLSL extensions
-//	,GL_EXTENSION_EXT( \0, GLSL, 1, true, true, &gl_ext_GLSL_ARB_funcs, shading_language_100 )
-//	,GL_EXTENSION_EXT( \0, GLSL_core, 1, true, false, &gl_ext_GLSL_core_ARB_funcs, GLSL )
-//	,GL_EXTENSION_EXT( \0, GLSL130, 1, false, false, &gl_ext_GLSL130_ARB_funcs, GLSL )
-//
-//	,GL_EXTENSION( EXT, draw_range_elements, false, false, &gl_ext_draw_range_elements_EXT_funcs )
-//	,GL_EXTENSION( EXT, framebuffer_object, true, true, &gl_ext_framebuffer_object_EXT_funcs )
-//	,GL_EXTENSION_EXT( EXT, framebuffer_blit, 1, false, false, &gl_ext_framebuffer_blit_EXT_funcs, framebuffer_object )
-//	,GL_EXTENSION( ARB, texture_compression, false, false, &gl_ext_texture_compression_ARB_funcs )
-//	
-//	,GL_EXTENSION( EXT, texture_edge_clamp, true, true, NULL )
-//	,GL_EXTENSION( SGIS, texture_edge_clamp, true, true, NULL )
-//	,GL_EXTENSION( ARB, texture_cube_map, true, true, NULL )
-//	,GL_EXTENSION( ARB, depth_texture, false, false, NULL )
-//	,GL_EXTENSION( SGIX, depth_texture, false, false, NULL )
-//	,GL_EXTENSION_EXT( ARB, shadow, 1, false, false, NULL, depth_texture )
-//	,GL_EXTENSION( ARB, texture_non_power_of_two, false, false, NULL )
-//	,GL_EXTENSION( ARB, draw_instanced, false, false, &gl_ext_draw_instanced_ARB_funcs )
-//	,GL_EXTENSION( ARB, instanced_arrays, false, false, &gl_ext_instanced_arrays_ARB_funcs )
-//	,GL_EXTENSION( ARB, half_float_vertex, false, false, NULL )
-//	,GL_EXTENSION( ARB, get_program_binary, false, false, &gl_ext_get_program_binary_ARB_funcs )
-//	,GL_EXTENSION( ARB, ES3_compatibility, false, false, NULL )
-//	,GL_EXTENSION( EXT, blend_func_separate, true, true, &gl_ext_blend_func_separate_EXT_funcs )
-//	,GL_EXTENSION( EXT, texture3D, false, false, &gl_ext_texture3D_EXT_funcs )
-//	,GL_EXTENSION_EXT( EXT, texture_array, 1, false, false, NULL, texture3D )
-//	,GL_EXTENSION( EXT, packed_depth_stencil, false, false, NULL )
-//	,GL_EXTENSION( SGIS, texture_lod, false, false, NULL )
-//	,GL_EXTENSION( ARB, gpu_shader5, false, false, NULL )
-//
-//	// memory info
-//	,GL_EXTENSION( NVX, gpu_memory_info, true, false, NULL )
-//	,GL_EXTENSION( ATI, meminfo, true, false, NULL )
-//
-//	,GL_EXTENSION( EXT, texture_filter_anisotropic, true, false, NULL )
-//	,GL_EXTENSION( EXT, bgra, true, false, NULL )
-//
-//#ifndef USE_SDL2
-//#ifdef GLX_VERSION
-//	,GL_EXTENSION( GLX_SGI, swap_control, true, false, &glx_ext_swap_control_SGI_funcs )
-//#endif
-//#ifdef _WIN32
-//	,GL_EXTENSION( WGL_EXT, swap_control, true, false, &wgl_ext_swap_interval_EXT_funcs )
-//#endif
-//#endif
-//};
-
 static void R_RegisterFatalExt(const char* ext) {
 	Sys_Error( "'%s' is not available, aborting\n", ext);
 }
@@ -523,27 +462,31 @@ static bool R_RegisterGLExtensions( void )
 	} else {
 		R_RegisterFatalExt( "gl_ext_vertex_buffer_object_ARB_funcs " );
 	}
+
 	if( R_TryLoadGLProcAddress( gl_ext_multitexture_ARB_funcs ) ) {
 		glConfig.ext.multitexture = 1;
 		glConfig.ext.vertex_shader = 1;
 		glConfig.ext.fragment_shader = 1;
 		glConfig.ext.shader_objects = 1;
 		glConfig.ext.shading_language_100 = 1;
-		if( R_TryLoadGLProcAddress( gl_ext_GLSL_ARB_funcs ) ) {
-			glConfig.ext.GLSL = 1;
-			if( R_TryLoadGLProcAddress( gl_ext_GLSL_core_ARB_funcs ) ) {
-				glConfig.ext.GLSL_core = 1;
-			}
-			if( R_TryLoadGLProcAddress( gl_ext_GLSL130_ARB_funcs ) ) {
-				glConfig.ext.GLSL130 = 1;
-			}
-		} else {
-			R_RegisterFatalExt( "gl_ext_GLSL_ARB_funcs" );
-		}
 	} else {
 		R_RegisterFatalExt( "gl_ext_multitexture_ARB_funcs" );
 	}
 
+	if( R_TryLoadGLProcAddress( gl_ext_GLSL_ARB_funcs ) ) {
+		glConfig.ext.GLSL = 1;
+	} else {
+		R_RegisterFatalExt( "gl_ext_GLSL_ARB_funcs" );
+	}
+
+	if( R_TryLoadGLProcAddress( gl_ext_GLSL_core_ARB_funcs ) ) {
+		glConfig.ext.GLSL_core = 1;
+	}
+
+	if( R_TryLoadGLProcAddress( gl_ext_GLSL130_ARB_funcs ) ) {
+		glConfig.ext.GLSL130 = 1;
+	}
+	
 	if( R_TryLoadGLProcAddress( gl_ext_draw_range_elements_EXT_funcs ) ) {
 		glConfig.ext.draw_range_elements = 1;
 	}
