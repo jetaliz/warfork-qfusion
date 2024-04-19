@@ -486,7 +486,7 @@ static void R_RegisterFatalExt(const char* ext) {
 	Sys_Error( "'%s' is not available, aborting\n", ext);
 }
 
-static const int R_TryLoadGLProcAddress(const gl_extension_func_t *funcs)
+static bool R_TryLoadGLProcAddress(const gl_extension_func_t *funcs)
 {
 	const gl_extension_func_t *func = funcs;
 	if( func ) {
