@@ -463,6 +463,12 @@ static bool R_RegisterGLExtensions( void )
 		R_RegisterFatalExt( "gl_ext_vertex_buffer_object_ARB_funcs " );
 	}
 
+	if( R_TryLoadGLProcAddress( gl_ext_framebuffer_object_EXT_funcs ) ) {
+		glConfig.ext.framebuffer_object = 1;
+	} else {
+		R_RegisterFatalExt( "gl_ext_framebuffer_object_EXT_funcs" );
+	}
+
 	if( R_TryLoadGLProcAddress( gl_ext_multitexture_ARB_funcs ) ) {
 		glConfig.ext.multitexture = 1;
 		glConfig.ext.vertex_shader = 1;
@@ -479,6 +485,12 @@ static bool R_RegisterGLExtensions( void )
 		R_RegisterFatalExt( "gl_ext_GLSL_ARB_funcs" );
 	}
 
+	if( R_TryLoadGLProcAddress( gl_ext_blend_func_separate_EXT_funcs ) ) {
+		glConfig.ext.blend_func_separate = 1;
+	} else {
+		R_RegisterFatalExt( "gl_ext_blend_func_separate_EXT_funcs" );
+	}
+
 	if( R_TryLoadGLProcAddress( gl_ext_GLSL_core_ARB_funcs ) ) {
 		glConfig.ext.GLSL_core = 1;
 	}
@@ -491,15 +503,10 @@ static bool R_RegisterGLExtensions( void )
 		glConfig.ext.draw_range_elements = 1;
 	}
 
-	if( R_TryLoadGLProcAddress( gl_ext_framebuffer_object_EXT_funcs ) ) {
-		glConfig.ext.framebuffer_object = 1;
-	} else {
-		R_RegisterFatalExt( "gl_ext_framebuffer_object_EXT_funcs" );
-	}
-
 	if( R_TryLoadGLProcAddress( gl_ext_framebuffer_blit_EXT_funcs ) ) {
 		glConfig.ext.framebuffer_blit = 1;
 	}
+
 	if( R_TryLoadGLProcAddress( gl_ext_texture_compression_ARB_funcs ) ) {
 		glConfig.ext.texture_compression = 1;
 	}
@@ -515,16 +522,11 @@ static bool R_RegisterGLExtensions( void )
 		glConfig.ext.get_program_binary = 1;
 	}
 
-	if( R_TryLoadGLProcAddress( gl_ext_blend_func_separate_EXT_funcs ) ) {
-		glConfig.ext.blend_func_separate = 1;
-	} else {
-		R_RegisterFatalExt( "gl_ext_blend_func_separate_EXT_funcs" );
-	}
-
 	if( R_TryLoadGLProcAddress( gl_ext_texture3D_EXT_funcs ) ) {
 		glConfig.ext.texture3D = 1;
 		glConfig.ext.texture_array = 1;
 	}
+
 	glConfig.ext.bgra = 1;
 	glConfig.ext.texture_filter_anisotropic = 1;
 	glConfig.ext.meminfo = 1;
