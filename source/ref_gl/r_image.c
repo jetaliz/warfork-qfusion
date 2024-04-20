@@ -29,6 +29,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "stb_image.h"
 
+#include "r_texture_buffer_load.h"
+
 #define	MAX_GLIMAGES	    8192
 #define IMAGES_HASH_SIZE    64
 
@@ -412,7 +414,7 @@ static void __R_stbi_free_image(void* p) {
 	stbi_image_free(img);
 }
 
-
+// TODO: replace r_texture_buffer_load.h has a replacment 
 static bool __R_ReadImageFromDisk_stbi(char *filename, struct texture_buf_s* buffer ) {
 	uint8_t* data;
 	size_t size = R_LoadFile( filename, ( void ** ) &data );
@@ -1519,7 +1521,7 @@ static bool R_LoadImageFromDisk( int ctx, image_t *image )
 			{
 				sdssubstr(pathname, 0, baseLen);
 				pathname = sdscatfmt( pathname, "_%s", cubemapSides[i][j].suf );
-				const char* extension = FS_FirstExtension( pathname, IMAGE_EXTENSIONS, NUM_IMAGE_EXTENSIONS - 1 ); // last is KTX
+				const char* extension = FS_FirstExtension2( pathname, IMAGE_EXTENSIONS, NUM_IMAGE_EXTENSIONS - 1 ); // last is KTX
 				
 				if(extension != NULL) {
 					lastExtension = extension;
@@ -1594,29 +1596,47 @@ static bool R_LoadImageFromDisk( int ctx, image_t *image )
 	{
 		struct texture_buf_s pic = {0};
 		sdssubstr(pathname, 0, baseLen);
-		const char* extension = FS_FirstExtension( pathname, IMAGE_EXTENSIONS, NUM_IMAGE_EXTENSIONS - 1 ); // last is KTX
-		if(extension != NULL) {
-			pathname = sdscat(pathname, extension);
+
+		const char *extensions[] = {
+			extensionTGA,
+			extensionJPG,
+			extensionPNG,
+			extensionWAL
+		};
+
+		const char* ext = FS_FirstExtension2( pathname, extensions, Q_ARRAY_COUNT(extensions)); // last is KTX
+		if(ext != NULL) {
+			pathname = sdscat(pathname, ext);
 		}
-		if(extension != NULL && __R_ReadImageFromDisk_stbi(pathname, &pic) )
-		{
-			image->width = T_PixelW(&pic);
-			image->height = T_PixelH(&pic);
-			image->samples =  RT_NumberChannels(pic.def);
+		if((ext == extensionPNG || ext == extensionJPG || ext == extensionTGA) && T_LoadImageSTBI(pathname, &pic)) {
+			image->width = T_PixelW( &pic );
+			image->height = T_PixelH( &pic );
+			image->samples = RT_NumberChannels( pic.def );
 
 			R_BindImage( image );
 
-			R_Upload32( ctx, &pic.buffer, 0, 0, 0, image->width, image->height, image->flags, image->minmipsize, &image->upload_width, 
-				&image->upload_height, image->samples, false, false );
+			R_Upload32( ctx, &pic.buffer, 0, 0, 0, image->width, image->height, image->flags, image->minmipsize, &image->upload_width, &image->upload_height, image->samples, false, false );
 
-			Q_strncpyz( image->extension, extension, sizeof( image->extension ) );
+			Q_strncpyz( image->extension, ext, sizeof( image->extension ) );
 			loaded = true;
-			T_FreeTextureBuf(&pic);
+			T_FreeTextureBuf( &pic );
+		} else if(ext == extensionWAL && T_LoadImageWAL(pathname, &pic)) {
+			image->width = T_PixelW( &pic );
+			image->height = T_PixelH( &pic );
+			image->samples = RT_NumberChannels( pic.def );
+			
+			R_BindImage( image );
+
+			R_Upload32( ctx, &pic.buffer, 0, 0, 0, image->width, image->height, image->flags, image->minmipsize, &image->upload_width, &image->upload_height, image->samples, false, false );
+
+			Q_strncpyz( image->extension, ext, sizeof( image->extension ) );
+			loaded = true;
+			T_FreeTextureBuf( &pic );
+
+		} else {
+			ri.Com_Printf( S_COLOR_YELLOW "Missing image: %s\n", image->name );
 		}
-		else
-		{
-			ri.Com_DPrintf( S_COLOR_YELLOW "Missing image: %s\n", image->name );
-		}
+		
 	}
 
 	if( loaded )
