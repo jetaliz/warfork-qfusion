@@ -766,7 +766,7 @@ static void CL_BeginRegistration( void )
 
 	cls.registrationOpen = true;
 
-	re.BeginRegistration();
+	RF_BeginRegistration();
 	CL_SoundModule_BeginRegistration();
 }
 
@@ -782,7 +782,7 @@ static void CL_EndRegistration( void )
 
 	FTLIB_TouchAllFonts();
 	CL_UIModule_TouchAllAssets();
-	re.EndRegistration();
+	RF_EndRegistration();
 	CL_SoundModule_EndRegistration();
 }
 

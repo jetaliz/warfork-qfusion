@@ -166,7 +166,7 @@ static void CL_GameModule_RefreshMouseAngles( void )
 * CL_GameModule_R_RegisterWorldModel
 */
 static void CL_GameModule_R_RegisterWorldModel( const char *model ) {
-	re.RegisterWorldModel( model, cl.cms ? CM_PVSData( cl.cms ) : NULL );
+	RF_RegisterWorldModel( model, cl.cms ? CM_PVSData( cl.cms ) : NULL );
 }
 
 /*

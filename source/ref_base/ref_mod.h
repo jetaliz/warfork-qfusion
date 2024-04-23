@@ -175,7 +175,7 @@ void RF_ResetScissor( void ){ ref_import.RF_ResetScissor();}
 void RF_SetCustomColor( int num, int r, int g, int b ) { ref_import.RF_SetCustomColor(num, r ,g ,b); }
 void RF_ScreenShot( const char *path, const char *name, const char *fmtstring, bool silent) { ref_import.RF_ScreenShot(path, name, fmtstring, silent); }
 void RF_EnvShot( const char *path, const char *name, unsigned pixels) { ref_import.RF_EnvShot(path, name, pixels); }
-bool RF_RenderingEnabled( void ){ ref_import.RF_RenderingEnabled(); }
+bool RF_RenderingEnabled( void ){ return ref_import.RF_RenderingEnabled(); }
 const char *RF_GetSpeedsMessage( char *out, size_t size) { return ref_import.RF_GetSpeedsMessage(out, size); }
 int RF_GetAverageFramerate( void ) { return ref_import.RF_GetAverageFramerate(); }
 void RF_ReplaceRawSubPic( shader_t *shader, int x, int y, int width, int height, uint8_t *data ) { ref_import.RF_ReplaceRawSubPic(shader, x,y,width, height, data);}
@@ -186,7 +186,7 @@ void RF_TransformVectorToScreen( const refdef_t *rd, const vec3_t in, vec2_t out
 bool RF_LerpTag( orientation_t *orient, const model_t *mod, int oldframe, int frame, float lerpfrac, const char *name) { return ref_import.RF_LerpTag(orient, mod, oldframe, frame, lerpfrac, name); }
 void RF_LightForOrigin( const vec3_t origin, vec3_t dir, vec4_t ambient, vec4_t diffuse, float radius) { ref_import.RF_LightForOrigin(origin, dir, ambient, diffuse, radius); }
 shader_t *RF_GetShaderForOrigin( const vec3_t origin ) { return ref_import.RF_GetShaderForOrigin(origin);}
-struct cinematics_s *RF_GetShaderCinematic( shader_t *shader ) { ref_import.RF_GetShaderCinematic( shader ); }
+struct cinematics_s *RF_GetShaderCinematic( shader_t *shader ) { return ref_import.RF_GetShaderCinematic( shader ); }
 
 static inline void Q_ImportRefModule(const struct ref_import_s* ref) {
 	ref_import = *ref;

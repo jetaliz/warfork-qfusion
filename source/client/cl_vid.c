@@ -203,7 +203,7 @@ static rserr_t VID_ChangeMode( void )
 	disp_freq = vid_displayfrequency->integer;
 	stereo = Cvar_Value( "cl_stereo" ) != 0;
 
-	err = re.SetMode( x, y, w, h, disp_freq, fs, stereo );
+	err = RF_SetMode( x, y, w, h, disp_freq, fs, stereo );
 
 	if( err == rserr_ok ) {
 		// store fallback mode
@@ -232,7 +232,7 @@ static rserr_t VID_ChangeMode( void )
 			vid_fullscreen->modified = false;
 			fs = false;
 
-			err = re.SetMode( x, y, w, h, disp_freq, false, stereo );
+			err = RF_SetMode( x, y, w, h, disp_freq, false, stereo );
 		}
 
 		if( err == rserr_invalid_mode ) {
@@ -244,7 +244,7 @@ static rserr_t VID_ChangeMode( void )
 			Cvar_ForceSet( vid_height->name, va( "%i", h ) );
 
 			// try setting it back to something safe
-			err = re.SetMode( x, y, w, h, disp_freq, fs, stereo );
+			err = RF_SetMode( x, y, w, h, disp_freq, fs, stereo );
 			if( err == rserr_invalid_fullscreen ) {
 				Com_Printf( "VID_ChangeMode() - could not revert to safe fullscreen mode\n" );
 
@@ -252,7 +252,7 @@ static rserr_t VID_ChangeMode( void )
 				vid_fullscreen->modified = false;
 				fs = false;
 
-				err = re.SetMode( x, y, w, h, disp_freq, false, stereo );
+				err = RF_SetMode( x, y, w, h, disp_freq, false, stereo );
 			}
 			if( err != rserr_ok ) {
 				Com_Printf( "VID_ChangeMode() - could not revert to safe mode\n" );
@@ -275,7 +275,7 @@ static void VID_UnloadRefresh( void )
 {
 	if( vid_ref_libhandle ) {
 		if( vid_ref_active ) {
-			re.Shutdown( false );
+			RF_Shutdown( false );
 			vid_ref_active = false;
 		}
 		Com_UnloadLibrary( &vid_ref_libhandle );
@@ -411,7 +411,6 @@ static bool VID_LoadRefresh( const char *name )
 
 		rep = GetRefAPI_f( &import );
 		re = *rep;
-		Q_ImportRefModule(&re.refImport);
 
 		api_version = re.API();
 
@@ -425,6 +424,7 @@ static bool VID_LoadRefresh( const char *name )
 			}
 			return false;
 		}
+		Q_ImportRefModule(&re.refImport);
 	}
 	else
 	{
@@ -640,7 +640,7 @@ load_refresh:
 			CL_SetKeyDest( key_menu );
 		}
 
-		re.EndRegistration();
+		RF_EndRegistration();
 		CL_SoundModule_EndRegistration();
 
 		vid_ref_modified = false;

@@ -118,7 +118,7 @@ static void CL_UIModule_AsyncStream_Shutdown( void )
 * CL_UIModule_R_RegisterWorldModel
 */
 static void CL_UIModule_R_RegisterWorldModel( const char *model ) {
-	re.RegisterWorldModel( model, NULL );
+	RF_RegisterWorldModel( model, NULL );
 }
 
 #define UI_L10N_DOMAIN	"ui"
