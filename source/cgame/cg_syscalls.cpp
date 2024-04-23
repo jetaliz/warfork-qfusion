@@ -36,7 +36,6 @@ extern "C" QF_DLL_EXPORT cgame_export_t *GetCGameAPI( cgame_import_t *import )
 
 
 	Q_ImportRefModule(&import->ref_import);
-
 	CGAME_IMPORT = *import;
 
 	globals.API = CG_API;

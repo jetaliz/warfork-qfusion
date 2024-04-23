@@ -9,6 +9,7 @@
 
 typedef struct shader_s shader_t;
 typedef struct model_s model_t;
+typedef struct skinfile_s skinfile_t;
 
 #define DECLARE_TYPEDEF_METHOD( ret, name, ... ) \
 	typedef ret(*name##Fn )( __VA_ARGS__ ); \
@@ -55,7 +56,33 @@ DECLARE_TYPEDEF_METHOD( void, RF_LightForOrigin, const vec3_t origin, vec3_t dir
 DECLARE_TYPEDEF_METHOD( shader_t *, RF_GetShaderForOrigin, const vec3_t origin );
 DECLARE_TYPEDEF_METHOD( struct cinematics_s *, RF_GetShaderCinematic, shader_t *shader );
 
-DECLARE_TYPEDEF_METHOD( void, R_RegisterWorldModel, const char *name, const dvis_t *pvsData );
+DECLARE_TYPEDEF_METHOD( void, R_ClearScene, void );
+DECLARE_TYPEDEF_METHOD( void, R_AddEntityToScene, const entity_t *ent );
+DECLARE_TYPEDEF_METHOD( void, R_AddLightToScene, const vec3_t org, float intensity, float r, float g, float b );
+DECLARE_TYPEDEF_METHOD( void, R_AddPolyToScene, const poly_t *poly );
+DECLARE_TYPEDEF_METHOD( void, R_RenderScene, const refdef_t *fd );
+DECLARE_TYPEDEF_METHOD( void, R_ModelBounds, const model_t *mod, vec3_t mins, vec3_t maxs );
+DECLARE_TYPEDEF_METHOD( void, R_ModelFrameBounds, const model_t *mod, int frame, vec3_t mins, vec3_t maxs );
+DECLARE_TYPEDEF_METHOD( model_t *, R_RegisterModel, const char *name );
+DECLARE_TYPEDEF_METHOD( shader_t *, R_RegisterSkin, const char *name );
+DECLARE_TYPEDEF_METHOD( shader_t *, R_RegisterPic, const char *name );
+DECLARE_TYPEDEF_METHOD( shader_t *, R_RegisterRawPic, const char *name, int width, int height, uint8_t *data, int samples );
+DECLARE_TYPEDEF_METHOD( shader_t *, R_RegisterLevelshot, const char *name, struct shader_s *defaultPic, bool *matchesDefault );
+DECLARE_TYPEDEF_METHOD( skinfile_t *, R_RegisterSkinFile, const char *name );
+DECLARE_TYPEDEF_METHOD( shader_t *, R_RegisterVideo, const char *name );
+DECLARE_TYPEDEF_METHOD( bool, R_LerpTag, orientation_t *orient, const struct model_s *mod, int oldframe, int frame, float lerpfrac, const char *name );
+DECLARE_TYPEDEF_METHOD( void, R_DrawStretchPic, int x, int y, int w, int h, float s1, float t1, float s2, float t2, const vec4_t color, const struct shader_s *shader );
+DECLARE_TYPEDEF_METHOD( void, R_DrawStretchPoly, const struct poly_s *poly, float x_offset, float y_offset );
+DECLARE_TYPEDEF_METHOD( void, R_DrawRotatedStretchPic, int x, int y, int w, int h, float s1, float t1, float s2, float t2, float angle, const vec4_t color, const struct shader_s *shader );
+DECLARE_TYPEDEF_METHOD( void, R_Scissor, int x, int y, int w, int h );
+DECLARE_TYPEDEF_METHOD( void, R_GetScissor, int *x, int *y, int *w, int *h );
+DECLARE_TYPEDEF_METHOD( void, R_ResetScissor, void );
+DECLARE_TYPEDEF_METHOD( void, R_GetShaderDimensions, const shader_t *shader, int *width, int *height );
+DECLARE_TYPEDEF_METHOD( void, R_TransformVectorToScreen, const refdef_t *rd, vec3_t const in, vec2_t out );
+DECLARE_TYPEDEF_METHOD( int, R_SkeletalGetNumBones, const model_t *mod, int *numFrames );
+DECLARE_TYPEDEF_METHOD( int, R_SkeletalGetBoneInfo, const model_t *mod, int bone, char *name, size_t name_size, int *flags );
+DECLARE_TYPEDEF_METHOD( void, R_SkeletalGetBonePose, const model_t *mod, int bone, int frame, bonepose_t *bonepose );
+DECLARE_TYPEDEF_METHOD( struct cinematics_t *, R_GetShaderCinematic, shader_t *shader );
 
 #undef DECLARE_TYPEDEF_METHOD
 
@@ -99,7 +126,33 @@ struct ref_import_s {
 	RF_LightForOriginFn RF_LightForOrigin;
 	RF_GetShaderForOriginFn RF_GetShaderForOrigin;
 	RF_GetShaderCinematicFn RF_GetShaderCinematic;
-	R_RegisterWorldModelFn R_RegisterWorldModel; 
+	R_ClearSceneFn R_ClearScene;
+	R_AddEntityToSceneFn R_AddEntityToScene;
+	R_AddLightToSceneFn R_AddLightToScene;
+	R_AddPolyToSceneFn R_AddPolyToScene;
+	R_RenderSceneFn R_RenderScene;
+	R_ModelBoundsFn R_ModelBounds;
+	R_ModelFrameBoundsFn R_ModelFrameBounds;
+	R_RegisterModelFn R_RegisterModel;
+	R_RegisterSkinFn R_RegisterSkin;
+	R_RegisterPicFn R_RegisterPic;
+	R_RegisterRawPicFn R_RegisterRawPic;
+	R_RegisterLevelshotFn R_RegisterLevelshot;
+	R_RegisterSkinFileFn R_RegisterSkinFile;
+	R_RegisterVideoFn R_RegisterVideo;
+	R_LerpTagFn R_LerpTag;
+	R_DrawStretchPicFn R_DrawStretchPic;
+	R_DrawStretchPolyFn R_DrawStretchPoly;
+	R_DrawRotatedStretchPicFn R_DrawRotatedStretchPic;
+	R_ScissorFn R_Scissor;
+	R_GetScissorFn R_GetScissor;
+	R_ResetScissorFn R_ResetScissor;
+	R_GetShaderDimensionsFn R_GetShaderDimensions;
+	R_TransformVectorToScreenFn R_TransformVectorToScreen;
+	R_SkeletalGetNumBonesFn R_SkeletalGetNumBones;
+	R_SkeletalGetBoneInfoFn R_SkeletalGetBoneInfo;
+	R_SkeletalGetBonePoseFn R_SkeletalGetBonePose;
+	R_GetShaderCinematicFn R_GetShaderCinematic;
 };
 
 #define DECLARE_REF_STRUCT() { \
@@ -142,7 +195,33 @@ struct ref_import_s {
   RF_LightForOrigin, \
   RF_GetShaderForOrigin, \
   RF_GetShaderCinematic, \
-  R_RegisterWorldModel \
+	R_ClearScene, \
+	R_AddEntityToScene, \
+	R_AddLightToScene, \
+	R_AddPolyToScene, \
+	R_RenderScene, \
+	R_ModelBounds, \
+	R_ModelFrameBounds, \
+	R_RegisterModel, \
+	R_RegisterSkin, \
+	R_RegisterPic, \
+	R_RegisterRawPic, \
+	R_RegisterLevelshot, \
+	R_RegisterSkinFile, \
+	R_RegisterVideo, \
+	R_LerpTag, \
+	R_DrawStretchPic, \
+	R_DrawStretchPoly, \
+	R_DrawRotatedStretchPic, \
+	R_Scissor, \
+	R_GetScissor, \
+	R_ResetScissor, \
+	R_GetShaderDimensions, \
+	R_TransformVectorToScreen, \
+	R_SkeletalGetNumBones, \
+	R_SkeletalGetBoneInfo, \
+	R_SkeletalGetBonePose, \
+	R_GetShaderCinematic, \
 }
 
 struct ref_import_s RF_Forward_Mod();
@@ -191,8 +270,6 @@ bool RF_LerpTag( orientation_t *orient, const model_t *mod, int oldframe, int fr
 void RF_LightForOrigin( const vec3_t origin, vec3_t dir, vec4_t ambient, vec4_t diffuse, float radius) { ref_import.RF_LightForOrigin(origin, dir, ambient, diffuse, radius); }
 shader_t *RF_GetShaderForOrigin( const vec3_t origin ) { return ref_import.RF_GetShaderForOrigin(origin);}
 struct cinematics_s *RF_GetShaderCinematic( shader_t *shader ) { return ref_import.RF_GetShaderCinematic( shader ); }
-
-void R_RegisterWorldModel(const char *name, const dvis_t *pvsData ){ return ref_import.R_RegisterWorldModel(name, pvsData);} 
 
 static inline void Q_ImportRefModule(const struct ref_import_s* ref) {
 	ref_import = *ref;

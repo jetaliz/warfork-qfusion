@@ -18,7 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "cg_local.h"
-
+#include "../ref_base/ref_mod.h"
 cg_static_t cgs;
 cg_state_t cg;
 
