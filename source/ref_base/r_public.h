@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../cgame/ref.h"
 
 #include "../qcommon/mod_mem.h"
+#include "ref_mod.h"
 
 #define REF_API_VERSION 21
 
@@ -207,6 +208,8 @@ typedef struct
 	void		( *StopAviDemo )( void );
 
 	void		( *AppActivate )( bool active, bool destroy );
+
+	struct ref_import_s refImport;
 } ref_export_t;
 
 typedef ref_export_t *(*GetRefAPI_t)(const ref_import_t *imports);
