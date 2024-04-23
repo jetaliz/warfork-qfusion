@@ -20,7 +20,6 @@ DECLARE_TYPEDEF_METHOD( rserr_t, RF_SetMode, int x, int y, int width, int height
 DECLARE_TYPEDEF_METHOD( void, RF_AppActivate, bool active, bool destroy );
 DECLARE_TYPEDEF_METHOD( rserr_t, RF_SetWindow, void *hinstance, void *wndproc, void *parenthWnd );
 DECLARE_TYPEDEF_METHOD( void, RF_Shutdown, bool verbose );
-DECLARE_TYPEDEF_METHOD( void, RF_SurfaceChangePending, void );
 DECLARE_TYPEDEF_METHOD( void, RF_BeginFrame, float cameraSeparation, bool forceClear, bool forceVsync );
 DECLARE_TYPEDEF_METHOD( void, RF_EndFrame, void );
 DECLARE_TYPEDEF_METHOD( void, RF_BeginRegistration, void );
@@ -64,7 +63,6 @@ struct ref_import_s {
 	RF_AppActivateFn RF_AppActivate;
 	RF_SetWindowFn RF_SetWindow;
 	RF_ShutdownFn RF_Shutdown;
-	RF_SurfaceChangePendingFn RF_SurfaceChangePending;
 	RF_BeginFrameFn RF_BeginFrame;
 	RF_EndFrameFn RF_EndFrame;
 	RF_BeginRegistrationFn RF_BeginRegistration;
@@ -107,7 +105,6 @@ struct ref_import_s {
   RF_AppActivate, \
   RF_SetWindow, \
   RF_Shutdown, \
-  RF_SurfaceChangePending, \
   RF_BeginFrame, \
   RF_EndFrame, \
   RF_BeginRegistration, \
@@ -151,7 +148,6 @@ rserr_t RF_SetMode( int x, int y, int width, int height, int displayFrequency, b
 void RF_AppActivate( bool active, bool destroy ) { ref_import.RF_AppActivate(active, destroy); }
 rserr_t	RF_SetWindow( void *hinstance, void *wndproc, void *parenthWnd ) { return ref_import.RF_SetWindow(hinstance, wndproc, parenthWnd); }
 void RF_Shutdown( bool verbose ) { ref_import.RF_Shutdown( verbose ); }
-void RF_SurfaceChangePending( void ) { ref_import.RF_SurfaceChangePending(); }
 void RF_BeginFrame( float cameraSeparation, bool forceClear, bool forceVsync ) { ref_import.RF_BeginFrame( cameraSeparation, forceClear, forceVsync ); }
 void RF_EndFrame( void ) { ref_import.RF_EndFrame(); }
 void RF_BeginRegistration( void ) { ref_import.RF_BeginRegistration(); }
