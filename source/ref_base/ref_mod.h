@@ -79,20 +79,13 @@ DECLARE_TYPEDEF_METHOD( shader_t *, R_RegisterVideo, const char *name );
 // r_skin.c
 DECLARE_TYPEDEF_METHOD( skinfile_t *, R_RegisterSkinFile, const char *name );
 
-
-DECLARE_TYPEDEF_METHOD( bool, R_LerpTag, orientation_t *orient, const struct model_s *mod, int oldframe, int frame, float lerpfrac, const char *name );
-DECLARE_TYPEDEF_METHOD( void, R_DrawStretchPic, int x, int y, int w, int h, float s1, float t1, float s2, float t2, const vec4_t color, const struct shader_s *shader );
-DECLARE_TYPEDEF_METHOD( void, R_DrawStretchPoly, const struct poly_s *poly, float x_offset, float y_offset );
-DECLARE_TYPEDEF_METHOD( void, R_DrawRotatedStretchPic, int x, int y, int w, int h, float s1, float t1, float s2, float t2, float angle, const vec4_t color, const struct shader_s *shader );
-DECLARE_TYPEDEF_METHOD( void, R_Scissor, int x, int y, int w, int h );
-DECLARE_TYPEDEF_METHOD( void, R_GetScissor, int *x, int *y, int *w, int *h );
-DECLARE_TYPEDEF_METHOD( void, R_ResetScissor, void );
+// r_shader.c
 DECLARE_TYPEDEF_METHOD( void, R_GetShaderDimensions, const shader_t *shader, int *width, int *height );
-DECLARE_TYPEDEF_METHOD( void, R_TransformVectorToScreen, const refdef_t *rd, vec3_t const in, vec2_t out );
+
+// r_skm.c
 DECLARE_TYPEDEF_METHOD( int, R_SkeletalGetNumBones, const model_t *mod, int *numFrames );
 DECLARE_TYPEDEF_METHOD( int, R_SkeletalGetBoneInfo, const model_t *mod, int bone, char *name, size_t name_size, int *flags );
 DECLARE_TYPEDEF_METHOD( void, R_SkeletalGetBonePose, const model_t *mod, int bone, int frame, bonepose_t *bonepose );
-DECLARE_TYPEDEF_METHOD( struct cinematics_t *, R_GetShaderCinematic, shader_t *shader );
 
 #undef DECLARE_TYPEDEF_METHOD
 
@@ -150,19 +143,10 @@ struct ref_import_s {
 	R_RegisterLevelshotFn R_RegisterLevelshot;
 	R_RegisterSkinFileFn R_RegisterSkinFile;
 	R_RegisterVideoFn R_RegisterVideo;
-	R_LerpTagFn R_LerpTag;
-	R_DrawStretchPicFn R_DrawStretchPic;
-	R_DrawStretchPolyFn R_DrawStretchPoly;
-	R_DrawRotatedStretchPicFn R_DrawRotatedStretchPic;
-	R_ScissorFn R_Scissor;
-	R_GetScissorFn R_GetScissor;
-	R_ResetScissorFn R_ResetScissor;
 	R_GetShaderDimensionsFn R_GetShaderDimensions;
-	R_TransformVectorToScreenFn R_TransformVectorToScreen;
 	R_SkeletalGetNumBonesFn R_SkeletalGetNumBones;
 	R_SkeletalGetBoneInfoFn R_SkeletalGetBoneInfo;
 	R_SkeletalGetBonePoseFn R_SkeletalGetBonePose;
-	R_GetShaderCinematicFn R_GetShaderCinematic;
 };
 
 #define DECLARE_REF_STRUCT() { \
@@ -219,19 +203,11 @@ struct ref_import_s {
 	R_RegisterLevelshot, \
 	R_RegisterSkinFile, \
 	R_RegisterVideo, \
-	R_LerpTag, \
 	R_DrawStretchPic, \
-	R_DrawStretchPoly, \
-	R_DrawRotatedStretchPic, \
-	R_Scissor, \
-	R_GetScissor, \
-	R_ResetScissor, \
 	R_GetShaderDimensions, \
-	R_TransformVectorToScreen, \
 	R_SkeletalGetNumBones, \
 	R_SkeletalGetBoneInfo, \
 	R_SkeletalGetBonePose, \
-	R_GetShaderCinematic, \
 }
 
 struct ref_import_s RF_Forward_Mod();

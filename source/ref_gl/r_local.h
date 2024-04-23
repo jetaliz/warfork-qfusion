@@ -728,8 +728,6 @@ bool	R_AddSkeletalModelToDrawList( const entity_t *e );
 void	R_DrawSkeletalSurf( const entity_t *e, const shader_t *shader, const mfog_t *fog, const portalSurface_t *portalSurface, unsigned int shadowBits, drawSurfaceSkeletal_t *drawSurf );
 float		R_SkeletalModelBBox( const entity_t *e, vec3_t mins, vec3_t maxs );
 void		R_SkeletalModelFrameBounds( const model_t *mod, int frame, vec3_t mins, vec3_t maxs );
-int			R_SkeletalGetBoneInfo( const model_t *mod, int bonenum, char *name, size_t name_size, int *flags );
-void		R_SkeletalGetBonePose( const model_t *mod, int bonenum, int frame, bonepose_t *bonepose );
 int			R_SkeletalGetNumBones( const model_t *mod, int *numFrames );
 
 void		R_InitSkeletalCache( void );
