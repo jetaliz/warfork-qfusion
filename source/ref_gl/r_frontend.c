@@ -264,6 +264,11 @@ rserr_t RF_SetWindow( void *hinstance, void *wndproc, void *parenthWnd )
 	return err;
 }
 
+struct ref_import_s RF_Forward_Mod() {
+	assert(0); // we don't implement this for the core mod
+	return (struct ref_import_s){0};
+}
+
 void RF_AppActivate( bool active, bool destroy )
 {
 	R_Flush();

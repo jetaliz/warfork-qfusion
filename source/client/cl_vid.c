@@ -21,6 +21,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // Main windowed and fullscreen graphics interface module. This module
 // is used for both the software and OpenGL rendering versions of the
 // qfusion refresh engine.
+#define REF_DEFINE_INTERFACE_IMPL 1
+#include "../ref_base/ref_mod.h"
+
 #include "client.h"
 #include "cin.h"
 #include "ftlib.h"
@@ -408,6 +411,8 @@ static bool VID_LoadRefresh( const char *name )
 
 		rep = GetRefAPI_f( &import );
 		re = *rep;
+		Q_ImportRefModule(&re.refImport);
+
 		api_version = re.API();
 
 		if( api_version != REF_API_VERSION ) {

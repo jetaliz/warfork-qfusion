@@ -141,8 +141,13 @@ struct ref_import_s {
   RF_GetShaderCinematic \
 }
 
+struct ref_import_s RF_Forward_Mod();
+
 #if REF_DEFINE_INTERFACE_IMPL
 static struct ref_import_s ref_import;
+struct ref_import_s RF_Forward_Mod() {
+	return ref_import;
+}
 rserr_t RF_Init( const char *applicationName, const char *screenshotPrefix, int startupColor,int iconResource, const int *iconXPM, void *hinstance, void *wndproc, void *parenthWnd,  bool verbose ) { return ref_import.RF_Init(applicationName, screenshotPrefix, startupColor, iconResource, iconXPM, hinstance, wndproc, parenthWnd, verbose ); }
 rserr_t RF_SetMode( int x, int y, int width, int height, int displayFrequency, bool fullScreen, bool stereo ) { return ref_import.RF_SetMode(x,y,width, height, displayFrequency, fullScreen, stereo); }
 void RF_AppActivate( bool active, bool destroy ) { ref_import.RF_AppActivate(active, destroy); }
@@ -180,7 +185,7 @@ void RF_StopAviDemo( void ) { ref_import.RF_StopAviDemo(); }
 void RF_TransformVectorToScreen( const refdef_t *rd, const vec3_t in, vec2_t out ) { ref_import.RF_TransformVectorToScreen(rd, in, out); }
 bool RF_LerpTag( orientation_t *orient, const model_t *mod, int oldframe, int frame, float lerpfrac, const char *name) { return ref_import.RF_LerpTag(orient, mod, oldframe, frame, lerpfrac, name); }
 void RF_LightForOrigin( const vec3_t origin, vec3_t dir, vec4_t ambient, vec4_t diffuse, float radius) { ref_import.RF_LightForOrigin(origin, dir, ambient, diffuse, radius); }
-shader_t *RF_GetShaderForOrigin( const vec3_t origin ) {ref_import.RF_LightForOrigin(origin);}
+shader_t *RF_GetShaderForOrigin( const vec3_t origin ) { return ref_import.RF_GetShaderForOrigin(origin);}
 struct cinematics_s *RF_GetShaderCinematic( shader_t *shader ) { ref_import.RF_GetShaderCinematic( shader ); }
 
 static inline void Q_ImportRefModule(const struct ref_import_s* ref) {
