@@ -55,6 +55,8 @@ DECLARE_TYPEDEF_METHOD( void, RF_LightForOrigin, const vec3_t origin, vec3_t dir
 DECLARE_TYPEDEF_METHOD( shader_t *, RF_GetShaderForOrigin, const vec3_t origin );
 DECLARE_TYPEDEF_METHOD( struct cinematics_s *, RF_GetShaderCinematic, shader_t *shader );
 
+DECLARE_TYPEDEF_METHOD( void, R_RegisterWorldModel, const char *name, const dvis_t *pvsData );
+
 #undef DECLARE_TYPEDEF_METHOD
 
 struct ref_import_s {
@@ -97,6 +99,7 @@ struct ref_import_s {
 	RF_LightForOriginFn RF_LightForOrigin;
 	RF_GetShaderForOriginFn RF_GetShaderForOrigin;
 	RF_GetShaderCinematicFn RF_GetShaderCinematic;
+	R_RegisterWorldModelFn R_RegisterWorldModel; 
 };
 
 #define DECLARE_REF_STRUCT() { \
@@ -138,7 +141,8 @@ struct ref_import_s {
   RF_LerpTag, \
   RF_LightForOrigin, \
   RF_GetShaderForOrigin, \
-  RF_GetShaderCinematic \
+  RF_GetShaderCinematic, \
+  R_RegisterWorldModel \
 }
 
 struct ref_import_s RF_Forward_Mod();
@@ -187,6 +191,8 @@ bool RF_LerpTag( orientation_t *orient, const model_t *mod, int oldframe, int fr
 void RF_LightForOrigin( const vec3_t origin, vec3_t dir, vec4_t ambient, vec4_t diffuse, float radius) { ref_import.RF_LightForOrigin(origin, dir, ambient, diffuse, radius); }
 shader_t *RF_GetShaderForOrigin( const vec3_t origin ) { return ref_import.RF_GetShaderForOrigin(origin);}
 struct cinematics_s *RF_GetShaderCinematic( shader_t *shader ) { return ref_import.RF_GetShaderCinematic( shader ); }
+
+void R_RegisterWorldModel(const char *name, const dvis_t *pvsData ){ return ref_import.R_RegisterWorldModel(name, pvsData);} 
 
 static inline void Q_ImportRefModule(const struct ref_import_s* ref) {
 	ref_import = *ref;

@@ -454,6 +454,7 @@ void CL_GameModule_Init( void )
 	import.NET_GetCurrentState = CL_GameModule_NET_GetCurrentState;
 	import.RefreshMouseAngles = CL_GameModule_RefreshMouseAngles;
 
+	import.ref_import = RF_Forward_Mod();
 	import.R_UpdateScreen = SCR_UpdateScreen;
 	import.R_GetClippedFragments = re.GetClippedFragments;
 	import.R_ClearScene = re.ClearScene;

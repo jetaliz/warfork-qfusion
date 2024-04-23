@@ -429,7 +429,7 @@ void		R_FreeUnusedModels( void );
 
 void		R_ModelBounds( const model_t *model, vec3_t mins, vec3_t maxs );
 void		R_ModelFrameBounds( const struct model_s *model, int frame, vec3_t mins, vec3_t maxs );
-void		R_RegisterWorldModel( const char *model, const dvis_t *pvsData );
+//void		R_RegisterWorldModel( const char *model, const dvis_t *pvsData );
 struct model_s *R_RegisterModel( const char *name );
 
 void R_GetTransformBufferForMesh( mesh_t *mesh, bool positions, bool normals, bool sVectors );

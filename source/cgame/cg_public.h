@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __CG_PUBLIC_H__
 #define __CG_PUBLIC_H__
 
+#include "../ref_base/ref_mod.h"
+
 struct orientation_s;
 struct bonepose_s;
 struct shader_s;
@@ -87,6 +89,8 @@ typedef struct
 	// console messages
 	void ( *Print )( const char *msg );
 	void ( *PrintToLog )( const char *msg );
+
+	struct ref_import_s ref_import;
 
 	// dynvars
 	dynvar_t *( *Dynvar_Create )( const char *name, bool console, dynvar_getter_f getter, dynvar_setter_f setter );

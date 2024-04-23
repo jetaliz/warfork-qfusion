@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef __UI_PUBLIC_H__
 #define __UI_PUBLIC_H__
 
+#include "../ref_base/ref_mod.h"
+
 #define	UI_API_VERSION	    62
 
 typedef size_t (*ui_async_stream_read_cb_t)(const void *buf, size_t numb, float percentage, 
@@ -79,12 +81,13 @@ typedef struct
 	void ( *Cmd_Execute )( void );
 	void ( *Cmd_SetCompletionFunc )( const char *cmd_name, char **( *completion_func )( const char *partial ) );
 
+
+	struct ref_import_s refImport;
 	void ( *R_ClearScene )( void );
 	void ( *R_AddEntityToScene )( const entity_t *ent );
 	void ( *R_AddLightToScene )( const vec3_t org, float intensity, float r, float g, float b );
 	void ( *R_AddPolyToScene )( const poly_t *poly );
 	void ( *R_RenderScene )( const refdef_t *fd );
-	void ( *R_EndFrame )( void );
 	void ( *R_RegisterWorldModel )( const char *name );
 	void ( *R_ModelBounds )( const struct model_s *mod, vec3_t mins, vec3_t maxs );
 	void ( *R_ModelFrameBounds )( const struct model_s *mod, int frame, vec3_t mins, vec3_t maxs );

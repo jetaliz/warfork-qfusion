@@ -233,7 +233,6 @@ void CL_UIModule_Init( void )
 	import.R_AddLightToScene = re.AddLightToScene;
 	import.R_AddPolyToScene = re.AddPolyToScene;
 	import.R_RenderScene = re.RenderScene;
-	import.R_EndFrame = re.EndFrame;
 	import.R_RegisterWorldModel = CL_UIModule_R_RegisterWorldModel;
 	import.R_ModelBounds = re.ModelBounds;
 	import.R_ModelFrameBounds = re.ModelFrameBounds;

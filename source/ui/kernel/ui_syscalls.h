@@ -73,9 +73,6 @@ namespace trap
 			UI_IMPORT.R_RenderScene( fd );
 		}
 
-		inline void R_EndFrame( void ) {
-			UI_IMPORT.R_EndFrame ();
-		}
 
 		inline void R_RegisterWorldModel( const char *name ) {
 			UI_IMPORT.R_RegisterWorldModel( name);
