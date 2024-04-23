@@ -144,6 +144,7 @@ void FTLIB_LoadLibrary( bool verbose )
 	import.FS_GetFileList = &FS_GetFileList;
 	import.FS_IsUrl = &FS_IsUrl;
 
+	import.refImport = RF_Forward_Mod();
 	import.R_RegisterPic = &CL_FTLibModule_RegisterPic;
 	import.R_RegisterRawPic = &CL_FTLibModule_RegisterRawPic;
 	import.R_RegisterRawAlphaMask = &CL_FTLibModule_RegisterRawAlphaMask;

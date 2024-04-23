@@ -35,7 +35,7 @@ QF_DLL_EXPORT ftlib_export_t *GetFTLibAPI( ftlib_import_t *import )
 
 	FTLIB_IMPORT = *import;
 
-	Q_ImportRefModule(&import->ref_import);
+	Q_ImportRefModule(&import->refImport);
 
 	globals.API = &FTLIB_API;
 

@@ -242,6 +242,7 @@ void Sys_Error( const char *format, ... )
 	va_start( argptr, format );
 	Q_vsnprintfz( msg, sizeof( msg ), format, argptr );
 	va_end( argptr );
+	printf("%s\n", msg);
 
 	trap::Error( msg );
 }

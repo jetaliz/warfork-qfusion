@@ -56,17 +56,13 @@ DECLARE_TYPEDEF_METHOD( void, RF_LightForOrigin, const vec3_t origin, vec3_t dir
 DECLARE_TYPEDEF_METHOD( shader_t *, RF_GetShaderForOrigin, const vec3_t origin );
 DECLARE_TYPEDEF_METHOD( struct cinematics_s *, RF_GetShaderCinematic, shader_t *shader );
 
+// r_poly.c
+DECLARE_TYPEDEF_METHOD( int, R_GetClippedFragments, const vec3_t origin, float radius, vec3_t axis[3], int maxfverts, vec4_t *fverts, int maxfragments, fragment_t *fragments );
+
 // r_model.c
 DECLARE_TYPEDEF_METHOD( void, R_ModelBounds, const model_t *mod, vec3_t mins, vec3_t maxs );
 DECLARE_TYPEDEF_METHOD( void, R_ModelFrameBounds, const model_t *mod, int frame, vec3_t mins, vec3_t maxs );
 DECLARE_TYPEDEF_METHOD( model_t *, R_RegisterModel, const char *name );
-
-// r_scene.c
-DECLARE_TYPEDEF_METHOD( void, R_ClearScene, void );
-DECLARE_TYPEDEF_METHOD( void, R_AddEntityToScene, const entity_t *ent );
-DECLARE_TYPEDEF_METHOD( void, R_AddLightToScene, const vec3_t org, float intensity, float r, float g, float b );
-DECLARE_TYPEDEF_METHOD( void, R_AddPolyToScene, const poly_t *poly );
-DECLARE_TYPEDEF_METHOD( void, R_RenderScene, const refdef_t *fd );
 
 // r_shader.c
 DECLARE_TYPEDEF_METHOD( shader_t *, R_RegisterSkin, const char *name );
@@ -128,11 +124,6 @@ struct ref_import_s {
 	RF_LightForOriginFn RF_LightForOrigin;
 	RF_GetShaderForOriginFn RF_GetShaderForOrigin;
 	RF_GetShaderCinematicFn RF_GetShaderCinematic;
-	R_ClearSceneFn R_ClearScene;
-	R_AddEntityToSceneFn R_AddEntityToScene;
-	R_AddLightToSceneFn R_AddLightToScene;
-	R_AddPolyToSceneFn R_AddPolyToScene;
-	R_RenderSceneFn R_RenderScene;
 	R_ModelBoundsFn R_ModelBounds;
 	R_ModelFrameBoundsFn R_ModelFrameBounds;
 	R_RegisterModelFn R_RegisterModel;
@@ -146,6 +137,7 @@ struct ref_import_s {
 	R_SkeletalGetNumBonesFn R_SkeletalGetNumBones;
 	R_SkeletalGetBoneInfoFn R_SkeletalGetBoneInfo;
 	R_SkeletalGetBonePoseFn R_SkeletalGetBonePose;
+	R_GetClippedFragmentsFn R_GetClippedFragments;
 };
 
 #define DECLARE_REF_STRUCT() { \
@@ -188,11 +180,6 @@ struct ref_import_s {
   RF_LightForOrigin, \
   RF_GetShaderForOrigin, \
   RF_GetShaderCinematic, \
-	R_ClearScene, \
-	R_AddEntityToScene, \
-	R_AddLightToScene, \
-	R_AddPolyToScene, \
-	R_RenderScene, \
 	R_ModelBounds, \
 	R_ModelFrameBounds, \
 	R_RegisterModel, \
@@ -206,6 +193,7 @@ struct ref_import_s {
 	R_SkeletalGetNumBones, \
 	R_SkeletalGetBoneInfo, \
 	R_SkeletalGetBonePose, \
+	R_GetClippedFragments \
 }
 
 struct ref_import_s RF_Forward_Mod();
@@ -257,11 +245,6 @@ struct cinematics_s *RF_GetShaderCinematic( shader_t *shader ) { return ref_impo
 void R_ModelBounds(const model_t *mod, vec3_t mins, vec3_t maxs ) { ref_import.R_ModelBounds(mod, mins, maxs); }
 void R_ModelFrameBounds( const model_t *mod, int frame, vec3_t mins, vec3_t maxs ) { ref_import.R_ModelFrameBounds( mod, frame, mins, maxs );}
 model_t * R_RegisterModel( const char *name ) { return ref_import.R_RegisterModel( name );}
-void R_ClearScene(void) { return ref_import.R_ClearScene();}
-void R_AddEntityToScene( const entity_t *ent ) { ref_import.R_AddEntityToScene(ent); }
-void R_AddLightToScene( const vec3_t org, float intensity, float r, float g, float b ) { ref_import.R_AddLightToScene( org, intensity, r, g, b ); }
-void R_AddPolyToScene( const poly_t *poly ) { ref_import.R_AddPolyToScene( poly );}
-void R_RenderScene( const refdef_t *fd) { ref_import.R_RenderScene(fd);}
 shader_t* R_RegisterSkin( const char *name) { return ref_import.R_RegisterSkin(name);}
 shader_t* R_RegisterPic( const char *name) { return ref_import.R_RegisterPic(name);}
 shader_t* R_RegisterRawPic( const char *name, int width, int height, uint8_t *data, int samples) { return ref_import.R_RegisterRawPic(name, width, height, data, samples);}
@@ -272,8 +255,7 @@ void R_GetShaderDimensions( const shader_t *shader, int *width, int *height ) { 
 int R_SkeletalGetNumBones( const model_t *mod, int *numFrames) {return ref_import.R_SkeletalGetNumBones(mod, numFrames);}
 int R_SkeletalGetBoneInfo( const model_t *mod, int bone, char *name, size_t name_size, int *flags ) {return ref_import.R_SkeletalGetBoneInfo( mod, bone, name, name_size, flags);}
 void R_SkeletalGetBonePose( const model_t *mod, int bone, int frame, bonepose_t *bonepose ){return ref_import.R_SkeletalGetBonePose( mod, bone, frame, bonepose );}
-
-
+int R_GetClippedFragments(const vec3_t origin, float radius, vec3_t axis[3], int maxfverts, vec4_t *fverts, int maxfragments, fragment_t *fragments ) { return ref_import.R_GetClippedFragments(origin, radius, axis, maxfverts, fverts, maxfragments, fragments ); }
 
 static inline void Q_ImportRefModule(const struct ref_import_s* ref) {
 	ref_import = *ref;

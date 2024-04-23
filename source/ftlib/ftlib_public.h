@@ -89,7 +89,7 @@ typedef struct
 	void ( *Sys_UnloadLibrary )( void **lib );
 
 	// renderer
-	struct ref_import_s ref_import;
+	struct ref_import_s refImport;
 	struct shader_s *( *R_RegisterPic )( const char *name );
 	struct shader_s * ( *R_RegisterRawPic )( const char *name, int width, int height, uint8_t *data, int samples );
 	struct shader_s * ( *R_RegisterRawAlphaMask )( const char *name, int width, int height, uint8_t *data );

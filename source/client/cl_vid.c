@@ -610,7 +610,7 @@ load_refresh:
 		// stop and free all sounds
 		CL_SoundModule_Init( verbose );
 
-		re.BeginRegistration();
+		RF_BeginRegistration();
 		CL_SoundModule_BeginRegistration();
 
 		FTLIB_PrecacheFonts( verbose );
