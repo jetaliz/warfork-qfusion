@@ -56,20 +56,30 @@ DECLARE_TYPEDEF_METHOD( void, RF_LightForOrigin, const vec3_t origin, vec3_t dir
 DECLARE_TYPEDEF_METHOD( shader_t *, RF_GetShaderForOrigin, const vec3_t origin );
 DECLARE_TYPEDEF_METHOD( struct cinematics_s *, RF_GetShaderCinematic, shader_t *shader );
 
+
+// r_model.c
+DECLARE_TYPEDEF_METHOD( void, R_ModelBounds, const model_t *mod, vec3_t mins, vec3_t maxs );
+DECLARE_TYPEDEF_METHOD( void, R_ModelFrameBounds, const model_t *mod, int frame, vec3_t mins, vec3_t maxs );
+DECLARE_TYPEDEF_METHOD( model_t *, R_RegisterModel, const char *name );
+
+// r_scene.c
 DECLARE_TYPEDEF_METHOD( void, R_ClearScene, void );
 DECLARE_TYPEDEF_METHOD( void, R_AddEntityToScene, const entity_t *ent );
 DECLARE_TYPEDEF_METHOD( void, R_AddLightToScene, const vec3_t org, float intensity, float r, float g, float b );
 DECLARE_TYPEDEF_METHOD( void, R_AddPolyToScene, const poly_t *poly );
 DECLARE_TYPEDEF_METHOD( void, R_RenderScene, const refdef_t *fd );
-DECLARE_TYPEDEF_METHOD( void, R_ModelBounds, const model_t *mod, vec3_t mins, vec3_t maxs );
-DECLARE_TYPEDEF_METHOD( void, R_ModelFrameBounds, const model_t *mod, int frame, vec3_t mins, vec3_t maxs );
-DECLARE_TYPEDEF_METHOD( model_t *, R_RegisterModel, const char *name );
+
+// r_shader.c
 DECLARE_TYPEDEF_METHOD( shader_t *, R_RegisterSkin, const char *name );
 DECLARE_TYPEDEF_METHOD( shader_t *, R_RegisterPic, const char *name );
 DECLARE_TYPEDEF_METHOD( shader_t *, R_RegisterRawPic, const char *name, int width, int height, uint8_t *data, int samples );
 DECLARE_TYPEDEF_METHOD( shader_t *, R_RegisterLevelshot, const char *name, struct shader_s *defaultPic, bool *matchesDefault );
-DECLARE_TYPEDEF_METHOD( skinfile_t *, R_RegisterSkinFile, const char *name );
 DECLARE_TYPEDEF_METHOD( shader_t *, R_RegisterVideo, const char *name );
+
+// r_skin.c
+DECLARE_TYPEDEF_METHOD( skinfile_t *, R_RegisterSkinFile, const char *name );
+
+
 DECLARE_TYPEDEF_METHOD( bool, R_LerpTag, orientation_t *orient, const struct model_s *mod, int oldframe, int frame, float lerpfrac, const char *name );
 DECLARE_TYPEDEF_METHOD( void, R_DrawStretchPic, int x, int y, int w, int h, float s1, float t1, float s2, float t2, const vec4_t color, const struct shader_s *shader );
 DECLARE_TYPEDEF_METHOD( void, R_DrawStretchPoly, const struct poly_s *poly, float x_offset, float y_offset );
