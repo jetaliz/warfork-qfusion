@@ -70,6 +70,7 @@ DECLARE_TYPEDEF_METHOD( shader_t *, R_RegisterPic, const char *name );
 DECLARE_TYPEDEF_METHOD( shader_t *, R_RegisterRawPic, const char *name, int width, int height, uint8_t *data, int samples );
 DECLARE_TYPEDEF_METHOD( shader_t *, R_RegisterLevelshot, const char *name, struct shader_s *defaultPic, bool *matchesDefault );
 DECLARE_TYPEDEF_METHOD( shader_t *, R_RegisterVideo, const char *name );
+DECLARE_TYPEDEF_METHOD( shader_t *, R_RegisterRawAlphaMask, const char *name, int width, int height, uint8_t *data );
 
 // r_skin.c
 DECLARE_TYPEDEF_METHOD( skinfile_t *, R_RegisterSkinFile, const char *name );
@@ -138,6 +139,7 @@ struct ref_import_s {
 	R_SkeletalGetBoneInfoFn R_SkeletalGetBoneInfo;
 	R_SkeletalGetBonePoseFn R_SkeletalGetBonePose;
 	R_GetClippedFragmentsFn R_GetClippedFragments;
+  R_RegisterRawAlphaMaskFn R_RegisterRawAlphaMask;
 };
 
 #define DECLARE_REF_STRUCT() { \
@@ -193,7 +195,8 @@ struct ref_import_s {
 	R_SkeletalGetNumBones, \
 	R_SkeletalGetBoneInfo, \
 	R_SkeletalGetBonePose, \
-	R_GetClippedFragments \
+	R_GetClippedFragments, \
+	R_RegisterRawAlphaMask, \
 }
 
 struct ref_import_s RF_Forward_Mod();
@@ -256,6 +259,7 @@ int R_SkeletalGetNumBones( const model_t *mod, int *numFrames) {return ref_impor
 int R_SkeletalGetBoneInfo( const model_t *mod, int bone, char *name, size_t name_size, int *flags ) {return ref_import.R_SkeletalGetBoneInfo( mod, bone, name, name_size, flags);}
 void R_SkeletalGetBonePose( const model_t *mod, int bone, int frame, bonepose_t *bonepose ){return ref_import.R_SkeletalGetBonePose( mod, bone, frame, bonepose );}
 int R_GetClippedFragments(const vec3_t origin, float radius, vec3_t axis[3], int maxfverts, vec4_t *fverts, int maxfragments, fragment_t *fragments ) { return ref_import.R_GetClippedFragments(origin, radius, axis, maxfverts, fverts, maxfragments, fragments ); }
+shader_t* R_RegisterRawAlphaMask( const char *name, int width, int height, uint8_t *data ) { return ref_import.R_RegisterRawAlphaMask(name, width, height, data);  }
 
 static inline void Q_ImportRefModule(const struct ref_import_s* ref) {
 	ref_import = *ref;

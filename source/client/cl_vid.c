@@ -146,7 +146,7 @@ static rserr_t VID_Sys_Init_( void *parentWindow, bool verbose )
 void VID_AppActivate( bool active, bool destroy )
 {
 	vid_app_active = active;
-	re.AppActivate( active, destroy );
+	RF_AppActivate( active, destroy );
 }
 
 /*

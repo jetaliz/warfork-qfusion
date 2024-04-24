@@ -1064,7 +1064,7 @@ void Con_DrawConsole( void )
 		lines = viddef.height;
 
 	// draw the background
-	re.DrawStretchPic( 0, 0, viddef.width, lines, 0, 0, 1, 1, colorWhite, cls.consoleShader );
+	RF_DrawStretchPic( 0, 0, viddef.width, lines, 0, 0, 1, 1, colorWhite, cls.consoleShader );
 	scaled = 2 * pixelRatio;
 	SCR_DrawFillRect( 0, lines - scaled, viddef.width, scaled, colorLtBlue );
 

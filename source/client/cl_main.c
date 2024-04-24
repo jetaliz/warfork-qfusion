@@ -2835,7 +2835,7 @@ void CL_Frame( int realmsec, int gamemsec )
 	{
 		int frame = ++cls.demo.avi_frame;
 		if( cls.demo.avi_video )
-			re.WriteAviFrame( frame, cl_demoavi_scissor->integer );
+			RF_WriteAviFrame( frame, cl_demoavi_scissor->integer );
 	}
 
 	// update audio

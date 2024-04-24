@@ -300,7 +300,6 @@ shader_t	*R_LoadShader( const char *name, shaderType_e type, bool forceDefault )
 shader_t	*R_LoadShaderText( const char *name, shaderType_e type, bool forceDefault, const char* text);
 
 shader_t	*R_RegisterShader( const char *name, shaderType_e type );
-shader_t	*R_RegisterRawAlphaMask( const char *name, int width, int height, uint8_t *data );
 
 unsigned	R_PackShaderOrder( const shader_t *shader );
 
