@@ -457,37 +457,23 @@ static bool R_RegisterGLExtensions( void )
 {
 	memset( &glConfig.ext, 0, sizeof( glextinfo_t ) );
 
-	if( R_TryLoadGLProcAddress( gl_ext_vertex_buffer_object_ARB_funcs ) ) {
-		glConfig.ext.vertex_buffer_object = 1;
-	} else {
+	if( !R_TryLoadGLProcAddress( gl_ext_vertex_buffer_object_ARB_funcs ) ) {
 		R_RegisterFatalExt( "gl_ext_vertex_buffer_object_ARB_funcs " );
 	}
 
-	if( R_TryLoadGLProcAddress( gl_ext_framebuffer_object_EXT_funcs ) ) {
-		glConfig.ext.framebuffer_object = 1;
-	} else {
+	if( !R_TryLoadGLProcAddress( gl_ext_framebuffer_object_EXT_funcs ) ) {
 		R_RegisterFatalExt( "gl_ext_framebuffer_object_EXT_funcs" );
 	}
 
-	if( R_TryLoadGLProcAddress( gl_ext_multitexture_ARB_funcs ) ) {
-		glConfig.ext.multitexture = 1;
-		glConfig.ext.vertex_shader = 1;
-		glConfig.ext.fragment_shader = 1;
-		glConfig.ext.shader_objects = 1;
-		glConfig.ext.shading_language_100 = 1;
-	} else {
+	if( !R_TryLoadGLProcAddress( gl_ext_multitexture_ARB_funcs ) ) {
 		R_RegisterFatalExt( "gl_ext_multitexture_ARB_funcs" );
 	}
 
-	if( R_TryLoadGLProcAddress( gl_ext_GLSL_ARB_funcs ) ) {
-		glConfig.ext.GLSL = 1;
-	} else {
+	if( !R_TryLoadGLProcAddress( gl_ext_GLSL_ARB_funcs ) ) {
 		R_RegisterFatalExt( "gl_ext_GLSL_ARB_funcs" );
 	}
 
-	if( R_TryLoadGLProcAddress( gl_ext_blend_func_separate_EXT_funcs ) ) {
-		glConfig.ext.blend_func_separate = 1;
-	} else {
+	if( !R_TryLoadGLProcAddress( gl_ext_blend_func_separate_EXT_funcs ) ) {
 		R_RegisterFatalExt( "gl_ext_blend_func_separate_EXT_funcs" );
 	}
 
