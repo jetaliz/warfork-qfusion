@@ -145,18 +145,6 @@ typedef struct
 	void **pointer;					// constant pointer to function's pointer (function itself)
 } gl_extension_func_t;
 
-typedef struct
-{
-	const char * prefix;			// constant pointer to constant string
-	const char * name;
-	const char * cvar_default;
-	bool cvar_readonly;
-	bool mandatory;
-	gl_extension_func_t *funcs;		// constant pointer to array of functions
-	size_t offset;					// offset to respective variable
-	size_t depOffset;				// offset to required pre-initialized variable
-} gl_extension_t;
-
 #define GL_EXTENSION_FUNC_EXT(name,func) { name, (void ** const)func }
 #define GL_EXTENSION_FUNC(name) GL_EXTENSION_FUNC_EXT("gl"#name,&(qgl##name))
 
