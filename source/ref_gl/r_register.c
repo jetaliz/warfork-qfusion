@@ -621,7 +621,6 @@ static bool R_RegisterGLExtensions( void )
 		glConfig.ext.texture_array = 1;
 	}
 
-	glConfig.ext.bgra = 1;
 	glConfig.ext.texture_filter_anisotropic = 1;
 	glConfig.ext.meminfo = 1;
 	glConfig.ext.gpu_memory_info = 1;

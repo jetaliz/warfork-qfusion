@@ -154,7 +154,6 @@ typedef struct
 	unsigned int  depth_texture: 1;
 	unsigned int  vertex_shader: 1;
 	unsigned int  shading_language_130: 1;
-	unsigned int  bgra: 1;
 	unsigned int  gamma_control: 1;
 	unsigned int  swap_control: 1;
 	unsigned int  draw_instanced: 1;
